@@ -1,0 +1,10 @@
+# Compiled source #
+###################
+a.out
+main
+
+
+*.dSYM
+*.json
+
+.tempCodeRunnerFile.cpp
