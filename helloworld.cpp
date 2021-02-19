@@ -4,6 +4,7 @@
 #include <vector> 
 #include <iterator>
 #include <math.h> 
+#include <list>
 
 using namespace std; 
 
@@ -11,17 +12,18 @@ using namespace std;
 
 // För att köre C++ ver 11
 
-class BaseState{
+
+class QuantumState{
 	public:
-		std::map<std::string, int> baseState;
+		std::map<std::string, int> state;
 
 		void addQuantumNumber(string key,int value){
-			baseState.insert(std::pair<std::string, int>(key,value));
+			state.insert(std::pair<std::string, int>(key,value));
 		}
 
-		void printBaseState(){
+		void printState(){
 			std::map<std::string, int>::iterator itr;
-			for (itr = baseState.begin(); itr != baseState.end(); ++itr) { 
+			for (itr = state.begin(); itr != state.end(); ++itr) { 
         		std::cout << itr->first 
              	<< ":" << itr->second << ", "; 
 			}	
@@ -30,7 +32,7 @@ class BaseState{
 
 class Basis {
 	public:
-		vector <BaseState> basis; //vector is supposed to be faster for iteration, which will be done. List could be used instead.
+		vector <QuantumState> basis; //vector is supposed to be faster for iteration, which will be done. List could be used instead.
 		Basis(int j2min,int j2max,int tzmin, int tzmax){
 			for (int tz = tzmin; tz <= tzmax; tz++){
 				for (int j = j2min; j <= j2max; j++){
@@ -39,7 +41,7 @@ class Basis {
 							for (int t = abs(tz); t < 2; t++)
 							{
 								if ((l+s+t)%2 != 0){
-									BaseState basestate;
+									QuantumState basestate;
 									basestate.addQuantumNumber("tz",tz);
 									basestate.addQuantumNumber("l",l);
 									basestate.addQuantumNumber("pi",pow(-1,l));
@@ -64,26 +66,87 @@ class Basis {
 
 		}
 		void printBasis(){
-			for(BaseState bs: basis){
+			for(QuantumState bs: basis){
 				std::cout <<"["	;
-				bs.printBaseState();
+				bs.printState();
 				std::cout <<"]"<<endl;
 			}
 		}
 
 };
 
+bool kDelta(QuantumState bra, QuantumState ket, std::vector <std::string> qN){
+	for(std::string s: qN){
+		if (bra.state[s] != ket.state[s]){
+			return false;
+		}
+	}
+	return true;
+}
+
 int main()
 {
 	std::cout << "Createing basis"<<endl;
 
-	Basis base(0,2,0,2);
+	Basis base(0,2,0,0);
 	base.printBasis();
 	
 	std::cout << "Basis length: "<<base.basis.size()<<endl;
 
+	std::vector <std::string> qN;
+	qN.push_back("s");
+	qN.push_back("j");
+	qN.push_back("pi");
+	qN.push_back("tz");
+
+	vector <QuantumState> states;
+
+	for(QuantumState bra: base.basis){
+		for(QuantumState ket: base.basis){				
+			if(kDelta(bra,ket,qN)){
+				QuantumState state;
+
+				state.addQuantumNumber("l",bra.state["l"]);
+				state.addQuantumNumber("ll",ket.state["l"]);
+
+				state.addQuantumNumber("s",bra.state["s"]);
+				state.addQuantumNumber("j",bra.state["j"]);
+				state.addQuantumNumber("t",bra.state["t"]);
+				state.addQuantumNumber("tz",bra.state["tz"]);
+				state.addQuantumNumber("pi",bra.state["pi"]);
+
+				states.push_back(state);
+			}
+
+		}
+	}
+
+	std::cout << states.size()<<endl;
+
+	for(QuantumState bs: states){
+		std::cout <<"["	;
+		bs.printState();
+		std::cout <<"]"<<endl;
+	}
+
+	std::multimap <double, QuantumState> channels;
+
+	double key;
+
+	for(QuantumState bs: states){
+		key = bs.state["j"]*1.0/3.0+bs.state["s"]*1.0/5.0+bs.state["tz"]*1.0/11.0+bs.state["pi"]*1.0/13.0;
+		channels.insert(pair<double,QuantumState>(key,bs));
+		std::cout <<key <<", "<<endl;
+	}
+
+	std::multimap<double, QuantumState>::iterator itr;
+	for (itr = channels.begin(); itr != channels.end(); ++itr) { 
+        // std::cout << itr->first<<" "<<itr->second<<",";
+	}
 
 
+
+	
 	return 0;
 
 
