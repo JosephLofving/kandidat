@@ -2,6 +2,7 @@
 #include <cmath>
 #include "constants.h"
 
+// Joseph's
 std::tuple<double, double, double> blattToStapp(double deltaMinusBB, double deltaPlusBB, double twoEpsilonJBB) {
 	double twoEpsilonJ = asin(sin(twoEpsilonJBB)*sin(deltaMinusBB - deltaPlusBB));
 	double deltaMinus  = 0.5*(deltaPlusBB + deltaMinusBB + asin(tan(twoEpsilonJ)/tan(twoEpsilonJBB)))*rad2deg;
@@ -10,3 +11,5 @@ std::tuple<double, double, double> blattToStapp(double deltaMinusBB, double delt
 
 	return {deltaMinus, deltaPlus, epsilon};
 }
+
+//Hanna's: 
