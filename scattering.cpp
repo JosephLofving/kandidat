@@ -15,9 +15,8 @@
 
 /* k (array) is quadrature points (was "p" in python), w (array) is weights, k0 (double?) is on-shell-point
  * OBS: Passing arrays changes the array even outside function (something with pointers...)
- * This function needs to return a pointer... unsure at the moment
- */
-double* setup_G0_vector(double k[], double k0[], double w[]) 
+ * This function needs to return a pointer... unsure at the moment */
+double* setup_G0_vector(double* k, double* k0, double* w) 
 { 
 	int N{ std::size(k) };					// since k has N elements k_j for j=1,...,N
 	std::complex<double> D[2 * (N + 1)]{ }; // standard to let all elements be zero if not specified
@@ -27,11 +26,10 @@ double* setup_G0_vector(double k[], double k0[], double w[])
     /* Now: Equation (2.22)
 	 * OBS: Chose own theory before python script here, so it differs.
 	 * Difference: In python first part of (2.22) is D[0,N] and second part of (2.22) is D[0],
-	 * and we use 2*2*mu/pi as constant while python script does not
-	 */
+	 * and we use 2*2*mu/pi as constant while python script does not */
 
 	double mu{ 1 }; // reduced mass, from constants, set to 1 since it does not exist yet
-	double pre_factor{ (2 / const::pi) * 2 * mu };
+	double pre_factor{ (2 / constants::pi) * 2 * mu };
 
 	D[1, N] = - pre_factor * k * k * w / (k0 * k0 - k * k);					// first part of (2.22)
 	double d[N]{ w / (k0 * k0 - k * k };									// makes next line shorter
@@ -50,14 +48,13 @@ double* setup_G0_vector(double k[], double k0[], double w[])
 
 
 
-
 //----------------------------------------JOSEPH'S------------------------------------------------------------------
 
 std::tuple<double, double, double> blattToStapp(double deltaMinusBB, double deltaPlusBB, double twoEpsilonJBB) {
 	double twoEpsilonJ = asin(sin(twoEpsilonJBB) * sin(deltaMinusBB - deltaPlusBB));
-	double deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))* const::rad2deg;
-	double deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))* const::rad2deg;
-	double epsilon = 0.5 * twoEpsilonJ* const::rad2deg;
+	double deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))* constants::rad2deg;
+	double deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))* constants::rad2deg;
+	double epsilon = 0.5 * twoEpsilonJ* constants::rad2deg;
 
 	return { deltaMinus, deltaPlus, epsilon };
 }
