@@ -67,7 +67,7 @@ class Basis {
 
 int setup_NN_channels()
 {
-	std::cout << "Createing basis"<<endl;
+	std::cout << "Creating basis"<<endl;
 
 	Basis base(0,2,0,0);
 	base.printBasis();
