@@ -13,11 +13,8 @@ class QuantumState {
 		void addQuantumNumber(std::string key, int value);
 		void printState();
 };
-class Basis {
-	std::vector <QuantumState> basis;
-	public:
-		Basis(int j2min, int j2max, int tzmin, int tzmax);
-		void printBasis();
-};
 
-int setup_NN_channels();
+//std::multimap <double, QuantumState> setup_NN_channels(Basis base);
+void printStates(std::vector<QuantumState> states);
+std::vector<QuantumState> setup_Base(int j2min, int j2max, int tzmin, int tzmax);
+std::multimap<double, QuantumState> setup_NN_channels(std::vector<QuantumState> base);
