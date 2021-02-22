@@ -6,10 +6,7 @@
 #include <math.h> 
 #include <list>
 
-using namespace std; //Don't use this /H
-
 //g++ -std=c++17 helloworld.cpp -o main
-
 // För att köre C++ ver 17
 
 
