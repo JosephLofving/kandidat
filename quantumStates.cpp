@@ -5,6 +5,7 @@
 #include <iterator>
 #include <math.h> 
 #include <list>
+#include "angmom.h"
 
 //g++ -std=c++17 helloworld.cpp -o main
 // För att köre C++ ver 17
@@ -84,7 +85,7 @@ int setup_NN_channels()
 
 	for(QuantumState bra: base.basis){
 		for(QuantumState ket: base.basis){				
-			if(kDelta(bra,ket,qN)){
+			if(kDelta(bra.state,ket.state,qN)){
 				QuantumState state;
 
 				state.addQuantumNumber("l",bra.state["l"]);
