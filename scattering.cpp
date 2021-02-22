@@ -15,7 +15,7 @@
 //-------------------------------------- HANNA'S ------------------------------------------------
 
 
-/* k (vector) is quadrature points (was "p" in python), w (vector) is weights, k0 (double) is on-shell-point .
+/* k (vector) is quadrature points (was "p" in python), w (vector) is weights, k0 (double) is on-shell-point.
  * Passes vector of type complex double. */
 std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::vector<double> w, double k0)
 { 
