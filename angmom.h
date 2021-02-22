@@ -3,7 +3,6 @@
 #include <vector> 
 #include <iterator>
 #include <string>
-#include <list>
 
 bool triag(int a, int b, int ab);
 bool kDelta(std::map<std::string, int> bra, std::map<std::string, int> ket, std::vector <std::string> qN);

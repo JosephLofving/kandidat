@@ -1,7 +1,9 @@
 #include <cstdlib> // Behövs för abs
 #include <map>
-#include <vector>
+#include <vector> 
+#include <iterator>
 #include <string>
+
 
 bool triag(int a, int b, int ab){ // Kontrollerar |a-b| <= ab <= a+b
 	return (abs(a - b) <= ab && ab <= a + b);

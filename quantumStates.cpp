@@ -5,6 +5,7 @@
 #include <iterator>
 #include <math.h> 
 #include <list>
+#include "angmom.h"
 
 //g++ -std=c++17 helloworld.cpp -o main
 // För att köre C++ ver 17
@@ -67,11 +68,9 @@ class Basis {
 
 int setup_NN_channels()
 {
-<<<<<<< HEAD
 	std::cout << "Createing basis" << std::endl;
-=======
-	std::cout << "Creating basis"<<endl;
->>>>>>> 47876c3af985fa47f6f6b33ea26aba29be86694c
+
+
 
 	Basis base(0,2,0,0);
 	base.printBasis();
@@ -88,7 +87,7 @@ int setup_NN_channels()
 
 	for(QuantumState bra: base.basis){
 		for(QuantumState ket: base.basis){				
-			if(kDelta(bra,ket,qN)){
+			if(kDelta(bra.state,ket.state,qN)){
 				QuantumState state;
 
 				state.addQuantumNumber("l",bra.state["l"]);
@@ -130,3 +129,4 @@ int setup_NN_channels()
 	
 	return 0;	
 }
+
