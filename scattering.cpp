@@ -1,21 +1,17 @@
-#include "constants.h" // namespace constants
+#include "constants.h"	// namespace constants
 
-#include <complex> // for complex numbers with std::complex<double>,
-#include <numeric> // for std::accumulate
-#include <iterator> // for std:size
+#include <complex>		// for complex numbers with std::complex<double>,
 #include <tuple>
 #include <cmath>
 #include <vector>
 #include <iostream>
 
+inline constexpr std::complex<double> I{ (0.0,1.0) }; // ugly way to get imaginary unit, does not work in all code
 
 
 
-
-//-------------------------------------- HANNA'S ------------------------------------------------
-
-
-/* k (vector) is quadrature points (was "p" in python), w (vector) is weights, k0 (double) is on-shell-point.
+//__________HANNA'S________________
+/* k (vector) is quadrature points (was "p" in python), w (vector) is weights, k0 (double) is on-shell-point .
  * Passes vector of type complex double. */
 std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::vector<double> w, double k0)
 { 
@@ -42,42 +38,82 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 		sum += w[ind] / (k0 * k0 - k[ind] * k[ind]);									// to use in D[0]
 	}
 	
-	D[0] = pre_factor * k0 * k0 * sum;
+	D[0] = pre_factor * k0 * k0 * sum + 2 * mu * I * k0;
 	
 	return D;
 }
 
+
+
+//___________HANNA'S______________
 // setup_VG_kernel
 
 
-// T should be matrix, maybe multidimensional vector? Let NN_channel be MD vector
-std::vector<double> compute_phase_shifts(std::vector<std::vector<double>> NN_channel, double k0, std::vector<double> T)
-{
-	std::vector<double> phases{};
-	int number_of_blocks{ NN_channel.size() };
-	int channel_index[0]['channel_index'];
-	std::cout << "Computing phase shifts in channel " << channel_index;
-
-	// T.shape?
-
-	double mu{};
-	if (NN_channel[0]['tz'] == -1)
-		mu = constants::mp / 2;
-	if (NN_channel[0]['tz'] == 0)
-		mu = constants::uN;
-	if (NN_channel[0]['tz'] == -1)
-		mu = constants::mN / 2;
-
-}
 
 
-//----------------------------------------JOSEPH'S------------------------------------------------------------------
 
+// __________JOSEPH'S____________
 std::tuple<double, double, double> blattToStapp(double deltaMinusBB, double deltaPlusBB, double twoEpsilonJBB) {
 	double twoEpsilonJ = asin(sin(twoEpsilonJBB) * sin(deltaMinusBB - deltaPlusBB));
 	double deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))* constants::rad2deg;
 	double deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))* constants::rad2deg;
 	double epsilon = 0.5 * twoEpsilonJ* constants::rad2deg;
 
-	return { deltaMinus, deltaPlus, epsilon };
+	return { deltaMinus, deltaPlus, epsilon }; // Kan assignas med auto [ double deltaMinus, double deltaPlus, double epsilon ] = blattToStapp(...)
+}
+
+
+
+
+//__________HANNA'S________________
+// T should be matrix, maybe multidimensional vector? Let NN_channel be MD vector
+std::vector<double> compute_phase_shifts(std::vector<std::vector<double>> NN_channel, double k0, std::vector<double> T)
+{
+	std::vector<double> phases{};
+	int number_of_blocks{ NN_channel.size() };			 // what blocks?
+	int channel_index{ NN_channel[0]['channel_index'] }; // unsure here, wait for quantumState
+	std::cout << "Computing phase shifts in channel " << channel_index;
+
+	double mu{};
+	int tz_index{ NN_channel[0]['tz'] };
+
+	if (tz_index == -1)
+		mu = constants::mp / 2;
+	else if (tz_index == 0)
+		mu = constants::uN;
+	else if (tz_index == -1)
+		mu = constants::mN / 2;
+
+	double factor{ 2 * mu * k0 };
+
+	// no idea what the following does (if-else)
+	int Np{}; // T.shape?
+	if (number_of_blocks > 1)
+	{
+		Np = static_cast<int>(Np - 2 / 2); // why cast? what is type of Np originally?
+		double T11{ T[Np,Np] };
+		double T12{ T[2 * Np + 1,Np] };
+		double T22{ T[2 * Np + 1,2 * Np + 1] };
+
+		// Blatt - Biedenharn(BB) convention
+		// Maybe complex double
+		double twoEpsilonJ_BB{ std::atan(2 * T12 / (T11 - T22)) };
+		double delta_plus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+		double delta_minus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+
+		std::tuple<double, double, double> append_vector{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) }; 
+
+		phases.insert(std::end(phases), std::begin(append_vector), std::end(append_vector)); // unsure what tuple is, how append to phases?
+	}
+	else
+	{
+		Np -= 1;
+		double T{ T[Np, Np] };
+		double Z{ 1 - factor * 2 * I * T };
+		double delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
+
+		phases.insert(std::end(phases), &delta, &delta);
+	}
+
+	return phases;
 }

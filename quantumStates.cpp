@@ -5,7 +5,6 @@
 #include <iterator>
 #include <math.h> 
 #include <list>
-#include "angmom.h"
 
 //g++ -std=c++17 helloworld.cpp -o main
 // För att köre C++ ver 17
@@ -59,7 +58,7 @@ class Basis {
 			for(QuantumState bs: basis){
 				std::cout <<"["	;
 				bs.printState();
-				std::cout <<"]"<<std::endl;
+				std::cout <<"]" << std::endl;
 			}
 		}
 };
@@ -68,12 +67,16 @@ class Basis {
 
 int setup_NN_channels()
 {
-	std::cout << "Creating basis"<<std::endl;
+<<<<<<< HEAD
+	std::cout << "Createing basis" << std::endl;
+=======
+	std::cout << "Creating basis"<<endl;
+>>>>>>> 47876c3af985fa47f6f6b33ea26aba29be86694c
 
 	Basis base(0,2,0,0);
 	base.printBasis();
 	
-	std::cout << "Basis length: "<<base.basis.size()<<std::endl;
+	std::cout << "Basis length: "<<base.basis.size() << std::endl;
 
 	std::vector <std::string> qN;
 	qN.push_back("s");
@@ -85,7 +88,7 @@ int setup_NN_channels()
 
 	for(QuantumState bra: base.basis){
 		for(QuantumState ket: base.basis){				
-			if(kDelta(bra.state,ket.state,qN)){
+			if(kDelta(bra,ket,qN)){
 				QuantumState state;
 
 				state.addQuantumNumber("l",bra.state["l"]);
@@ -102,12 +105,12 @@ int setup_NN_channels()
 		}
 	}
 
-	std::cout << states.size()<<std::endl;
+	std::cout << states.size() << std::endl;
 
 	for(QuantumState bs: states){
 		std::cout <<"["	;
 		bs.printState();
-		std::cout <<"]"<<std::endl;
+		std::cout <<"]" << std::endl;
 	}
 
 	std::multimap <double, QuantumState> channels;
@@ -117,7 +120,7 @@ int setup_NN_channels()
 	for(QuantumState bs: states){
 		key = bs.state["j"]*1.0/3.0+bs.state["s"]*1.0/5.0+bs.state["tz"]*1.0/11.0+bs.state["pi"]*1.0/13.0;
 		channels.insert(std::pair<double,QuantumState>(key,bs));
-		std::cout <<key <<", "<<std::endl;
+		std::cout <<key <<", "<< std::endl;
 	}
 
 	std::multimap<double, QuantumState>::iterator itr;
