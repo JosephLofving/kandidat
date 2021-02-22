@@ -59,7 +59,7 @@ std::tuple<double, double, double> blattToStapp(double deltaMinusBB, double delt
 	double deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))* constants::rad2deg;
 	double epsilon = 0.5 * twoEpsilonJ* constants::rad2deg;
 
-	return { deltaMinus, deltaPlus, epsilon };
+	return { deltaMinus, deltaPlus, epsilon }; // Kan assignas med auto [ double deltaMinus, double deltaPlus, double epsilon ] = blattToStapp(...)
 }
 
 
