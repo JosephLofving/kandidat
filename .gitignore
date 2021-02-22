@@ -2,9 +2,11 @@
 ###################
 a.out
 main
+test
+tempCodeRunnerFile.cpp
+testFile.cpp
 
 .vs
 *.dSYM
 *.json
 
-.tempCodeRunnerFile.cpp
