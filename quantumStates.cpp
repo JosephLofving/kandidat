@@ -96,7 +96,7 @@ int setup_NN_channels()
 	qN.push_back("pi");
 	qN.push_back("tz");
 
-	vector <QuantumState> states;
+	std::vector <QuantumState> states;
 
 	for(QuantumState bra: base.basis){
 		for(QuantumState ket: base.basis){				
