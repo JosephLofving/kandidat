@@ -6,7 +6,7 @@
 
 int main() {
 	std::vector<QuantumState> base = setup_Base(0,2,0,0);
-    std::multimap<double, QuantumState> channels = setup_NN_channels(base);
+    std::multimap<std::string, QuantumState> channels = setup_NN_channels(base);
 
 	int Np = 100;
 	//tuple a = gauss_kegendre_inf_mesh(Np);

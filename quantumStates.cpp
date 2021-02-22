@@ -68,7 +68,7 @@ std::vector<QuantumState> setup_Base(int j2min, int j2max, int tzmin, int tzmax)
 }
 
 //std::multimap <double, QuantumState> setup_NN_channels(Basis base){
-std::multimap<double, QuantumState> setup_NN_channels(std::vector<QuantumState> base){
+std::multimap<std::string, QuantumState> setup_NN_channels(std::vector<QuantumState> base){
 
 	//std::vector<QuantumState> base = setup_Base(0, 2, 0, 0);
 
@@ -101,26 +101,21 @@ std::multimap<double, QuantumState> setup_NN_channels(std::vector<QuantumState> 
 
 	std::cout << states.size() << std::endl;
 
-	for (QuantumState bs : states){
-		std::cout << "[";
-		bs.printState();
-		std::cout << "]" << std::endl;
-	}
+	std::multimap<std::string, QuantumState> channels;
 
-	std::multimap<double, QuantumState> channels;
-
-	double key;
+	std::string key;
 
 	for (QuantumState state : states){
-		key = state.state["j"] * 1.0 / 3.0 + state.state["s"] * 1.0 / 5.0 + state.state["tz"] * 1.0 / 11.0 + state.state["pi"] * 1.0 / 13.0;
-		channels.insert(std::pair<double, QuantumState>(key, state));
-		std::cout << key << ", " << std::endl;
+		key = "j: "+std::to_string(state.state["j"])+" s: "+std::to_string(state.state["s"])+" tz: " +std::to_string(state.state["tz"]) +" pi: "+ std::to_string(state.state["pi"]);
+		channels.insert(std::pair<std::string, QuantumState>(key, state));
 	}
 
-	std::multimap<double, QuantumState>::iterator itr;
+	std::multimap<std::string, QuantumState>::iterator itr;
 	for (itr = channels.begin(); itr != channels.end(); ++itr){
-		std::cout << itr->first << " ";
+		std::cout << "Key: [" << itr->first<< " ] ";
+		std::cout << " value: [";
 		itr->second.printState();
+		std::cout << "] "<< std::endl;
 	}
 
 	return channels;

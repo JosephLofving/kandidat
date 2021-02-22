@@ -5,6 +5,7 @@ main
 test
 tempCodeRunnerFile.cpp
 testFile.cpp
+oldcode.cpp
 
 .vs
 *.dSYM
