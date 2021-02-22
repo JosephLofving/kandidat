@@ -7,7 +7,7 @@
 #include <list>
 
 class QuantumState {
-	void addQuantumNumber(string key, int value);
+	void addQuantumNumber(std::string key, int value);
 	void printState();
 };
 class Basis {
@@ -15,5 +15,4 @@ class Basis {
 	void printBasis();
 };
 
-bool kDelta(QuantumState bra, QuantumState ket, std::vector <std::string> qN);
 int setup_NN_channels();
