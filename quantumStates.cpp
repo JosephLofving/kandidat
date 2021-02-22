@@ -14,7 +14,7 @@ class QuantumState{
 	public:
 		std::map<std::string, int> state;
 
-		void addQuantumNumber(string key,int value){
+		void addQuantumNumber(std::string key,int value){
 			state.insert(std::pair<std::string, int>(key,value));
 		}
 
@@ -29,7 +29,7 @@ class QuantumState{
 
 class Basis {
 	public:
-		vector <QuantumState> basis; //vector is supposed to be faster for iteration, which will be done. List could be used instead.
+		std::vector <QuantumState> basis; //vector is supposed to be faster for iteration, which will be done. List could be used instead.
 		Basis(int j2min,int j2max,int tzmin, int tzmax){
 			for (int tz = tzmin; tz <= tzmax; tz++){
 				for (int j = j2min; j <= j2max; j++){
@@ -66,7 +66,7 @@ class Basis {
 			for(QuantumState bs: basis){
 				std::cout <<"["	;
 				bs.printState();
-				std::cout <<"]"<<endl;
+				std::cout <<"]" << std::endl;
 			}
 		}
 
@@ -76,12 +76,12 @@ class Basis {
 
 int setup_NN_channels()
 {
-	std::cout << "Createing basis"<<endl;
+	std::cout << "Createing basis" << std::endl;
 
 	Basis base(0,2,0,0);
 	base.printBasis();
 	
-	std::cout << "Basis length: "<<base.basis.size()<<endl;
+	std::cout << "Basis length: "<<base.basis.size() << std::endl;
 
 	std::vector <std::string> qN;
 	qN.push_back("s");
@@ -111,12 +111,12 @@ int setup_NN_channels()
 		}
 	}
 
-	std::cout << states.size()<<endl;
+	std::cout << states.size() << std::endl;
 
 	for(QuantumState bs: states){
 		std::cout <<"["	;
 		bs.printState();
-		std::cout <<"]"<<endl;
+		std::cout <<"]" << std::endl;
 	}
 
 	std::multimap <double, QuantumState> channels;
@@ -125,8 +125,8 @@ int setup_NN_channels()
 
 	for(QuantumState bs: states){
 		key = bs.state["j"]*1.0/3.0+bs.state["s"]*1.0/5.0+bs.state["tz"]*1.0/11.0+bs.state["pi"]*1.0/13.0;
-		channels.insert(pair<double,QuantumState>(key,bs));
-		std::cout <<key <<", "<<endl;
+		channels.insert(std::pair<double,QuantumState>(key,bs));
+		std::cout <<key <<", "<< std::endl;
 	}
 
 	std::multimap<double, QuantumState>::iterator itr;
