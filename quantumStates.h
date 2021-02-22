@@ -7,7 +7,7 @@
 #include <list>
 
 class QuantumState {
-	void addQuantumNumber(string key, int value);
+	void addQuantumNumber(std::string key, int value);
 	void printState();
 };
 class Basis {
