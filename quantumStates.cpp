@@ -84,7 +84,7 @@ bool kDelta(QuantumState bra, QuantumState ket, std::vector <std::string> qN){
 	return true;
 }
 
-int main()
+int setup_NN_channels()
 {
 	std::cout << "Createing basis"<<endl;
 
