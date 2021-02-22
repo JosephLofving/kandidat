@@ -43,6 +43,8 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	return D;
 }
 
+
+
 //___________HANNA'S______________
 // setup_VG_kernel
 
