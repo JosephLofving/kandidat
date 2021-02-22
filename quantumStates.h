@@ -7,13 +7,13 @@
 #include <list>
 
 class QuantumState {
-	void addQuantumNumber(string key, int value)
-	void printState()
+	void addQuantumNumber(string key, int value);
+	void printState();
 };
 class Basis {
-	Basis(int j2min, int j2max, int tzmin, int tzmax)
-	void printBasis()
+	Basis(int j2min, int j2max, int tzmin, int tzmax);
+	void printBasis();
 };
 
-bool kDelta(QuantumState bra, QuantumState ket, std::vector <std::string> qN)
-int setup_NN_channels()
+bool kDelta(QuantumState bra, QuantumState ket, std::vector <std::string> qN);
+int setup_NN_channels();
