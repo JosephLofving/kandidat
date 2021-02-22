@@ -60,7 +60,7 @@ std::vector<double> blattToStapp(double deltaMinusBB, double deltaPlusBB, double
 	double epsilon = 0.5 * twoEpsilonJ*constants::rad2deg;
 
 	return std::vector<double> { deltaMinus, deltaPlus, epsilon };
-
+}
 
 
 
