@@ -55,12 +55,11 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 // __________JOSEPH'S____________
 std::vector<double> blattToStapp(double deltaMinusBB, double deltaPlusBB, double twoEpsilonJBB) {
 	double twoEpsilonJ = asin(sin(twoEpsilonJBB) * sin(deltaMinusBB - deltaPlusBB));
-	double deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))* constants::rad2deg;
-	double deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))* constants::rad2deg;
-	double epsilon = 0.5 * twoEpsilonJ* constants::rad2deg;
+	double deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))*constants::rad2deg;
+	double deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB)))*constants::rad2deg;
+	double epsilon = 0.5 * twoEpsilonJ*constants::rad2deg;
 
-	return std::vector<double> { deltaMinus, deltaPlus, epsilon }; // Kan assignas med auto [ double deltaMinus, double deltaPlus, double epsilon ] = blattToStapp(...)
-}
+	return std::vector<double> { deltaMinus, deltaPlus, epsilon };
 
 
 
