@@ -7,8 +7,10 @@
 #include <list>
 
 class QuantumState {
-	void addQuantumNumber(std::string key, int value);
-	void printState();
+	public:
+		std::map<std::string, int> state;
+		void addQuantumNumber(std::string key, int value);
+		void printState();
 };
 class Basis {
 	Basis(int j2min, int j2max, int tzmin, int tzmax);
