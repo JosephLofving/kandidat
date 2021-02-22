@@ -6,10 +6,7 @@
 #include <math.h> 
 #include <list>
 
-using namespace std; 
-
 //g++ -std=c++17 helloworld.cpp -o main
-
 // För att köre C++ ver 17
 
 
@@ -77,7 +74,7 @@ class Basis {
 
 
 
-int main()
+int setup_NN_channels()
 {
 	std::cout << "Createing basis"<<endl;
 
@@ -92,7 +89,7 @@ int main()
 	qN.push_back("pi");
 	qN.push_back("tz");
 
-	vector <QuantumState> states;
+	std::vector <QuantumState> states;
 
 	for(QuantumState bra: base.basis){
 		for(QuantumState ket: base.basis){				
