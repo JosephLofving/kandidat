@@ -49,18 +49,10 @@ class Basis {
 									basis.push_back(basestate);
 								}
 							}
-							
-
 						}
-						
-
 					}
-					
 				}
-				
 			}
-			
-
 		}
 		void printBasis(){
 			for(QuantumState bs: basis){
@@ -69,14 +61,17 @@ class Basis {
 				std::cout <<"]" << std::endl;
 			}
 		}
-
 };
 
 
 
 int setup_NN_channels()
 {
+<<<<<<< HEAD
 	std::cout << "Createing basis" << std::endl;
+=======
+	std::cout << "Creating basis"<<endl;
+>>>>>>> 47876c3af985fa47f6f6b33ea26aba29be86694c
 
 	Basis base(0,2,0,0);
 	base.printBasis();
@@ -107,7 +102,6 @@ int setup_NN_channels()
 
 				states.push_back(state);
 			}
-
 		}
 	}
 
@@ -133,12 +127,6 @@ int setup_NN_channels()
 	for (itr = channels.begin(); itr != channels.end(); ++itr) { 
         // std::cout << itr->first<<" "<<itr->second<<",";
 	}
-
-
-
 	
-	return 0;
-
-
-	
+	return 0;	
 }
