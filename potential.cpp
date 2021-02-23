@@ -1,7 +1,7 @@
 
 #include "chiral_LO.h"
 
-int main(int argc, char* argv[]){
+std::vector<double> potential(int argc, char* argv[]){
     
 
     /* Declare a NULL pointer of the potential-class type */
@@ -38,16 +38,16 @@ int main(int argc, char* argv[]){
     
     /* Call class-member function V */
     /* Declare and set in- and out-momenta in c.m.*/
-    double V_matrix[6][6] = {};
+    std::vector<double> V_matrix(6*6);
     for (int ppi = 1; ppi < 6; ppi++) {
         for (int ppo = 1; ppo < 6; ppo++) {
             double pi = 1.0 * ppi;
             double po = 1.0 * ppo;
             potential_class_ptr->V(pi, po, coupled, S, J, T, Tz, V_array);
             std::cout << V_array[0] << std::endl;
-            V_matrix[ppi][ppo] = V_array[0];
+            V_matrix[ppi + ppo*6] = V_array[0];
         }
     }
 
-    return 0;
+    return V_matrix;
 }
