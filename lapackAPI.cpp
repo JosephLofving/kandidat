@@ -26,6 +26,7 @@ class lapackMat {
 	lapackMat(int x, int y); // Constructor för nollmatris
 	double matrixElement(int row, int col); // Returnerar element med givna index. Notera att allt är 0-indexerat
 	void printMatrix(); // Printar matrisen
+	lapackMat zeros(int N);
 };
 
 lapackMat::lapackMat(int x, int y, std::vector<double> z) {

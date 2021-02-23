@@ -1,42 +1,44 @@
 //#include <boost/math/quadrature/gauss.hpp> //vi skriver den själva istälet
 #include "constants.h"
 #include "lapackAPI.h"
-
 #include <iostream>
 #include <cmath>
-<<<<<<< HEAD
-#include <lapackAPI.h>
+#include <lapackAPI.h> //ger error av någon anledning...
 #include <vector>
+#include <algorithm>
+#include <list>
+#include <numeric> //behövs för std::iota
+#include <random>
 
-struct tuple {
+struct two_vectors {
 	std::vector<double> t;
 	std::vector<double> u;
-=======
-#include <vector>
-
-
-
-struct Two_vectors {
-	std::vector<double> v1;
-	std::vector<double> v2;
->>>>>>> 0bc0121ee6790b466965a30ed17bea8810ddac31
 };
 
-tuple leggauss(int N) {
-	std::vector<double> c(N * N);
+two_vectors leggauss(int N) {
+	std::vector<double> c(N);
+	
+
+
+};
+
+lapackMat legcompanion(std::vector<double> c) {
 	c[N] = 1;
 	if (N == 2) {
-		tuple mat[1][1] = 0;
-			return mat;
+		lapackMat mat = new lapackMat(1,1); //se kommentar nedan
+		return mat;
 	}
-	
+	lapackMat mat = new lapackMat(N, N); //den verkar inte kunna koppla till lapackAPI.h? Ska iaf skapa matris = zeros(N*N)
+	std::vector<double> arange_vec(N);
+	std::iota(std::begin(arange_vec), std::end(arange_vec), 0); //arange_vec = {0,1,...,N}
+	std::vector<double> scl = 1./sqrt
+
 
 }
 
-
 /* This follows equation (2.18) and (2.19) with the same notation */
-Two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
-	Two_vectors X = leggauss(N);
+two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
+	two_vectors X = leggauss(N);
 	std::vector<double> p = X[0];
 	std::vector<double> w_prime = X[1];
 
@@ -47,19 +49,19 @@ Two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
 	// for loops for these operations?
 	std::vector<double> k = (1 + p) / (1 - p); // 0.5 * (p + 1) * (b - a) + a;
 	std::vector<double> w = 2 * C * w_prime / pow(1 - k, 2);//  w_prime * 0.5 * (b - a);
-	Two_vectors k_and_w{ k, w };
+	two_vectors k_and_w{ k, w };
 
 	return k_and_w;
 }
 
-Two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
-	Two_vectors X = leggauss(N);
+two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
+	two_vectors X = leggauss(N);
 	std::vector<double> x = X[0];
 	std::vector<double> w = X[1];
 	double pi_over_four = constants::pi;
 	std::vector<double> t = scale * tan(pi_over_four) * (x + 1.0);
 	std::vector<double> u = scale * pi_over_four / cos(pi_over_four) * pow(x * 1.0, 2 * w);
-	Two_vectors T = new Two_vectors(t, u);
+	two_vectors T = new two_vectors(t, u);
 	return T;
 
 }
