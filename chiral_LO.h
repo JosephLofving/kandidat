@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #ifndef CHIRAL_LO_SIMPLE_H
 #define CHIRAL_LO_SIMPLE_H
 
