@@ -6,8 +6,16 @@ test
 tempCodeRunnerFile.cpp
 testFile.cpp
 oldcode.cpp
-
+angmom.exe
+angmom.obj
+chiral_LO.exe
+chiral_LO.obj
+main.exe
+main.obj
+quantumStates.obj
+solveLS.obj
 .vs
 *.dSYM
 *.json
+.gitignore
 
