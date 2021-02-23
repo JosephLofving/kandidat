@@ -16,10 +16,6 @@ int main(int argc, char* argv[]){
     int J = 0;
     int T = 1; // I use generalised Pauli principle (L+S+T=odd) to determine T=1 since L=S=0
 
-    /* Declare and set in- and out-momenta in c.m.*/
-    double pi = 5;
-    double po = 5;
-
     /* I set this to be a proton-neutron scattering system, meaning Tz=0.
      * For pp-scattering we would have Tz=-1 and for nn we would have Tz=+1 */
     int Tz = 0;
@@ -41,9 +37,17 @@ int main(int argc, char* argv[]){
     bool coupled = false;
     
     /* Call class-member function V */
-    potential_class_ptr->V(pi, po, coupled, S, J, T, Tz, V_array);
-
-    std::cout << V_array[0] << std::endl;
+    /* Declare and set in- and out-momenta in c.m.*/
+    double V_matrix[6][6] = {};
+    for (int ppi = 1; ppi < 6; ppi++) {
+        for (int ppo = 1; ppo < 6; ppo++) {
+            double pi = 1.0 * ppi;
+            double po = 1.0 * ppo;
+            potential_class_ptr->V(pi, po, coupled, S, J, T, Tz, V_array);
+            std::cout << V_array[0] << std::endl;
+            V_matrix[ppi][ppo] = V_array[0];
+        }
+    }
 
     return 0;
 }
