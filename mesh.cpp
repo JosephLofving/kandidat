@@ -1,7 +1,8 @@
-#include <boost/math/quadrature/gauss.hpp>
+//#include <boost/math/quadrature/gauss.hpp> //vi skriver den själva istälet
 #include "constants.h"
 #include <iostream>
 #include <cmath>
+#include <lapackAPI.h>
 
 class arr {
 
