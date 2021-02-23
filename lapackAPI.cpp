@@ -2,10 +2,6 @@
 #include <vector>
 #include <string.h> // Behövs för numberToFixedWidth()
 
-extern "C" {
-  void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
-}
-
 std::string numberToFixedWidth(double num, int width) { // Gör num till en string av bredd width med efterföljande blanksteg
 	std::string s = std::to_string(num); // Typkonversion
 	if (s.length() > width) {
@@ -70,38 +66,58 @@ void lapackMat::print() {
   	}
 }
 
+extern "C" {
+  void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
+}
+
+/* I funktionerna nedan används dgemm_ flitigt. dgemm_ genomför i grunden operationen alpha*op(A)*op(B) + beta*C
+ * där op(X) antingen är en transponering eller ingenting. Nedan följer en förklaring av ickeuppenbara argument.
+ * TRANSX: Anger hur (och om) X ska transponeras. TRANSX='N' innebär ingen transponering
+ *      M: Antalet rader i A (och C)
+ *      N: Antalet kolonner i B (och C)
+ *      K: Antalet kolonner i A och rader i B
+ *    LDX: Ledande dimension för X. Kan anpassas om man vill använda submatriser, men det vill vi aldrig. */
+
 lapackMat matrixMultiplication(lapackMat A, lapackMat B) { // Returnerar C=A*B
 	lapackMat C(A.height, B.width); // Initierar ett C att skriva över. Kanske inte behövs egentligen?
-	char TRANS = 'N'; // Anger att A och B inte ska transponeras
-	int M = A.height;  // Antalet rader i A (och C)
-	int N = B.width;   // Antalet kolonner i B (och C)
-	int K = A.width;   // Antalet kolonner i A (och rader i B)
-	double ALPHA = 1;  // Skalär som A*B multipliceras med (se nedan)
-	double BETA  = 0;  // Skalär som C multipliceras med innan C adderas (se nedan)
-	int LDA = M;       // Ledande dimension för A. Kan ändras för att utföra operationer på submatriser
-	int LDB = K;       // Ledande dimension för B
-	int LDC = M;	   // Ledande dimension för C
+	char TRANS = 'N';
+	double ALPHA = 1;
+	double BETA  = 0;
 
-	// Tekniskt sett ger dgemm C = alpha*A*B + beta*C
-	dgemm_(&TRANS, &TRANS, &M, &N, &K, &ALPHA, A.contents.data(), &LDA, B.contents.data(), &LDB, &BETA, C.contents.data(), &LDC);
+	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
 
 	return C;
 }
 
-lapackMat scalarMultiplication(lapackMat A, double scalar) { // Se matrixMultiplication() för närmare förklaringar
+lapackMat scalarMultiplication(lapackMat A, double scalar) { // Returnerar C=alpha*A
 	lapackMat B = lapackMat(A.height); // Skapar en identitetsmatris för att bevara A vid multiplikation
 	lapackMat C(A.height, B.width);
 	char TRANS = 'N';
-	int M = A.height;  // Antalet rader i A (och C)
-	int N = B.width;   // Antalet kolonner i B (och C)
-	int K = A.width;   // Antalet kolonner i A (och rader i B)
-	double BETA  = 0;  // Skalär som C multipliceras med innan C adderas (se nedan)
-	int LDA = M;       // Ledande dimension för A. Kan ändras för att utföra operationer på submatriser
-	int LDB = K;       // Ledande dimension för B
-	int LDC = M;	   // Ledande dimension för C
+	double BETA  = 0;
 
-	// Tekniskt sett ger dgemm C = alpha*A*B + beta*C
-	dgemm_(&TRANS, &TRANS, &M, &N, &K, &scalar, A.contents.data(), &LDA, B.contents.data(), &LDB, &BETA, C.contents.data(), &LDC);
+	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &scalar, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
+
+	return C;
+}
+
+lapackMat matrixAddition(lapackMat A, lapackMat C) { // Returnerar C=A+C
+	lapackMat B = lapackMat(A.height);
+	char TRANS = 'N';
+	double ALPHA = 1;
+	double BETA  = 1;
+
+	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
+
+	return C;
+}
+
+lapackMat matrixSubtraction(lapackMat A, lapackMat C) { // Returnerar C=A-C
+	lapackMat B = lapackMat(A.height);
+	char TRANS = 'N';
+	double ALPHA = 1;
+	double BETA  = -1;
+
+	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
 
 	return C;
 }
