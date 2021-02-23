@@ -11,11 +11,14 @@ class lapackMat {
 
 	lapackMat(int x, int y, std::vector<double> z);
 	lapackMat(int x, int y);
+	lapackMat(int x);
 
-	double matrixElement(int row, int col);
-	void printMatrix();
+	double getElement(int row, int col);
+	void setElement(int row, int col, double value);
+	void print();
 };
 
-lapackMat multiplyMatrix(lapackMat A, lapackMat B);
+lapackMat matrixMultiplication(lapackMat A, lapackMat B);
+lapackMat scalarMultiplication(lapackMat A, double scalar);
 
 #endif
