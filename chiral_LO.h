@@ -1,8 +1,7 @@
-#define _USE_MATH_DEFINES
-
 #ifndef CHIRAL_LO_SIMPLE_H
 #define CHIRAL_LO_SIMPLE_H
 
+#define _USE_MATH_DEFINES
 #include <iostream>
 #include <vector>
 #include <cmath>
