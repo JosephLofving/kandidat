@@ -70,7 +70,7 @@ extern "C" {
   void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
 }
 
-/* I funktionerna nedan används dgemm_ flitigt. dgemm_ genomför i grunden operationen alpha*op(A)*op(B) + beta*C
+/* I funktionerna nedan används dgemm_ flitigt. dgemm_ genomför i grunden operationen C = alpha*op(A)*op(B) + beta*C
  * där op(X) antingen är en transponering eller ingenting. Nedan följer en förklaring av ickeuppenbara argument.
  * TRANSX: Anger hur (och om) X ska transponeras. TRANSX='N' innebär ingen transponering
  *      M: Antalet rader i A (och C)
