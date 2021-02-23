@@ -4,14 +4,10 @@
 
 #include <iostream>
 #include <cmath>
-<<<<<<< HEAD
 #include <lapackAPI.h>
 #include <vector>
 
-struct tuple {
-	std::vector<double> t;
-	std::vector<double> u;
-=======
+
 #include <vector>
 
 
@@ -19,18 +15,16 @@ struct tuple {
 struct Two_vectors {
 	std::vector<double> v1;
 	std::vector<double> v2;
->>>>>>> 0bc0121ee6790b466965a30ed17bea8810ddac31
 };
 
-tuple leggauss(int N) {
+
+Two_vectors leggauss(int N) {
 	std::vector<double> c(N * N);
 	c[N] = 1;
 	if (N == 2) {
-		tuple mat[1][1] = 0;
+		Two_vectors mat[1][1] = 0;
 			return mat;
 	}
-	
-
 }
 
 
@@ -54,12 +48,14 @@ Two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
 
 Two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 	Two_vectors X = leggauss(N);
-	std::vector<double> x = X[0];
-	std::vector<double> w = X[1];
+	std::vector<double> p = X.v1;		// first of the two vectors in X
+	std::vector<double> w_prime = X.v2; // second of the two vectors in X
+	
 	double pi_over_four = constants::pi;
-	std::vector<double> t = scale * tan(pi_over_four) * (x + 1.0);
-	std::vector<double> u = scale * pi_over_four / cos(pi_over_four) * pow(x * 1.0, 2 * w);
-	Two_vectors T = new Two_vectors(t, u);
-	return T;
 
+	std::vector<double> k = scale * tan(pi_over_four) * (p + 1.0);
+	std::vector<double> w = scale * pi_over_four / cos(pi_over_four) * pow(p * 1.0, 2 * w_prime);
+	Two_vectors k_and_w{ k, w };
+
+	return k_and_w;
 }
