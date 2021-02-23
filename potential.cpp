@@ -1,7 +1,7 @@
 
 #include "chiral_LO.h"
 
-int main(int argc, char* argv[]){
+std::vector<double> potential(int argc, char* argv[]){
     
 
     /* Declare a NULL pointer of the potential-class type */
@@ -15,10 +15,6 @@ int main(int argc, char* argv[]){
     int S = 0;
     int J = 0;
     int T = 1; // I use generalised Pauli principle (L+S+T=odd) to determine T=1 since L=S=0
-
-    /* Declare and set in- and out-momenta in c.m.*/
-    double pi = 5;
-    double po = 5;
 
     /* I set this to be a proton-neutron scattering system, meaning Tz=0.
      * For pp-scattering we would have Tz=-1 and for nn we would have Tz=+1 */
@@ -41,9 +37,17 @@ int main(int argc, char* argv[]){
     bool coupled = false;
     
     /* Call class-member function V */
-    potential_class_ptr->V(pi, po, coupled, S, J, T, Tz, V_array);
+    /* Declare and set in- and out-momenta in c.m.*/
+    std::vector<double> V_matrix(6*6);
+    for (int ppi = 1; ppi < 6; ppi++) {
+        for (int ppo = 1; ppo < 6; ppo++) {
+            double pi = 1.0 * ppi;
+            double po = 1.0 * ppo;
+            potential_class_ptr->V(pi, po, coupled, S, J, T, Tz, V_array);
+            std::cout << V_array[0] << std::endl;
+            V_matrix[ppi + ppo*6] = V_array[0];
+        }
+    }
 
-    std::cout << V_array[0] << std::endl;
-
-    return 0;
+    return V_matrix;
 }
