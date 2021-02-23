@@ -3,7 +3,6 @@
 #include "lapackAPI.h"
 #include <iostream>
 #include <cmath>
-#include <lapackAPI.h> //ger error av någon anledning...
 #include <vector>
 #include <algorithm>
 #include <list>
