@@ -3,19 +3,15 @@
 #include <iostream>
 #include <cmath>
 #include <lapackAPI.h>
-
-class arr {
-
-};
-
+#include <vector>
 
 struct tuple {
-	arr t;
-	arr u;
+	std::vector<double> t;
+	std::vector<double> u;
 };
 
-tuple leggauss(N) {
-	arr c[N] = { 0 };
+tuple leggauss(int N) {
+	std::vector<double> c(N * N);
 	c[N] = 1;
 	if (N == 2) {
 		tuple mat[1][1] = 0;
