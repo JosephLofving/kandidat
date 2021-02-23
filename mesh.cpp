@@ -1,13 +1,13 @@
-//#include <boost/math/quadrature/gauss.hpp> //vi skriver den själva istälet
+ï»¿//#include <boost/math/quadrature/gauss.hpp> //vi skriver den sjï¿½lva istï¿½let
 #include "constants.h"
 #include "lapackAPI.h"
 #include <iostream>
 #include <cmath>
-#include <lapackAPI.h> //ger error av någon anledning...
+#include <lapackAPI.h> //ger error av nÃ¥gon anledning...
 #include <vector>
 #include <algorithm>
 #include <list>
-#include <numeric> //behövs för std::iota
+#include <numeric> //behï¿½vs fï¿½r std::iota
 #include <random>
 
 struct two_vectors {
@@ -56,12 +56,14 @@ two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
 
 two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 	two_vectors X = leggauss(N);
-	std::vector<double> x = X[0];
-	std::vector<double> w = X[1];
+	std::vector<double> p = X.v1;		// first of the two vectors in X
+	std::vector<double> w_prime = X.v2; // second of the two vectors in X
+	
 	double pi_over_four = constants::pi;
-	std::vector<double> t = scale * tan(pi_over_four) * (x + 1.0);
-	std::vector<double> u = scale * pi_over_four / cos(pi_over_four) * pow(x * 1.0, 2 * w);
-	two_vectors T = new two_vectors(t, u);
-	return T;
 
+	std::vector<double> k = scale * tan(pi_over_four) * (p + 1.0);
+	std::vector<double> w = scale * pi_over_four / cos(pi_over_four) * pow(p * 1.0, 2 * w_prime);
+	two_vectors k_and_w{ k, w };
+
+	return k_and_w;
 }
