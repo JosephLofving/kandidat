@@ -20,11 +20,6 @@ public:
 
 	lapackMat(int x, int y, std::vector<double>); // Constructor
 	lapackMat(int x, int y); // Constructor för nollmatris
-<<<<<<< HEAD
-	double matrixElement(int row, int col); // Returnerar element med givna index. Notera att allt är 0-indexerat
-	void printMatrix(); // Printar matrisen
-	lapackMat zeros(int N);
-=======
 	lapackMat(int x); // Constructor för identitetsmatris
 	double getElement(int row, int col); // Returnerar element med givna index. Notera att allt är 0-indexerat
 	void setElement(int row, int col, double value);
@@ -36,7 +31,6 @@ private:
 		height = y;
 		contents = z;
 	}
->>>>>>> 5d55ce0968daec0d0d56f819493d9bfd0126d312
 };
 
 lapackMat::lapackMat(int x, int y, std::vector<double> z) {
