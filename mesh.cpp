@@ -10,30 +10,69 @@
 #include <random>
 
 struct two_vectors {
-	std::vector<double> t;
-	std::vector<double> u;
+	std::vector<double> v1;
+	std::vector<double> v2;
 };
+
+std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double> v2) {
+	std::vector<double> vec;
+	if (v1.size() != v2.size())
+		std::cout << "Error: vectors must be same length\n";
+	for (int i = 0; i < v1.size(); i++) {
+		vec[i] = v1[i] * v2[i];
+	}
+	return vec;
+}
 
 two_vectors leggauss(int N) {
 	std::vector<double> c(N);
+	c[N - 1] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
+	lapackMat* m = legcompanion(c); //se legcompanion
 	
+	std::vector<double> x = {};
+	std::vector<double> w = {};
 
-
+	two_vectors x_and_w{ x, w };
+	return x_and_w;
 };
 
+//nu är den klar, bara att fixa så lapackMat är av rätt typ, den kan inte accessa sina funktioner
 lapackMat* legcompanion(std::vector<double> c) {
-	c[N] = 1;
+	int N = c.size();
 	if (N == 2) {
-		lapackMat* mat = new lapackMat(1,1); //se kommentar nedan
+		lapackMat* mat = new lapackMat(1,1);
 		return mat;
 	}
-	lapackMat* mat = new lapackMat(N, N); //den verkar inte kunna koppla till lapackAPI.h? Ska iaf skapa matris = zeros(N*N)
+	lapackMat* mat = new lapackMat(N, N); //Skapar matris mat = zeros(N*N)
 	std::vector<double> scl(N);
-	std::iota(std::begin(scl), std::end(scl), 0); //scl= {0,1,...,N}
+	std::iota(std::begin(scl), std::end(scl), 0); //scl= {0,1,...,N-1}
 	std::for_each(scl.begin(), scl.end(), [](double& v) {v = sqrt(2 * v + 1); }); //scl[i] = sqrt(2*scl[i]+1) forall i
 	std::for_each(scl.begin(), scl.end(), [](double& v) { v = 1 / v; });
-
-
+	//std::vector<double> top(N - 1, 0); //bös, behövs nog ej
+	//std::vector<double> bot(N - 1, 0);
+	std::vector<double> scll(N-1);
+	std::iota(std::begin(scll), std::end(scll), 1); //scll= {1,...,N-1} (börjar på 1, men har denna gång endast N-1 element, till skillnad från scl).
+	std::vector<double> scl_removedLast = scl; //scl fast med sista elementet borttaget
+	std::vector<double> scl_removedFirst = scl; //scl fast med första elementet borttaget
+	scl_removedLast.pop_back();
+	scl_removedFirst.erase(scl_removedFirst.begin());
+	std::vector<double> scl_prod = elementwise_mult(scl_removedLast, scl_removedFirst); //elementvis produkt mellan dessa
+	std::vector<double> top = elementwise_mult(scl_prod, scll);
+	for (int i = 0; i < N-1; i++) {
+		mat.setElement(i, i + 1, top[i]);
+		mat.setElement(i + 1, i, top[i]); //nää det är nåt fel med syntax fortfarande, den tror att mat är en pointer nu?
+	}
+	c.pop_back(); //nu är c bara nollor, samt 1 element kortare.
+	double scl_lastValue = scl.back();
+	std::for_each(scl.begin(), scl.end(), [&](double& v) { v = v / scl_lastValue; });
+	double N_div = N / (2 * N - 1);
+	std::vector<double> bigProd = elementwise_mult(scl, c);
+	std::for_each(bigProd.begin(), bigProd.end(), [&](double& v) { v = v * N_div; });
+	for (int i = 0; i < N; i++) {
+		double prev_elem = mat.getElement(i, N);
+		mat.setElement(i, N, prev_elem - bigProd[i]);
+	}
+	return mat;
 
 }
 
