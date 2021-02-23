@@ -89,7 +89,7 @@ lapackMat matrixMultiplication(lapackMat A, lapackMat B) { // Returnerar C=A*B
 	return C;
 }
 
-lapackMat scalarMultiplication(lapackMat A, double scalar) { // Returnerar C=alpha*A
+lapackMat scalarMultiplication(double scalar, lapackMat A) { // Returnerar C=alpha*A
 	lapackMat B = lapackMat(A.height); // Skapar en identitetsmatris för att bevara A vid multiplikation
 	lapackMat C(A.height, B.width);
 	char TRANS = 'N';
@@ -120,4 +120,23 @@ lapackMat matrixSubtraction(lapackMat A, lapackMat C) { // Returnerar C=A-C
 	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
 
 	return C;
+}
+
+extern "C" { // Måste skrivas såhär
+	void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
+	void dgetrs_(char* C, int* N, int* NRHS, double* A, int* LDA, int* IPIV, double* B, int* LDB, int* INFO);
+}
+
+lapackMat solveMatrixEq(lapackMat A, lapackMat B) {
+	lapackMat dummyA = lapackMat(A.width, A.height, A.contents); // dgetrf_ och dgetrs_ manipulerar A och B. Dummies skapas för att bevara ursprungliga A och B
+	lapackMat dummyB = lapackMat(B.width, B.height, B.contents);
+
+	int INFO;
+	char TRANS = 'N';
+	std::vector<int> IPIV(std::min(A.width, A.height));
+
+	dgetrf_(&A.height, &A.width, dummyA.contents.data(), &A.height, IPIV.data(), &INFO);
+	dgetrs_(&TRANS, &A.height, &B.width, dummyA.contents.data(), &A.width, IPIV.data(), dummyB.contents.data(), &A.height, &INFO);
+
+	return dummyB;
 }

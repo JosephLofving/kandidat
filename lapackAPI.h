@@ -19,8 +19,9 @@ class lapackMat {
 };
 
 lapackMat matrixMultiplication(lapackMat A, lapackMat B);
-lapackMat scalarMultiplication(lapackMat A, double scalar);
+lapackMat scalarMultiplication(double scalar, lapackMat A);
 lapackMat matrixAddition(lapackMat A, lapackMat C);
 lapackMat matrixSubtraction(lapackMat A, lapackMat C);
+lapackMat solveMatrixEq(lapackMat A, lapackMat B);
 
 #endif
