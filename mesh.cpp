@@ -21,16 +21,18 @@ two_vectors leggauss(int N) {
 
 };
 
-lapackMat legcompanion(std::vector<double> c) {
+lapackMat* legcompanion(std::vector<double> c) {
 	c[N] = 1;
 	if (N == 2) {
-		lapackMat mat = new lapackMat(1,1); //se kommentar nedan
+		lapackMat* mat = new lapackMat(1,1); //se kommentar nedan
 		return mat;
 	}
-	lapackMat mat = new lapackMat(N, N); //den verkar inte kunna koppla till lapackAPI.h? Ska iaf skapa matris = zeros(N*N)
-	std::vector<double> arange_vec(N);
-	std::iota(std::begin(arange_vec), std::end(arange_vec), 0); //arange_vec = {0,1,...,N}
-	std::vector<double> scl = 1./sqrt
+	lapackMat* mat = new lapackMat(N, N); //den verkar inte kunna koppla till lapackAPI.h? Ska iaf skapa matris = zeros(N*N)
+	std::vector<double> scl(N);
+	std::iota(std::begin(scl), std::end(scl), 0); //scl= {0,1,...,N}
+	std::for_each(scl.begin(), scl.end(), [](double& v) {v = sqrt(2 * v + 1); }); //scl[i] = sqrt(2*scl[i]+1) forall i
+	std::for_each(scl.begin(), scl.end(), [](double& v) { v = 1 / v; });
+
 
 
 }
