@@ -88,7 +88,7 @@ std::vector<double> setup_VG_kernel(std::vector<std::vector<double>> channel, st
 
 
 // __________JOSEPH'S____________
-LapackMat computeTMatrix(type NN_channel, LapackMat V, double ko, LapackMat p, LapackMat w) {
+LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, LapackMat V, double ko, LapackMat p, LapackMat w) {
 	VG = setup_VG_kernel(NN_channel, V, ko, p, w);
 
 	eyeVG = matrixSubtraction(LapackMat(VG.width), scalarMultiplication(2.0/constants::pi, VG)); // IVG = (I - 2.0/pi * VG)

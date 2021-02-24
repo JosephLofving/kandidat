@@ -68,7 +68,7 @@ std::vector<QuantumState> setup_Base(int j2min, int j2max, int tzmin, int tzmax)
 }
 
 //std::multimap <double, QuantumState> setup_NN_channels(Basis base){
-std::multimap<std::string, QuantumState> setup_NN_channels(std::vector<QuantumState> base){
+std::map<std::string, std::vector<QuantumState> > setup_NN_channels(std::vector<QuantumState> base){
 
 	//std::vector<QuantumState> base = setup_Base(0, 2, 0, 0);
 
@@ -101,22 +101,33 @@ std::multimap<std::string, QuantumState> setup_NN_channels(std::vector<QuantumSt
 
 	std::cout << states.size() << std::endl;
 
-	std::multimap<std::string, QuantumState> channels;
+	std::map<std::string, std::vector<QuantumState> > channels;
 
 	std::string key;
 
 	for (QuantumState state : states){
 		key = "j: "+std::to_string(state.state["j"])+" s: "+std::to_string(state.state["s"])+" tz: " +std::to_string(state.state["tz"]) +" pi: "+ std::to_string(state.state["pi"]);
-		channels.insert(std::pair<std::string, QuantumState>(key, state));
+		if(channels.count(key)==0){
+			std::vector<QuantumState> vec_state;
+			vec_state.push_back(state);
+			channels.insert(std::pair<std::string, std::vector<QuantumState> >(key, vec_state));
+		}
+		else{
+			channels[key].push_back(state);
+		}
+		
 	}
 
-	std::multimap<std::string, QuantumState>::iterator itr;
-	for (itr = channels.begin(); itr != channels.end(); ++itr){
-		std::cout << "Key: [" << itr->first<< " ] ";
-		std::cout << " value: [";
-		itr->second.printState();
-		std::cout << "] "<< std::endl;
-	}
 
 	return channels;
+}
+
+void printChannels(std::map<std::string, std::vector<QuantumState> > channels){
+	std::map<std::string, std::vector<QuantumState> >::iterator itr;
+	for (itr = channels.begin(); itr != channels.end(); ++itr){
+		std::cout << "Key: [" << itr->first<< " ] " << std::endl;
+		std::cout << " value: ";
+		printStates(itr->second);
+	}
+
 }
