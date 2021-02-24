@@ -12,6 +12,10 @@ std::string numberToFixedWidth(double num, int width) { // Gör num till en stri
 	return s;
 }
 
+extern "C" {
+  void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
+}
+
 class LapackMat {
 public:
 	int width;  // Matrisbredd
@@ -24,6 +28,12 @@ public:
 	double getElement(int row, int col); // Returnerar element med givna index. Notera att allt är 0-indexerat
 	void setElement(int row, int col, double value);
 	void print(); // Printar matrisen
+
+	friend LapackMat operator+(LapackMat &A, LapackMat &B);
+	friend LapackMat operator-(LapackMat &A, LapackMat &B);
+	friend LapackMat operator*(double scalar, LapackMat &A);
+	friend LapackMat operator*(LapackMat &A, double scalar);
+	friend LapackMat operator*(LapackMat &A, LapackMat &B);
 
 private: 
 	void init(int x, int y, std::vector<double> z) { // Skapas separat från konstruktorerna för att göra konstruktorerna mer koncisa
@@ -66,9 +76,9 @@ void LapackMat::print() {
   	}
 }
 
-extern "C" {
-  void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
-}
+// extern "C" {
+//   void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
+// }
 
 /* I funktionerna nedan används dgemm_ flitigt. dgemm_ genomför i grunden operationen C = alpha*op(A)*op(B) + beta*C
  * där op(X) antingen är en transponering eller ingenting. Nedan följer en förklaring av ickeuppenbara argument.
@@ -78,20 +88,33 @@ extern "C" {
  *      K: Antalet kolonner i A och rader i B
  *    LDX: Ledande dimension för X. Kan anpassas om man vill använda submatriser, men det vill vi aldrig. */
 
-LapackMat matrixMultiplication(LapackMat A, LapackMat B) { // Returnerar C=A*B
-	LapackMat C(A.height, B.width); // Initierar ett C att skriva över. Kanske inte behövs egentligen?
+LapackMat operator+(LapackMat &A, LapackMat &B) { // A+B
+	LapackMat dummyB   = LapackMat(B.width, B.height, B.contents);
+	LapackMat identity = LapackMat(A.height);
 	char TRANS = 'N';
 	double ALPHA = 1;
-	double BETA  = 0;
+	double BETA  = 1;
 
-	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
+	dgemm_(&TRANS, &TRANS, &A.height, &identity.width, &A.width, &ALPHA, A.contents.data(), &A.height, identity.contents.data(), &A.width, &BETA, dummyB.contents.data(), &A.height);
 
-	return C;
+	return dummyB;
 }
 
-LapackMat scalarMultiplication(double scalar, LapackMat A) { // Returnerar C=alpha*A
+LapackMat operator-(LapackMat &A, LapackMat &B) { // A-B
+	LapackMat dummyB   = LapackMat(B.width, B.height, B.contents);
+	LapackMat identity = LapackMat(A.height);
+	char TRANS = 'N';
+	double ALPHA = 1;
+	double BETA  = -1;
+
+	dgemm_(&TRANS, &TRANS, &A.height, &identity.width, &A.width, &ALPHA, A.contents.data(), &A.height, identity.contents.data(), &A.width, &BETA, dummyB.contents.data(), &A.height);
+
+	return dummyB;
+}
+
+LapackMat operator*(double scalar, LapackMat &A) { // scalar*A
 	LapackMat B = LapackMat(A.height); // Skapar en identitetsmatris för att bevara A vid multiplikation
-	LapackMat C(A.height, B.width);
+	LapackMat C(A.width, A.height);
 	char TRANS = 'N';
 	double BETA  = 0;
 
@@ -100,22 +123,15 @@ LapackMat scalarMultiplication(double scalar, LapackMat A) { // Returnerar C=alp
 	return C;
 }
 
-LapackMat matrixAddition(LapackMat A, LapackMat C) { // Returnerar C=A+C
-	LapackMat B = LapackMat(A.height);
-	char TRANS = 'N';
-	double ALPHA = 1;
-	double BETA  = 1;
-
-	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
-
-	return C;
+LapackMat operator*(LapackMat &A, double scalar) { // A*scalar
+	return scalar*A; // Scalar multiplication is commutative
 }
 
-LapackMat matrixSubtraction(LapackMat A, LapackMat C) { // Returnerar C=A-C
-	LapackMat B = LapackMat(A.height);
+LapackMat operator*(LapackMat &A, LapackMat &B) { // A*B
+	LapackMat C(A.height, B.width); // Initierar ett C att skriva över. Kanske inte behövs egentligen?
 	char TRANS = 'N';
 	double ALPHA = 1;
-	double BETA  = -1;
+	double BETA  = 0;
 
 	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
 

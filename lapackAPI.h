@@ -16,6 +16,12 @@ class LapackMat {
 	double getElement(int row, int col);
 	void setElement(int row, int col, double value);
 	void print();
+
+	friend LapackMat operator+(LapackMat &A, LapackMat &B);
+	friend LapackMat operator-(LapackMat &A, LapackMat &B);
+	friend LapackMat operator*(double scalar, LapackMat &A);
+	friend LapackMat operator*(LapackMat &A, double scalar);
+	friend LapackMat operator*(LapackMat &A, LapackMat &B);
 };
 
 struct Two_vectors {
@@ -25,8 +31,6 @@ struct Two_vectors {
 
 LapackMat matrixMultiplication(LapackMat A, LapackMat B);
 LapackMat scalarMultiplication(double scalar, LapackMat A);
-LapackMat matrixAddition(LapackMat A, LapackMat C);
-LapackMat matrixSubtraction(LapackMat A, LapackMat C);
 LapackMat solveMatrixEq(LapackMat A, LapackMat B);
 
 #endif
