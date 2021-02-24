@@ -17,4 +17,4 @@ class QuantumState {
 //std::multimap <double, QuantumState> setup_NN_channels(Basis base);
 void printStates(std::vector<QuantumState> states);
 std::vector<QuantumState> setup_Base(int j2min, int j2max, int tzmin, int tzmax);
-std::multimap<std::string, QuantumState> setup_NN_channels(std::vector<QuantumState> base);
+std::map<std::string, std::vector<QuantumState> > setup_NN_channels(std::vector<QuantumState> base)
