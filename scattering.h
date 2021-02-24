@@ -11,7 +11,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 // setup_VG_kernel...
 std::vector<double> blattToStapp(double deltaMinusBB, double deltaPlusBB, double twoEpsilonJBB);
 // compute_T_matrix...
-std::vector<double> compute_phase_shifts(std::vector<std::vector<double>> NN_channel, double k0, std::vector<double> T);
+std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,std::string key, double k0, std::vector<double> T);
 
 
 

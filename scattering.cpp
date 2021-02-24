@@ -54,7 +54,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 
 
 // __________JOSEPH'S____________
-LapackMat computeTMatrix(type NN_channel, LapackMat V, double ko, LapackMat p, LapackMat w) {
+LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, LapackMat V, double ko, LapackMat p, LapackMat w) {
 	VG = setup_VG_kernel(NN_channel, V, ko, p, w);
 
 	eyeVG = matrixSubtraction(LapackMat(VG.width), scalarMultiplication(2.0/constants::pi, VG)); // IVG = (I - 2.0/pi * VG)
@@ -110,9 +110,9 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 		double delta_plus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
 		double delta_minus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
 
-		std::tuple<double, double, double> append_vector{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) }; 
+		std::vector<double> append_phases{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) }; 
 
-		phases.insert(std::end(phases), std::begin(append_vector), std::end(append_vector)); // unsure what tuple is, how append to phases?
+		phases.insert(std::end(phases), std::begin(append_phases), std::end(append_phases)); // unsure what tuple is, how append to phases?
 	}
 	else
 	{
