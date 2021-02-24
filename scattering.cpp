@@ -1,4 +1,5 @@
 #include "constants.h"	// namespace constants
+#include "quantumStates.h"
 
 #include <complex>		// for complex numbers with std::complex<double>,
 #include <tuple>
@@ -76,15 +77,14 @@ std::vector<double> blattToStapp(double deltaMinusBB, double deltaPlusBB, double
 
 //__________HANNA'S________________
 // T should be matrix, maybe multidimensional vector? Let NN_channel be MD vector
-std::vector<double> compute_phase_shifts(std::vector<std::vector<double>> NN_channel, double k0, std::vector<double> T)
+std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,std::string key, double k0, std::vector<double> T)
 {
 	std::vector<double> phases{};
-	int number_of_blocks{ NN_channel.size() };			 // what blocks?
-	int channel_index{ NN_channel[0]['channel_index'] }; // unsure here, wait for quantumState
-	std::cout << "Computing phase shifts in channel " << channel_index;
+	int number_of_blocks{ NN_channel.size() };			 // what blocks? block = quantumstate in channel
+	std::cout << "Computing phase shifts in channel " << key;
 
 	double mu{};
-	int tz_index{ NN_channel[0]['tz'] };
+	int tz_index{ NN_channel[0].state["tz"]};
 
 	if (tz_index == -1)
 		mu = constants::mp / 2;
