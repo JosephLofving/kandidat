@@ -1,7 +1,7 @@
 #include <iostream>
-#include <boost/math/quadrature/gauss.hpp>
+//#include <boost/math/quadrature/gauss.hpp>
 
-struct tuple
-tuple leggauss(N);
-tuple gauss_legendre_line_mesh(int N, int a, int b);
-tuple gauss_legendre_inf_mesh(int N, double scale = 100.0);
+struct two_vectors
+two_vectors leggauss(N);
+two_vectors gauss_legendre_line_mesh(int N, int a, int b);
+two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0);
