@@ -47,7 +47,41 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 
 
 //___________HANNA'S______________
-// setup_VG_kernel
+
+//what is "channel"?
+std::vector<double> setup_VG_kernel(std::vector<std::vector<double>> channel, std::vector<double> V, std::vector<double> k, std::vector<double> w, double k0)
+{
+	double mu{};
+	int tz_channel{ channel[0]['tz'] };
+	if (tz_channel == -1)
+		mu = constants::mp / 2;
+	else if (tz_channel == 0)
+		mu = constants::uN;
+	else if (tz_channel == 1)
+		mu = constants::mN / 2;
+
+	double Np{ k.size() };
+	int number_of_blocks{ channel.size() };
+	int channel_index{ channel[0]['channel_index'] };
+	std::cout << "Setting up G_0(k0) in channel " << channel_index;
+
+	double Np_channel{ static_cast<int>(std::sqrt(number_of_blocks) * (Np + 1)) };
+	std::vector<std::complex<double>> G0{ setup_G0_vector(k, w, k0) };
+
+	// copy G0 up to Np_channel:th (or (Np_channel-1):th?) element
+	std::vector<std::complex<double>> G0_part{};
+	for (int index{ 0 }; index < Np_channel; ) { G0_part[index] = G0[index]; }  // potential off-by-one error here
+
+	// VG is a kernel; multidimensional complex vector. Switch to matrix?
+	std::vector<std::vector<std::complex<double>>> VG[G0_part.size()][G0_part.size()]{};
+
+	for (int index{ 0 }; index < G0_part.size(); index++)
+	{
+		VG[:][index] = V[:][index] * G0_part[index] * 2 * mu; // ":" means all rows...
+	}
+
+	return VG;
+}
 
 
 
@@ -63,6 +97,9 @@ LapackMat computeTMatrix(type NN_channel, LapackMat V, double ko, LapackMat p, L
 
 	return Tmtx;
 }
+
+
+
 
 std::vector<double> blattToStapp(double deltaMinusBB, double deltaPlusBB, double twoEpsilonJBB) {
 	double twoEpsilonJ = asin(sin(twoEpsilonJBB) * sin(deltaMinusBB - deltaPlusBB));
