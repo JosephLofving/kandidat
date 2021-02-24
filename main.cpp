@@ -3,6 +3,7 @@
 #include "chiral_LO.h"
 #include "mesh.h"
 #include "lapackAPI.h"
+#include "scattering.h"
 
 
 int main() {
