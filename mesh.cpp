@@ -59,8 +59,8 @@ lapackMat* legcompanion(std::vector<double> c) {
 	std::vector<double> scl_prod = elementwise_mult(scl_removedLast, scl_removedFirst); //elementvis produkt mellan dessa
 	std::vector<double> top = elementwise_mult(scl_prod, scll);
 	for (int i = 0; i < N-1; i++) {
-		mat.setElement(i, i + 1, top[i]);
-		mat.setElement(i + 1, i, top[i]); //nää det är nåt fel med syntax fortfarande, den tror att mat är en pointer nu?
+		mat->setElement(i, i + 1, top[i]);
+		mat->setElement(i + 1, i, top[i]); //nää det är nåt fel med syntax fortfarande, den tror att mat är en pointer nu?
 	}
 	c.pop_back(); //nu är c bara nollor, samt 1 element kortare.
 	double scl_lastValue = scl.back();
@@ -69,8 +69,8 @@ lapackMat* legcompanion(std::vector<double> c) {
 	std::vector<double> bigProd = elementwise_mult(scl, c);
 	std::for_each(bigProd.begin(), bigProd.end(), [&](double& v) { v = v * N_div; });
 	for (int i = 0; i < N; i++) {
-		double prev_elem = mat.getElement(i, N);
-		mat.setElement(i, N, prev_elem - bigProd[i]);
+		double prev_elem = mat->getElement(i, N);
+		mat->setElement(i, N, prev_elem - bigProd[i]);
 	}
 	return mat;
 
