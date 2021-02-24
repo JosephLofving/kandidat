@@ -8,8 +8,8 @@
 #include "angmom.h"
 
 class QuantumState {
-	std::map<std::string, int> state;
 	public:
+		std::map<std::string, int> state;
 		void addQuantumNumber(std::string key, int value);
 		void printState();
 };
