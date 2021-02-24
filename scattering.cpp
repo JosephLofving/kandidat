@@ -49,7 +49,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 //___________HANNA'S______________
 
 //what is "channel"?
-std::vector<double> setup_VG_kernel(std::vector<std::vector<double>> channel, std::vector<double> V, std::vector<double> k, std::vector<double> w, double k0)
+std::vector<double> setup_VG_kernel(std::vector<std::vector<double> > channel, std::vector<double> V, std::vector<double> k, std::vector<double> w, double k0)
 {
 	double mu{};
 	int tz_channel{ channel[0]['tz'] };
