@@ -110,9 +110,9 @@ std::vector<double> compute_phase_shifts(std::vector<std::vector<double>> NN_cha
 		double delta_plus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
 		double delta_minus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
 
-		std::tuple<double, double, double> append_vector{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) }; 
+		std::vector<double> append_phases{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) }; 
 
-		phases.insert(std::end(phases), std::begin(append_vector), std::end(append_vector)); // unsure what tuple is, how append to phases?
+		phases.insert(std::end(phases), std::begin(append_phases), std::end(append_phases)); // unsure what tuple is, how append to phases?
 	}
 	else
 	{
