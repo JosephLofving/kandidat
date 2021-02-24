@@ -18,7 +18,11 @@ class lapackMat {
 	void print();
 };
 
-struct Two_vectors;
+struct Two_vectors {
+	std::vector<double> v1;
+	std::vector<double> v2;
+};
+
 lapackMat matrixMultiplication(lapackMat A, lapackMat B);
 lapackMat scalarMultiplication(double scalar, lapackMat A);
 lapackMat matrixAddition(lapackMat A, lapackMat C);

@@ -22,7 +22,7 @@ std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double>
 Two_vectors leggauss(int N) {
 	std::vector<double> c(N);
 	c[N - 1] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
-	lapackMat* m = legcompanion(c); //se legcompanion
+	LapackMat* m = legcompanion(c); //se legcompanion
 	
 	std::vector<double> x = {};
 	std::vector<double> w = {};
@@ -39,14 +39,14 @@ std::vector<double> legder(std::vector<double> c) {
 
 }
 
-//nu är den klar, bara att fixa så lapackMat är av rätt typ, den kan inte accessa sina funktioner
-lapackMat* legcompanion(std::vector<double> c) {
+//nu är den klar, bara att fixa så LapackMat är av rätt typ, den kan inte accessa sina funktioner
+LapackMat* legcompanion(std::vector<double> c) {
 	int N = c.size();
 	if (N == 2) {
-		lapackMat* mat = new lapackMat(1,1);
+		LapackMat* mat = new LapackMat(1,1);
 		return mat;
 	}
-	lapackMat* mat = new lapackMat(N, N); //Skapar matris mat = zeros(N*N)
+	LapackMat* mat = new LapackMat(N, N); //Skapar matris mat = zeros(N*N)
 	std::vector<double> scl(N);
 	std::iota(std::begin(scl), std::end(scl), 0); //scl= {0,1,...,N-1}
 	std::for_each(scl.begin(), scl.end(), [](double& v) {v = sqrt(2 * v + 1); }); //scl[i] = sqrt(2*scl[i]+1) forall i
