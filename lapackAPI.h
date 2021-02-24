@@ -29,8 +29,6 @@ struct Two_vectors {
 	std::vector<double> v2;
 };
 
-LapackMat matrixMultiplication(LapackMat A, LapackMat B);
-LapackMat scalarMultiplication(double scalar, LapackMat A);
 LapackMat solveMatrixEq(LapackMat A, LapackMat B);
 
 #endif
