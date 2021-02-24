@@ -23,8 +23,14 @@ Two_vectors leggauss(int N) {
 	std::vector<double> c(N);
 	c[N - 1] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
 	LapackMat* m = legcompanion(c); //se legcompanion
-	
-	std::vector<double> x = {};
+	std::vector<double> x = m.eig();
+
+	std::vector<double> dy = legval(x, c);
+	std::vector<double> df = legval(x, legder(c));
+	for (int i = 0; i < x.size(); ++i) {
+		x[i] -= dy[i] / df[i];
+	}
+
 	std::vector<double> w = {};
 
 	Two_vectors x_and_w{ x, w };
@@ -106,8 +112,11 @@ Two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 	//double pi_over_four = 0.25 * constants::pi;
 	std::vector<double> k = p;
 	std::for_each(k.begin(), k.end(), [&](double& v) { v = (1 + v) / (1 - v); });
-	std::vector<double> w = w_prime;
-	std::for_each(w.begin(), w.end(), [&](double& v) { v = 2 * scale * v / pow(1 - k, 2); }); //PROBLEM
+
+	std::vector<double> w;
+	for (int i = 0; i < w.size(); ++i) {
+		w[i] = 2 * scale * w_prime[i] / pow(1 - k[i], 2);
+	}
 
 	//std::vector<double> k = (1 + p) / (1 - p); 
 	//std::vector<double> w = 2 * scale * w_prime / pow(1 - k, 2);
