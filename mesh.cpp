@@ -19,19 +19,71 @@ std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double>
 	return vec;
 }
 
+//först opererar den abs() på alla vektorns element, och sen returnar den det största av dessa element.
+double absmax(std::vector<double> vec) {
+	std::vector<double> vec1;
+	for (int i = 0; i < vec.size(); ++i) {
+		vec1[i] = abs(vec[i]);
+	}
+	double max = *max_element(vec1.begin(), vec1.end());
+	return max;
+}
+
+//Gauss-Legendre quadrature
+//Computes the sample pointsand weights for Gauss - Legendre quadrature.
+//These sample points and weights will correctly integrate polynomials of
+//degree : math:`2*deg - 1` or less over the interval : math:`[ - 1, 1]` with
+//the weight function : math:`f(x) = 1`.
 Two_vectors leggauss(int N) {
+	if (N < 1) {
+		std::cout << "Index must be >=1\n";
+	}
+	//first approximation of roots.We use the fact that the companion
+	//matrix is symmetric in this case in order to obtain better zeros.
 	std::vector<double> c(N);
 	c[N - 1] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
 	LapackMat* m = legcompanion(c); //se legcompanion
 	std::vector<double> x = m.eig();
 
+	//improve roots by one application of Newton
 	std::vector<double> dy = legval(x, c);
 	std::vector<double> df = legval(x, legder(c));
 	for (int i = 0; i < x.size(); ++i) {
 		x[i] -= dy[i] / df[i];
 	}
 
-	std::vector<double> w = {};
+	//compute the weights. We scale the factor to avoid possible numerical overflow.
+	std::vector<double> c_removedFirst = c;
+	c_removedFirst.erase(c_removedFirst.begin()); //c med första elementet borttaget
+	std::vector<double> fm = legval(x, c_removedFirst);
+	std::vector<double> w;
+	
+	double fm_absmax = absmax(fm);
+	double df_absmax = absmax(df);
+	for (int i = 0; i < fm.size(); ++i) {
+		fm[i] /= fm_absmax;
+		df[i] /= df_absmax;
+		w[i] = 1 / (fm[i] / df[i]);
+	}
+
+	//for Legendre we can also symmetrize
+	std::vector<double> w_reverse = w;
+	std::reverse(w_reverse.begin(), w_reverse.end());
+	std::vector<double> x_reverse = x;
+	std::reverse(x_reverse.begin(), x_reverse.end());
+	for (int i = 0; i < w.size(); ++i) {
+		w[i] = (w[i] + w_reverse[i]) / 2;
+		x[i] = (x[i] - x_reverse[i]) / 2;
+	}
+
+	//scale w to get the right value
+	double w_sum;
+	std::for_each(w.begin(), w.end(), [&](double v) {
+		w_sum += v;
+		});
+	for (int i = 0; i < w.size(); ++i) {
+		w[i] *= 2 / w_sum;
+	}
 
 	Two_vectors x_and_w{ x, w };
 	return x_and_w;
@@ -45,7 +97,7 @@ std::vector<double> legder(std::vector<double> c) {
 
 }
 
-//nu är den klar, bara att fixa så LapackMat är av rätt typ, den kan inte accessa sina funktioner
+//hjälpreda till leggauss
 LapackMat* legcompanion(std::vector<double> c) {
 	int N = c.size();
 	if (N == 2) {
