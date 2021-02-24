@@ -3,6 +3,7 @@
 #include "quantumStates.h"
 #include "chiral_LO.h"
 #include "mesh.h"
+#include "lapackAPI.h"
 
 
 int main() {
