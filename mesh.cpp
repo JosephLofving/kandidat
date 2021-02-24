@@ -36,6 +36,14 @@ two_vectors leggauss(int N) {
 	return x_and_w;
 };
 
+std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
+
+}
+
+std::vector<double> legder(std::vector<double> c) {
+
+}
+
 //nu är den klar, bara att fixa så lapackMat är av rätt typ, den kan inte accessa sina funktioner
 lapackMat* legcompanion(std::vector<double> c) {
 	int N = c.size();
@@ -99,7 +107,7 @@ two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 	std::vector<double> p = X.v1;		// first of the two vectors in X
 	std::vector<double> w_prime = X.v2; // second of the two vectors in X
 	
-	double pi_over_four = constants::pi;
+	double pi_over_four = 0.25 * constants::pi;
 
 	std::vector<double> k = scale * tan(pi_over_four) * (p + 1.0);
 	std::vector<double> w = scale * pi_over_four / cos(pi_over_four) * pow(p * 1.0, 2 * w_prime);
