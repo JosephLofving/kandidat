@@ -12,15 +12,15 @@ std::string numberToFixedWidth(double num, int width) { // Gör num till en stri
 	return s;
 }
 
-class lapackMat {
+class LapackMat {
 public:
 	int width;  // Matrisbredd
 	int height; // Matrishöjd
 	std::vector<double> contents;
 
-	lapackMat(int x, int y, std::vector<double>); // Constructor
-	lapackMat(int x, int y); // Constructor för nollmatris
-	lapackMat(int x); // Constructor för identitetsmatris
+	LapackMat(int x, int y, std::vector<double>); // Constructor
+	LapackMat(int x, int y); // Constructor för nollmatris
+	LapackMat(int x); // Constructor för identitetsmatris
 	double getElement(int row, int col); // Returnerar element med givna index. Notera att allt är 0-indexerat
 	void setElement(int row, int col, double value);
 	void print(); // Printar matrisen
@@ -33,15 +33,15 @@ private:
 	}
 };
 
-lapackMat::lapackMat(int x, int y, std::vector<double> z) {
+LapackMat::LapackMat(int x, int y, std::vector<double> z) {
 	init(x, y, z);
 }
 
-lapackMat::lapackMat(int x, int y) {
+LapackMat::LapackMat(int x, int y) {
 	init(x, y, std::vector<double>(x*y, 0.0)); // Kallar init med en nollvektor av rätt dimension som contents
 }
 
-lapackMat::lapackMat(int x) {
+LapackMat::LapackMat(int x) {
 	init(x, x, std::vector<double>(x*x, 0.0)); // Skapar en kvadratisk nollmatris som i nollmatriskonstruktorn
 	
 	for (int i = 0; i < x; i++) {
@@ -49,15 +49,15 @@ lapackMat::lapackMat(int x) {
 	}
 }
 
-double lapackMat::getElement(int row, int col) {
+double LapackMat::getElement(int row, int col) {
 	return contents[row + col*height]; // Lapack har column-major order. row*height ger början av varje kolonn
 }
 
-void lapackMat::setElement(int row, int col, double value) {
+void LapackMat::setElement(int row, int col, double value) {
 	contents[row + col*height] = value;
 }
 
-void lapackMat::print() {
+void LapackMat::print() {
 	for (int i = 0; i < height; i++) { // Loopar genom raderna
 		for (int j = 0; j < width; j++) { // Loopar genom kolonnerna
 			std::cout << numberToFixedWidth(getElement(i, j), 6); // Printar elementet
@@ -78,8 +78,8 @@ extern "C" {
  *      K: Antalet kolonner i A och rader i B
  *    LDX: Ledande dimension för X. Kan anpassas om man vill använda submatriser, men det vill vi aldrig. */
 
-lapackMat matrixMultiplication(lapackMat A, lapackMat B) { // Returnerar C=A*B
-	lapackMat C(A.height, B.width); // Initierar ett C att skriva över. Kanske inte behövs egentligen?
+LapackMat matrixMultiplication(LapackMat A, LapackMat B) { // Returnerar C=A*B
+	LapackMat C(A.height, B.width); // Initierar ett C att skriva över. Kanske inte behövs egentligen?
 	char TRANS = 'N';
 	double ALPHA = 1;
 	double BETA  = 0;
@@ -89,9 +89,9 @@ lapackMat matrixMultiplication(lapackMat A, lapackMat B) { // Returnerar C=A*B
 	return C;
 }
 
-lapackMat scalarMultiplication(double scalar, lapackMat A) { // Returnerar C=alpha*A
-	lapackMat B = lapackMat(A.height); // Skapar en identitetsmatris för att bevara A vid multiplikation
-	lapackMat C(A.height, B.width);
+LapackMat scalarMultiplication(double scalar, LapackMat A) { // Returnerar C=alpha*A
+	LapackMat B = LapackMat(A.height); // Skapar en identitetsmatris för att bevara A vid multiplikation
+	LapackMat C(A.height, B.width);
 	char TRANS = 'N';
 	double BETA  = 0;
 
@@ -100,8 +100,8 @@ lapackMat scalarMultiplication(double scalar, lapackMat A) { // Returnerar C=alp
 	return C;
 }
 
-lapackMat matrixAddition(lapackMat A, lapackMat C) { // Returnerar C=A+C
-	lapackMat B = lapackMat(A.height);
+LapackMat matrixAddition(LapackMat A, LapackMat C) { // Returnerar C=A+C
+	LapackMat B = LapackMat(A.height);
 	char TRANS = 'N';
 	double ALPHA = 1;
 	double BETA  = 1;
@@ -111,8 +111,8 @@ lapackMat matrixAddition(lapackMat A, lapackMat C) { // Returnerar C=A+C
 	return C;
 }
 
-lapackMat matrixSubtraction(lapackMat A, lapackMat C) { // Returnerar C=A-C
-	lapackMat B = lapackMat(A.height);
+LapackMat matrixSubtraction(LapackMat A, LapackMat C) { // Returnerar C=A-C
+	LapackMat B = LapackMat(A.height);
 	char TRANS = 'N';
 	double ALPHA = 1;
 	double BETA  = -1;
@@ -127,9 +127,9 @@ extern "C" { // Måste skrivas såhär
 	void dgetrs_(char* C, int* N, int* NRHS, double* A, int* LDA, int* IPIV, double* B, int* LDB, int* INFO);
 }
 
-lapackMat solveMatrixEq(lapackMat A, lapackMat B) {
-	lapackMat dummyA = lapackMat(A.width, A.height, A.contents); // dgetrf_ och dgetrs_ manipulerar A och B. Dummies skapas för att bevara ursprungliga A och B
-	lapackMat dummyB = lapackMat(B.width, B.height, B.contents);
+LapackMat solveMatrixEq(LapackMat A, LapackMat B) {
+	LapackMat dummyA = LapackMat(A.width, A.height, A.contents); // dgetrf_ och dgetrs_ manipulerar A och B. Dummies skapas för att bevara ursprungliga A och B
+	LapackMat dummyB = LapackMat(B.width, B.height, B.contents);
 
 	int INFO;
 	char TRANS = 'N';
