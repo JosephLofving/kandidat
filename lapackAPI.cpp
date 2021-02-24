@@ -33,6 +33,11 @@ private:
 	}
 };
 
+struct Two_vectors {
+	std::vector<double> v1;
+	std::vector<double> v2;
+};
+
 lapackMat::lapackMat(int x, int y, std::vector<double> z) {
 	init(x, y, z);
 }

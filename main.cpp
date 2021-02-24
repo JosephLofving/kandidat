@@ -9,12 +9,12 @@ int main() {
 	std::vector<QuantumState> base = setup_Base(0,2,0,0);
     std::multimap<std::string, QuantumState> channels = setup_NN_channels(base);
 	int Np = 100;
-	two_vectors p_and_w = gauss_legendre_inf_mesh(Np);
+	Two_vectors p_and_w = gauss_legendre_inf_mesh(Np);
 	std::vector<double> p = p_and_w.v1;
 	std::vector<double> w = p_and_w.v2;
 	double Tlab = 100.0;
 	channel chan = channels[0];
-	two_vectors V_and_k0 = potential(chan, p, Tlab);
+	Two_vectors V_and_k0 = potential(chan, p, Tlab);
 	std::vector<double> V = V_and_k0.v1;
 	std::vector<double> k0 = V_and_k0.v2;
 	lapackMat T = compute_Tmatrix(chan, V, k0, p, w);

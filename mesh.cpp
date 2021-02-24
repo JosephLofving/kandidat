@@ -9,11 +9,6 @@
 #include <numeric> //beh�vs f�r std::iota
 #include <random>
 
-struct two_vectors {
-	std::vector<double> v1;
-	std::vector<double> v2;
-};
-
 std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double> v2) {
 	std::vector<double> vec;
 	if (v1.size() != v2.size())
@@ -24,7 +19,7 @@ std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double>
 	return vec;
 }
 
-two_vectors leggauss(int N) {
+Two_vectors leggauss(int N) {
 	std::vector<double> c(N);
 	c[N - 1] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
 	lapackMat* m = legcompanion(c); //se legcompanion
@@ -32,7 +27,7 @@ two_vectors leggauss(int N) {
 	std::vector<double> x = {};
 	std::vector<double> w = {};
 
-	two_vectors x_and_w{ x, w };
+	Two_vectors x_and_w{ x, w };
 	return x_and_w;
 };
 
@@ -85,8 +80,8 @@ lapackMat* legcompanion(std::vector<double> c) {
 }
 
 /* This follows equation (2.18) and (2.19) with the same notation */
-two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
-	two_vectors X = leggauss(N);
+Two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
+	Two_vectors X = leggauss(N);
 	std::vector<double> p = X[0];
 	std::vector<double> w_prime = X[1];
 
@@ -96,13 +91,13 @@ two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
 	// for loops for these operations?
 	std::vector<double> k = 0.5 * (p + 1) * (b - a) + a;
 	std::vector<double> w = w_prime * 0.5 * (b - a);
-	two_vectors k_and_w{ k, w };
+	Two_vectors k_and_w{ k, w };
 
 	return k_and_w;
 }
 
-two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
-	two_vectors X = leggauss(N);
+Two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
+	Two_vectors X = leggauss(N);
 	std::vector<double> p = X.v1;		// first of the two vectors in X
 	std::vector<double> w_prime = X.v2; // second of the two vectors in X
 	
@@ -110,7 +105,7 @@ two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 
 	std::vector<double> k = (1 + p) / (1 - p); 
 	std::vector<double> w = 2 * scale * w_prime / pow(1 - k, 2);
-	two_vectors k_and_w{ k, w };
+	Two_vectors k_and_w{ k, w };
 
 	return k_and_w;
 }
