@@ -54,9 +54,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 
 // __________JOSEPH'S____________
 lapackMat computeTMatrix(type NN_channel, lapackMat V, double ko, lapackMat p, lapackMat w) {
-	chnIdx = NN_channel[0]['chn_idx'];
-
-	VG = setup_VG_kernel(NN_chanel, V, ko, p, w);
+	VG = setup_VG_kernel(NN_channel, V, ko, p, w);
 
 	eyeVG = matrixSubtraction(lapackMat(VG.width), scalarMultiplication(2.0/constants::pi, VG)); // IVG = (I - 2.0/pi * VG)
 
