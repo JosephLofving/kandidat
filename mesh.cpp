@@ -93,10 +93,9 @@ two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
 	/* Translate p and w_prime values for [-1,1] to a general 
 	 * interval [a,b]  for quadrature points k and weights w */  
 
-	double C{ 1 }; // what is the value of this parameter? Choose later?
 	// for loops for these operations?
-	std::vector<double> k = (1 + p) / (1 - p); // 0.5 * (p + 1) * (b - a) + a;
-	std::vector<double> w = 2 * C * w_prime / pow(1 - k, 2);//  w_prime * 0.5 * (b - a);
+	std::vector<double> k = 0.5 * (p + 1) * (b - a) + a;
+	std::vector<double> w = w_prime * 0.5 * (b - a);
 	two_vectors k_and_w{ k, w };
 
 	return k_and_w;
@@ -109,8 +108,8 @@ two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 	
 	double pi_over_four = 0.25 * constants::pi;
 
-	std::vector<double> k = scale * tan(pi_over_four) * (p + 1.0);
-	std::vector<double> w = scale * pi_over_four / cos(pi_over_four) * pow(p * 1.0, 2 * w_prime);
+	std::vector<double> k = (1 + p) / (1 - p); 
+	std::vector<double> w = 2 * scale * w_prime / pow(1 - k, 2);
 	two_vectors k_and_w{ k, w };
 
 	return k_and_w;
