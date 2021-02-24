@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <string.h> // Behövs för numberToFixedWidth()
+#include <string> // Behövs för numberToFixedWidth()
 
 std::string numberToFixedWidth(double num, int width) { // Gör num till en string av bredd width med efterföljande blanksteg
 	std::string s = std::to_string(num); // Typkonversion
