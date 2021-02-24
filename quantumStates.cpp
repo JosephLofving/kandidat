@@ -118,6 +118,11 @@ std::map<std::string, std::vector<QuantumState> > setup_NN_channels(std::vector<
 		
 	}
 
+
+	return channels;
+}
+
+void printChannels(std::map<std::string, std::vector<QuantumState> > channels){
 	std::map<std::string, std::vector<QuantumState> >::iterator itr;
 	for (itr = channels.begin(); itr != channels.end(); ++itr){
 		std::cout << "Key: [" << itr->first<< " ] ";
@@ -126,5 +131,4 @@ std::map<std::string, std::vector<QuantumState> > setup_NN_channels(std::vector<
 		std::cout << "] "<< std::endl;
 	}
 
-	return channels;
 }
