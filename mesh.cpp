@@ -103,10 +103,14 @@ Two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 	std::vector<double> p = X.v1;		// first of the two vectors in X
 	std::vector<double> w_prime = X.v2; // second of the two vectors in X
 	
-	double pi_over_four = 0.25 * constants::pi;
+	//double pi_over_four = 0.25 * constants::pi;
+	std::vector<double> k = p;
+	std::for_each(k.begin(), k.end(), [&](double& v) { v = (1 + v) / (1 - v); });
+	std::vector<double> w = w_prime;
+	std::for_each(w.begin(), w.end(), [&](double& v) { v = 2 * scale * v / pow(1 - k, 2); });
 
-	std::vector<double> k = (1 + p) / (1 - p); 
-	std::vector<double> w = 2 * scale * w_prime / pow(1 - k, 2);
+	//std::vector<double> k = (1 + p) / (1 - p); 
+	//std::vector<double> w = 2 * scale * w_prime / pow(1 - k, 2);
 	Two_vectors k_and_w{ k, w };
 
 	return k_and_w;
