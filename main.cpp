@@ -1,5 +1,4 @@
 #include <iostream>
-//#include "mesh.h" //mesh.cpp kanske funkar ocks�?
 #include "quantumStates.h"
 #include "chiral_LO.h"
 #include "mesh.h"
