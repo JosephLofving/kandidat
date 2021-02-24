@@ -3,15 +3,15 @@
 
 #include <vector>
 
-class lapackMat {
+class LapackMat {
 	public:
 	int width;
 	int height;
 	std::vector<double> contents;
 
-	lapackMat(int x, int y, std::vector<double> z);
-	lapackMat(int x, int y);
-	lapackMat(int x);
+	LapackMat(int x, int y, std::vector<double> z);
+	LapackMat(int x, int y);
+	LapackMat(int x);
 
 	double getElement(int row, int col);
 	void setElement(int row, int col, double value);
@@ -23,10 +23,10 @@ struct Two_vectors {
 	std::vector<double> v2;
 };
 
-lapackMat matrixMultiplication(lapackMat A, lapackMat B);
-lapackMat scalarMultiplication(double scalar, lapackMat A);
-lapackMat matrixAddition(lapackMat A, lapackMat C);
-lapackMat matrixSubtraction(lapackMat A, lapackMat C);
-lapackMat solveMatrixEq(lapackMat A, lapackMat B);
+LapackMat matrixMultiplication(LapackMat A, LapackMat B);
+LapackMat scalarMultiplication(double scalar, LapackMat A);
+LapackMat matrixAddition(LapackMat A, LapackMat C);
+LapackMat matrixSubtraction(LapackMat A, LapackMat C);
+LapackMat solveMatrixEq(LapackMat A, LapackMat B);
 
 #endif

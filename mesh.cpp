@@ -107,7 +107,7 @@ Two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 	std::vector<double> k = p;
 	std::for_each(k.begin(), k.end(), [&](double& v) { v = (1 + v) / (1 - v); });
 	std::vector<double> w = w_prime;
-	std::for_each(w.begin(), w.end(), [&](double& v) { v = 2 * scale * v / pow(1 - k, 2); });
+	std::for_each(w.begin(), w.end(), [&](double& v) { v = 2 * scale * v / pow(1 - k, 2); }); //PROBLEM
 
 	//std::vector<double> k = (1 + p) / (1 - p); 
 	//std::vector<double> w = 2 * scale * w_prime / pow(1 - k, 2);
