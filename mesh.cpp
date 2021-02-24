@@ -82,15 +82,17 @@ LapackMat* legcompanion(std::vector<double> c) {
 /* This follows equation (2.18) and (2.19) with the same notation */
 Two_vectors gauss_legendre_line_mesh(int N, int a, int b) { // Change to struct?
 	Two_vectors X = leggauss(N);
-	std::vector<double> p = X[0];
-	std::vector<double> w_prime = X[1];
+	std::vector<double> p = X.v1;
+	std::vector<double> w_prime = X.v2;
 
 	/* Translate p and w_prime values for [-1,1] to a general 
 	 * interval [a,b]  for quadrature points k and weights w */  
 
 	// for loops for these operations?
-	std::vector<double> k = 0.5 * (p + 1) * (b - a) + a;
-	std::vector<double> w = w_prime * 0.5 * (b - a);
+	std::vector<double> k = p;// = 0.5 * (p + 1) * (b - a) + a;
+	std::for_each(k.begin(), k.end(), [&](double& v) { v = 0.5 * (v + 1) * (b - a) + a; });
+	std::vector<double> w = w_prime; // w_prime * 0.5 * (b - a);
+	std::for_each(w.begin(), w.end(), [&](double& v) { v = v * 0.5 * (b - a); });
 	Two_vectors k_and_w{ k, w };
 
 	return k_and_w;
@@ -101,10 +103,14 @@ Two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 	std::vector<double> p = X.v1;		// first of the two vectors in X
 	std::vector<double> w_prime = X.v2; // second of the two vectors in X
 	
-	double pi_over_four = 0.25 * constants::pi;
+	//double pi_over_four = 0.25 * constants::pi;
+	std::vector<double> k = p;
+	std::for_each(k.begin(), k.end(), [&](double& v) { v = (1 + v) / (1 - v); });
+	std::vector<double> w = w_prime;
+	std::for_each(w.begin(), w.end(), [&](double& v) { v = 2 * scale * v / pow(1 - k, 2); });
 
-	std::vector<double> k = (1 + p) / (1 - p); 
-	std::vector<double> w = 2 * scale * w_prime / pow(1 - k, 2);
+	//std::vector<double> k = (1 + p) / (1 - p); 
+	//std::vector<double> w = 2 * scale * w_prime / pow(1 - k, 2);
 	Two_vectors k_and_w{ k, w };
 
 	return k_and_w;

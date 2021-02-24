@@ -1,7 +1,9 @@
 
 #include "chiral_LO.h"
+#include "lapackAPI.h"
 
-std::vector<double> potential(int argc, char* argv[]){
+Two_vectors potential(chan, p, Tlab) {
+//std::vector<double> potential(int argc, char* argv[]){
     
 
     /* Declare a NULL pointer of the potential-class type */
