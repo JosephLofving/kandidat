@@ -12,10 +12,6 @@ std::string numberToFixedWidth(double num, int width) { // Gör num till en stri
 	return s;
 }
 
-extern "C" {
-  void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
-}
-
 class LapackMat {
 public:
 	int width;  // Matrisbredd
@@ -76,9 +72,9 @@ void LapackMat::print() {
   	}
 }
 
-// extern "C" {
-//   void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
-// }
+extern "C" {
+  void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
+}
 
 /* I funktionerna nedan används dgemm_ flitigt. dgemm_ genomför i grunden operationen C = alpha*op(A)*op(B) + beta*C
  * där op(X) antingen är en transponering eller ingenting. Nedan följer en förklaring av ickeuppenbara argument.
@@ -138,12 +134,13 @@ LapackMat operator*(LapackMat &A, LapackMat &B) { // A*B
 	return C;
 }
 
-extern "C" { // Måste skrivas såhär
+extern "C" {
 	void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
 	void dgetrs_(char* C, int* N, int* NRHS, double* A, int* LDA, int* IPIV, double* B, int* LDB, int* INFO);
+	void dsyev_(char* JOBZ, char* UPLO, int* N, double* A, int* LDA, double* W, double* WORK, int* LWORK, int* INFO);
 }
 
-LapackMat solveMatrixEq(LapackMat A, LapackMat B) {
+LapackMat solveMatrixEq(LapackMat A, LapackMat B) { // Solve AX = B (returns X)
 	LapackMat dummyA = LapackMat(A.width, A.height, A.contents); // dgetrf_ och dgetrs_ manipulerar A och B. Dummies skapas för att bevara ursprungliga A och B
 	LapackMat dummyB = LapackMat(B.width, B.height, B.contents);
 
@@ -156,3 +153,34 @@ LapackMat solveMatrixEq(LapackMat A, LapackMat B) {
 
 	return dummyB;
 }
+
+std::vector<double> eigenValues(LapackMat A) { // Compute eigenvalues of A.
+	LapackMat dummyA = LapackMat(A.width, A.height, A.contents); // dummyA is destroyed
+
+	char JOBZ = 'V'; // Compute eigenvalues only. 'V' for eigenvalues and eigenvectors
+	char UPLO = 'U'; // Store upper triangle of A.
+	int N = A.width;
+	int LDA = N;
+	std::vector<double> W(N); // Vector to store eigenvalues.
+	int LWORK = 3*N-1; // WORK-dimension?
+	std::vector<double> WORK(LWORK);
+	int INFO = 0; // Success integer
+
+	dsyev_(&JOBZ, &UPLO, &N, dummyA.contents.data(), &LDA, W.data(), WORK.data(), &LWORK, &INFO);
+
+	return W;
+}
+
+// void eigenValues(LapackMat A, double* W) {
+// 	// LapackMat dummyA = LapackMat(A.width, A.height, A.contents); // dummyA is destroyed
+
+// 	char JOBZ = 'V'; // Compute eigenvalues only. 'V' for eigenvalues and eigenvectors
+// 	char UPLO = 'U'; // Store upper triangle of A.
+// 	int N = A.width;
+// 	int LDA = A.width;
+// 	double WORK[3*N-1];
+// 	int LWORK = 3*N-1;
+// 	int INFO = 0;
+
+// 	dsyev_(&JOBZ, &UPLO, &N, A.contents.data(), &LDA, W, WORK, &LWORK, &INFO);
+// }
