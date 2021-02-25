@@ -114,10 +114,10 @@ std::map<std::string, std::vector<QuantumState> > setup_NN_channels(std::vector<
 
 	//A vector of strings that specify which quantum numbers to be conserved
 	std::vector<std::string> conservedQuantumNumbers;
-	qN.push_back("s");
-	qN.push_back("j");
-	qN.push_back("pi");
-	qN.push_back("tz");
+	conservedQuantumNumbers.push_back("s");
+	conservedQuantumNumbers.push_back("j");
+	conservedQuantumNumbers.push_back("pi");
+	conservedQuantumNumbers.push_back("tz");
 
 	std::vector<QuantumState> allowedStates;
 
