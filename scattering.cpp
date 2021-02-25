@@ -50,10 +50,10 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 //___________HANNA'S______________
 
 //what is "channel"?
-std::vector<double> setup_VG_kernel(std::vector<std::vector<double>> channel, std::vector<double> V, std::vector<double> k, std::vector<double> w, double k0)
+LapackMat setup_VG_kernel(std::vector<QuantumState> channel, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)
 {
 	double mu{};
-	int tz_channel{ channel[0]['tz'] };
+	int tz_channel{ channel[0]['tz'] }; // have not changed since QuantumState changed
 	if (tz_channel == -1)
 		mu = constants::mp / 2;
 	else if (tz_channel == 0)
@@ -63,7 +63,7 @@ std::vector<double> setup_VG_kernel(std::vector<std::vector<double>> channel, st
 
 	double Np{ k.size() };
 	int number_of_blocks{ channel.size() };
-	int channel_index{ channel[0]['channel_index'] };
+	int channel_index{ channel[0]['channel_index'] }; // have not changed since QuantumState changed
 	std::cout << "Setting up G_0(k0) in channel " << channel_index;
 
 	double Np_channel{ static_cast<int>(std::sqrt(number_of_blocks) * (Np + 1)) };
@@ -73,12 +73,16 @@ std::vector<double> setup_VG_kernel(std::vector<std::vector<double>> channel, st
 	std::vector<std::complex<double>> G0_part{};
 	for (int index{ 0 }; index < Np_channel; ) { G0_part[index] = G0[index]; }  // potential off-by-one error here
 
-	// VG is a kernel; multidimensional complex vector. Switch to matrix?
-	std::vector<std::vector<std::complex<double>>> VG[G0_part.size()][G0_part.size()]{};
+	// From here, functions from Lapack are needed... Not done yet
+	LapackMat VG[G0_part.size()][G0_part.size()]{};
 
-	for (int index{ 0 }; index < G0_part.size(); index++)
+	for (int row{ 0 }; row < G0_part.size(); row++)
 	{
-		VG[:][index] = V[:][index] * G0_part[index] * 2 * mu; // ":" means all rows...
+		for (int column{ 0 }; column < G0_part.size(); column++)
+		{
+			// Think you need setElement here, not looked it up yet
+			VG(row, column) = V(row, column) * G0_part[column] * 2 * mu;
+		}
 	}
 
 	return VG;
@@ -89,14 +93,14 @@ std::vector<double> setup_VG_kernel(std::vector<std::vector<double>> channel, st
 
 
 // __________JOSEPH'S____________
-LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, LapackMat V, double ko, LapackMat p, LapackMat w) {
-	VG = setup_VG_kernel(NN_channel, V, ko, p, w);
+LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) {
+	LapackMat VG = setup_VG_kernel(NN_channel, V, k, w, k0);
 
-	IVG = LapackMat(VG.width) - (2.0/constants::pi) * VG; 
+	LapackMat IVG = LapackMat(VG.width) - (2.0/constants::pi) * VG; 
 
-	Tmtx = solveMatrixEq(IVG, V); // IVG*T = V
+	LapackMat T = solveMatrixEq(IVG, V); // IVG*T = V
 
-	return Tmtx;
+	return T;
 }
 
 
