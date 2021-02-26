@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "lapackAPI.h"
 #include "scattering.h"
+#include "potential.h"
 
 
 int main() {
@@ -14,9 +15,12 @@ int main() {
 	std::vector<double> p = p_and_w.v1;
 	std::vector<double> w = p_and_w.v2;
 	double Tlab = 100.0;
-	std::string key = "j: 0 s:0 tz:0 pi:0"; //could change key format
+	std::string key = "j:0 s:0 tz:0 pi:0"; //could change key format
 	std::vector<QuantumState> channel = channels[key]; 
-	Two_vectors V_and_k0 = potential(channel, p, Tlab);
+	std::vector<double> V_and_k0 = potential(channel, p);
+
+
+
 	std::vector<double> V = V_and_k0.v1;
 	std::vector<double> k0 = V_and_k0.v2;
 	lapackMat T = compute_Tmatrix(channel, V, k0, p, w);

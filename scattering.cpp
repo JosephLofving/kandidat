@@ -50,10 +50,10 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 //___________HANNA'S______________
 
 //what is "channel"?
-LapackMat setup_VG_kernel(std::vector<QuantumState> channel, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)
+LapackMat setup_VG_kernel(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)
 {
 	double mu{};
-	int tz_channel{ channel[0]['tz'] }; // have not changed since QuantumState changed
+	int tz_channel{ channel[0].state["tz"] }; // have not changed since QuantumState changed
 	if (tz_channel == -1)
 		mu = constants::mp / 2;
 	else if (tz_channel == 0)
@@ -63,8 +63,7 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> channel, LapackMat V, std::v
 
 	double Np{ k.size() };
 	int number_of_blocks{ channel.size() };
-	int channel_index{ channel[0]['channel_index'] }; // have not changed since QuantumState changed
-	std::cout << "Setting up G_0(k0) in channel " << channel_index;
+	std::cout << "Setting up G_0(k0) in channel " << key;
 
 	double Np_channel{ static_cast<int>(std::sqrt(number_of_blocks) * (Np + 1)) };
 	std::vector<std::complex<double>> G0{ setup_G0_vector(k, w, k0) };
@@ -74,14 +73,14 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> channel, LapackMat V, std::v
 	for (int index{ 0 }; index < Np_channel; ) { G0_part[index] = G0[index]; }  // potential off-by-one error here
 
 	// From here, functions from Lapack are needed... Not done yet
-	LapackMat VG[G0_part.size()][G0_part.size()]{};
+	LapackMat VG = LapackMat(G0_part.size());
 
 	for (int row{ 0 }; row < G0_part.size(); row++)
 	{
 		for (int column{ 0 }; column < G0_part.size(); column++)
 		{
 			// Think you need setElement here, not looked it up yet
-			VG(row, column) = V(row, column) * G0_part[column] * 2 * mu;
+			VG.setElement(V.getElement(row, column) * G0_part[column] * 2 * mu);
 		}
 	}
 
@@ -93,8 +92,8 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> channel, LapackMat V, std::v
 
 
 // __________JOSEPH'S____________
-LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) {
-	LapackMat VG = setup_VG_kernel(NN_channel, V, k, w, k0);
+LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) {
+	LapackMat VG = setup_VG_kernel(NN_channel,key, V, k, w, k0);
 
 	LapackMat IVG = LapackMat(VG.width) - (2.0/constants::pi) * VG; 
 
@@ -139,6 +138,7 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 
 	// no idea what the following does (if-else)
 	int Np{}; // T.shape?
+std::complex<double> complexOne(1);
 	if (number_of_blocks > 1)
 	{
 		Np = static_cast<int>(Np - 2 / 2); // why cast? what is type of Np originally?
@@ -148,9 +148,10 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 
 		// Blatt - Biedenharn(BB) convention
 		// Maybe complex double
+
 		double twoEpsilonJ_BB{ std::atan(2 * T12 / (T11 - T22)) };
-		double delta_plus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
-		double delta_minus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_plus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_minus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
 
 		std::vector<double> append_phases{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) }; 
 
@@ -160,8 +161,8 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 	{
 		Np -= 1;
 		double T{ T[Np, Np] };
-		double Z{ 1 - factor * 2 * I * T };
-		double delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
+		std::complex<double> Z{ complexOne - factor * 2 * I * T };
+		std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
 
 		phases.insert(std::end(phases), &delta, &delta);
 	}
