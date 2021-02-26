@@ -2,10 +2,11 @@
 
 #include <iostream>
 #include <vector>
+#include <complex>
 #include <string> // Behövs för numberToFixedWidth()
 
-std::string numberToFixedWidth(double num, int width) { // Gör num till en string av bredd width med efterföljande blanksteg
-	std::string s = std::to_string(num); // Typkonversion
+std::string numberToFixedWidth(std::complex<double> num, int width) { // Gör num till en string av bredd width med efterföljande blanksteg
+	std::string s = std::to_string(num.real()); // OBS! Printar bara realdel
 	if (s.length() > width) {
 		s = s.substr(0, width); // Trunkerar strängen om den är för lång
 	}
@@ -14,33 +15,33 @@ std::string numberToFixedWidth(double num, int width) { // Gör num till en stri
 	return s;
 }
 
-void LapackMat::init(int x, int y, std::vector<double> z) { // Skapas separat från konstruktorerna för att göra konstruktorerna mer koncisa
+void LapackMat::init(int x, int y, std::vector<std::complex<double>> z) { // Skapas separat från konstruktorerna för att göra konstruktorerna mer koncisa
 		width = x;
 		height = y;
 		contents = z;
 }
 
-LapackMat::LapackMat(int x, int y, std::vector<double> z) {
+LapackMat::LapackMat(int x, int y, std::vector<std::complex<double>> z) {
 	LapackMat::init(x, y, z);
 }
 
 LapackMat::LapackMat(int x, int y) {
-	LapackMat::init(x, y, std::vector<double>(x*y, 0.0)); // Kallar init med en nollvektor av rätt dimension som contents
+	LapackMat::init(x, y, std::vector<std::complex<double>>(x*y, 0.0)); // Kallar init med en nollvektor av rätt dimension som contents
 }
 
 LapackMat::LapackMat(int x) {
-	LapackMat::init(x, x, std::vector<double>(x*x, 0.0)); // Skapar en kvadratisk nollmatris som i nollmatriskonstruktorn
+	LapackMat::init(x, x, std::vector<std::complex<double>>(x*x, 0.0)); // Skapar en kvadratisk nollmatris som i nollmatriskonstruktorn
 	
 	for (int i = 0; i < x; i++) {
 		this->setElement(i, i, 1.0); // Sätter alla diagonalelement till 1
 	}
 }
 
-double LapackMat::getElement(int row, int col) {
+std::complex<double> LapackMat::getElement(int row, int col) {
 	return contents[row + col*height]; // Lapack har column-major order. row*height ger början av varje kolonn
 }
 
-void LapackMat::setElement(int row, int col, double value) {
+void LapackMat::setElement(int row, int col, std::complex<double> value) {
 	contents[row + col*height] = value;
 }
 
@@ -54,7 +55,7 @@ void LapackMat::print() {
 }
 
 extern "C" {
-  void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
+  void zgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, std::complex<double>* ALPHA, std::complex<double>* A, int* LDA, std::complex<double>* B, int* LDB, std::complex<double>* BETA, std::complex<double>* C, int* LDC);
 }
 
 /* I funktionerna nedan används dgemm_ flitigt. dgemm_ genomför i grunden operationen C = alpha*op(A)*op(B) + beta*C
@@ -69,10 +70,10 @@ LapackMat operator+(LapackMat &A, LapackMat &B) { // A+B
 	LapackMat dummyB   = LapackMat(B.width, B.height, B.contents);
 	LapackMat identity = LapackMat(A.height);
 	char TRANS = 'N';
-	double ALPHA = 1;
-	double BETA  = 1;
+	std::complex<double> ALPHA = 1;
+	std::complex<double> BETA  = 1;
 
-	dgemm_(&TRANS, &TRANS, &A.height, &identity.width, &A.width, &ALPHA, A.contents.data(), &A.height, identity.contents.data(), &A.width, &BETA, dummyB.contents.data(), &A.height);
+	zgemm_(&TRANS, &TRANS, &A.height, &identity.width, &A.width, &ALPHA, A.contents.data(), &A.height, identity.contents.data(), &A.width, &BETA, dummyB.contents.data(), &A.height);
 
 	return dummyB;
 }
@@ -81,44 +82,44 @@ LapackMat operator-(LapackMat &A, LapackMat &B) { // A-B
 	LapackMat dummyB   = LapackMat(B.width, B.height, B.contents);
 	LapackMat identity = LapackMat(A.height);
 	char TRANS = 'N';
-	double ALPHA = 1;
-	double BETA  = -1;
+	std::complex<double> ALPHA = 1;
+	std::complex<double> BETA  = -1;
 
-	dgemm_(&TRANS, &TRANS, &A.height, &identity.width, &A.width, &ALPHA, A.contents.data(), &A.height, identity.contents.data(), &A.width, &BETA, dummyB.contents.data(), &A.height);
+	zgemm_(&TRANS, &TRANS, &A.height, &identity.width, &A.width, &ALPHA, A.contents.data(), &A.height, identity.contents.data(), &A.width, &BETA, dummyB.contents.data(), &A.height);
 
 	return dummyB;
 }
 
-LapackMat operator*(double scalar, LapackMat &A) { // scalar*A
+LapackMat operator*(std::complex<double> scalar, LapackMat &A) { // scalar*A
 	LapackMat B = LapackMat(A.height); // Skapar en identitetsmatris för att bevara A vid multiplikation
 	LapackMat C(A.width, A.height);
 	char TRANS = 'N';
-	double BETA  = 0;
+	std::complex<double> BETA = 0;
 
-	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &scalar, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
+	zgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &scalar, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
 
 	return C;
 }
 
-LapackMat operator*(LapackMat &A, double scalar) { // A*scalar
+LapackMat operator*(LapackMat &A, std::complex<double> scalar) { // A*scalar
 	return scalar*A; // Scalar multiplication is commutative
 }
 
 LapackMat operator*(LapackMat &A, LapackMat &B) { // A*B
 	LapackMat C(A.height, B.width); // Initierar ett C att skriva över. Kanske inte behövs egentligen?
 	char TRANS = 'N';
-	double ALPHA = 1;
-	double BETA  = 0;
+	std::complex<double> ALPHA = 1;
+	std::complex<double> BETA  = 0;
 
-	dgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
+	zgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
 
 	return C;
 }
 
 extern "C" {
-	void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
-	void dgetrs_(char* C, int* N, int* NRHS, double* A, int* LDA, int* IPIV, double* B, int* LDB, int* INFO);
-	void dsyev_(char* JOBZ, char* UPLO, int* N, double* A, int* LDA, double* W, double* WORK, int* LWORK, int* INFO);
+	void zgetrf_(int* M, int *N, std::complex<double>* A, int* lda, int* IPIV, int* INFO);
+	void zgetrs_(char* C, int* N, int* NRHS, std::complex<double>* A, int* LDA, int* IPIV, std::complex<double>* B, int* LDB, int* INFO);
+	void zheev_(char* JOBZ, char* UPLO, int* N, std::complex<double>* A, int* LDA, double* W, std::complex<double>* WORK, int* LWORK, double* RWORK, int* INFO);
 }
 
 LapackMat solveMatrixEq(LapackMat A, LapackMat B) { // Solve AX = B (returns X)
@@ -129,8 +130,8 @@ LapackMat solveMatrixEq(LapackMat A, LapackMat B) { // Solve AX = B (returns X)
 	char TRANS = 'N';
 	std::vector<int> IPIV(std::min(A.width, A.height));
 
-	dgetrf_(&A.height, &A.width, dummyA.contents.data(), &A.height, IPIV.data(), &INFO);
-	dgetrs_(&TRANS, &A.height, &B.width, dummyA.contents.data(), &A.width, IPIV.data(), dummyB.contents.data(), &A.height, &INFO);
+	zgetrf_(&A.height, &A.width, dummyA.contents.data(), &A.height, IPIV.data(), &INFO);
+	zgetrs_(&TRANS, &A.height, &B.width, dummyA.contents.data(), &A.width, IPIV.data(), dummyB.contents.data(), &A.height, &INFO);
 
 	return dummyB;
 }
@@ -143,11 +144,15 @@ std::vector<double> eigenValues(LapackMat A) { // Compute eigenvalues of A.
 	int N = A.width;
 	int LDA = N;
 	std::vector<double> W(N); // Vector to store eigenvalues.
-	int LWORK = 3*N-1; // WORK-dimension?
-	std::vector<double> WORK(LWORK);
+	int LWORK = 2*N-1; // WORK-dimension?
+	std::vector<double> RWORK(3*N-2);
+	std::vector<std::complex<double>> WORK(LWORK);
 	int INFO = 0; // Success integer
 
-	dsyev_(&JOBZ, &UPLO, &N, dummyA.contents.data(), &LDA, W.data(), WORK.data(), &LWORK, &INFO);
+	zheev_(&JOBZ, &UPLO, &N, dummyA.contents.data(), &LDA, W.data(), WORK.data(), &LWORK, RWORK.data(), &INFO);
+
+	dummyA.print();
+	std::cout << std::endl;
 
 	return W;
 }
