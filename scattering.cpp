@@ -148,9 +148,11 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 
 		// Blatt - Biedenharn(BB) convention
 		// Maybe complex double
+		std::complex<double> complexOne(1);
+
 		double twoEpsilonJ_BB{ std::atan(2 * T12 / (T11 - T22)) };
-		std::complex<double> delta_plus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
-		std::complex<double> delta_minus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_plus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_minus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
 
 		std::vector<double> append_phases{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) }; 
 
