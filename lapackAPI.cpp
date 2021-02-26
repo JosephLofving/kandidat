@@ -15,7 +15,7 @@ std::string numberToFixedWidth(std::complex<double> num, int width) { // Gör nu
 	return s;
 }
 
-void LapackMat::init(int x, int y, std::vector<std::complex<double>> z) { // Skapas separat från konstruktorerna för att göra konstruktorerna mer koncisa
+void LapackMat::init(int x, int y, std::vector<std::complex<double>> z) { // Skapas separat från konstruktorerna för att göra dem mer koncisa
 		width = x;
 		height = y;
 		contents = z;
@@ -50,7 +50,7 @@ void LapackMat::print() {
 		for (int j = 0; j < width; j++) { // Loopar genom kolonnerna
 			std::cout << numberToFixedWidth(getElement(i, j), 6); // Printar elementet
     	}
-    	std::cout << '\n';
+    	std::cout << std::endl; // Radbrytning när ny rad påbörjas
   	}
 }
 
@@ -58,7 +58,7 @@ extern "C" {
   void zgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, std::complex<double>* ALPHA, std::complex<double>* A, int* LDA, std::complex<double>* B, int* LDB, std::complex<double>* BETA, std::complex<double>* C, int* LDC);
 }
 
-/* I funktionerna nedan används dgemm_ flitigt. dgemm_ genomför i grunden operationen C = alpha*op(A)*op(B) + beta*C
+/* I funktionerna nedan används zgemm_ flitigt. zgemm_ genomför i grunden operationen C = alpha*op(A)*op(B) + beta*C
  * där op(X) antingen är en transponering eller ingenting. Nedan följer en förklaring av ickeuppenbara argument.
  * TRANSX: Anger hur (och om) X ska transponeras. TRANSX='N' innebär ingen transponering
  *      M: Antalet rader i A (och C)
@@ -67,23 +67,23 @@ extern "C" {
  *    LDX: Ledande dimension för X. Kan anpassas om man vill använda submatriser, men det vill vi aldrig. */
 
 LapackMat operator+(LapackMat &A, LapackMat &B) { // A+B
-	LapackMat dummyB   = LapackMat(B.width, B.height, B.contents);
-	LapackMat identity = LapackMat(A.height);
-	char TRANS = 'N';
-	std::complex<double> ALPHA = 1;
-	std::complex<double> BETA  = 1;
+	LapackMat dummyB   = LapackMat(B.width, B.height, B.contents); // Klonar B-matrisen. zgemm modifierar B-matrisen, så utan kloning tappar man inputmatrisen
+	LapackMat identity = LapackMat(A.height); // Identitetsmatris. A*I + B = A + B
+	char TRANS = 'N'; // Transponera inget
+	std::complex<double> ALPHA = 1; // Skala A-matrisen med 1 (dvs gör inget)
+	std::complex<double> BETA  = 1; // Detsamma för B-matrisen
 
 	zgemm_(&TRANS, &TRANS, &A.height, &identity.width, &A.width, &ALPHA, A.contents.data(), &A.height, identity.contents.data(), &A.width, &BETA, dummyB.contents.data(), &A.height);
 
-	return dummyB;
+	return dummyB; // dummyB har modifierats och är nu resultatet av A+B
 }
 
-LapackMat operator-(LapackMat &A, LapackMat &B) { // A-B
+LapackMat operator-(LapackMat &A, LapackMat &B) { // A-B. Precis samma förfarande som för A+B, fast med negativ skalning av B-matrisen.
 	LapackMat dummyB   = LapackMat(B.width, B.height, B.contents);
 	LapackMat identity = LapackMat(A.height);
 	char TRANS = 'N';
 	std::complex<double> ALPHA = 1;
-	std::complex<double> BETA  = -1;
+	std::complex<double> BETA  = -1; // Skalar B-matrisen med -1 för att få subtraktion
 
 	zgemm_(&TRANS, &TRANS, &A.height, &identity.width, &A.width, &ALPHA, A.contents.data(), &A.height, identity.contents.data(), &A.width, &BETA, dummyB.contents.data(), &A.height);
 
@@ -91,10 +91,10 @@ LapackMat operator-(LapackMat &A, LapackMat &B) { // A-B
 }
 
 LapackMat operator*(std::complex<double> scalar, LapackMat &A) { // scalar*A
-	LapackMat B = LapackMat(A.height); // Skapar en identitetsmatris för att bevara A vid multiplikation
-	LapackMat C(A.width, A.height);
-	char TRANS = 'N';
-	std::complex<double> BETA = 0;
+	LapackMat B = LapackMat(A.height); // Skapar en identitetsmatris för att bevara A vid multiplikation. Ger scalar*A*I + C = scalar*A + C
+	LapackMat C(A.width, A.height); // Skapar nollmatris för att inte addera något. Ger scalar*A*I + 0 = scalar*A
+	char TRANS = 'N'; // Ingen transponering
+	std::complex<double> BETA = 0; // Skalar nollmatrisen med 0. Egentligen onödigt
 
 	zgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &scalar, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
 
@@ -106,10 +106,10 @@ LapackMat operator*(LapackMat &A, std::complex<double> scalar) { // A*scalar
 }
 
 LapackMat operator*(LapackMat &A, LapackMat &B) { // A*B
-	LapackMat C(A.height, B.width); // Initierar ett C att skriva över. Kanske inte behövs egentligen?
-	char TRANS = 'N';
-	std::complex<double> ALPHA = 1;
-	std::complex<double> BETA  = 0;
+	LapackMat C(A.height, B.width); // Initierar ett C att skriva över. Är en nollmatris för att inte addera något till produkten
+	char TRANS = 'N'; // Ingen transponering
+	std::complex<double> ALPHA = 1; // Skala A*B med 1 (dvs gör inget)
+	std::complex<double> BETA  = 0; // Skala C med 0. Onödigt egentligen.
 
 	zgemm_(&TRANS, &TRANS, &A.height, &B.width, &A.width, &ALPHA, A.contents.data(), &A.height, B.contents.data(), &A.width, &BETA, C.contents.data(), &A.height);
 
@@ -122,21 +122,27 @@ extern "C" {
 	void zheev_(char* JOBZ, char* UPLO, int* N, std::complex<double>* A, int* LDA, double* W, std::complex<double>* WORK, int* LWORK, double* RWORK, int* INFO);
 }
 
-LapackMat solveMatrixEq(LapackMat A, LapackMat B) { // Solve AX = B (returns X)
-	LapackMat dummyA = LapackMat(A.width, A.height, A.contents); // dgetrf_ och dgetrs_ manipulerar A och B. Dummies skapas för att bevara ursprungliga A och B
+/* Solves matrix equations of the form AX = B and returns X. The command zgetrf_ creates a partial pivot LU-decomposition. The
+ * L and U matrices and the pivot vector are then provided to zgetrs_, which uses them to calculate X. 
+ * Note, however, that the L and U matrices are combined. zgetrf_ takes a pointer to the A matrix and replaces its contents
+ * with a combination of the L and U matrices (the strict lower left triangle being U (though lacking an identity diagonal) and
+ * the upper right triangle being U). To avoid destroying the initial contents of A this way (and B, which is destroyed similarly
+ * for reasons irrelevant to us) two dummy matrices are created and used as arguments for the functions. */
+LapackMat solveMatrixEq(LapackMat A, LapackMat B) {
+	LapackMat dummyA = LapackMat(A.width, A.height, A.contents); // zgetrf_ och zgetrs_ manipulerar A och B. Dummies skapas för att bevara ursprungliga A och B
 	LapackMat dummyB = LapackMat(B.width, B.height, B.contents);
 
-	int INFO;
-	char TRANS = 'N';
-	std::vector<int> IPIV(std::min(A.width, A.height));
+	int INFO; // Ger success-status vid output
+	char TRANS = 'N'; // Anger att ingen transponering ska ske
+	std::vector<int> IPIV(std::min(A.width, A.height)); // Permutationsvektor. Ges från zgetrf till zgetrs för att beskriva permuteringen som skedde vid faktoriseringen
 
-	zgetrf_(&A.height, &A.width, dummyA.contents.data(), &A.height, IPIV.data(), &INFO);
-	zgetrs_(&TRANS, &A.height, &B.width, dummyA.contents.data(), &A.width, IPIV.data(), dummyB.contents.data(), &A.height, &INFO);
+	zgetrf_(&A.height, &A.width, dummyA.contents.data(), &A.height, IPIV.data(), &INFO); // LU-faktoriserar
+	zgetrs_(&TRANS, &A.height, &B.width, dummyA.contents.data(), &A.width, IPIV.data(), dummyB.contents.data(), &A.height, &INFO); // Beräknar X
 
-	return dummyB;
+	return dummyB; // Returnerar X
 }
 
-std::vector<double> eigenValues(LapackMat A) { // Compute eigenvalues of A.
+std::vector<double> eigenValues(LapackMat A) { // Compute eigenvalues of A. A has to be hermitian.
 	LapackMat dummyA = LapackMat(A.width, A.height, A.contents); // dummyA is destroyed
 
 	char JOBZ = 'V'; // Compute eigenvalues only. 'V' for eigenvalues and eigenvectors
