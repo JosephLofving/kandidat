@@ -113,7 +113,47 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 }
 
 std::vector<double> legder(std::vector<double> c) {
+	//c = np.array(c, ndmin = 1, copy = True)
+	//	if c.dtype.char in '?bBhHiIlLqQpP':
+	//c = c.astype(np.double)
+	//	cnt = pu._deprecate_as_int(m, "the order of derivation")
+	//	iaxis = pu._deprecate_as_int(axis, "the axis")
+	//	if cnt < 0 :
+	//		raise ValueError("The order of derivation must be non-negative")
+	//		iaxis = normalize_axis_index(iaxis, c.ndim)
+	
+	
+	if (cnt == 0) // what is cnt?
+		return c;
 
+	// c = np.moveaxis(c, iaxis, 0)
+
+	int n{ c.size() };
+	if (cnt >= n)
+	{
+		// c = c[:1] * 0
+	}
+	else
+	{
+		for (int iii{ 0 }; iii < cnt.size(); iii++)
+		{
+			n = n - 1;
+			c *= scl;
+			// der = np.empty((n, ) + c.shape[1:], dtype = c.dtype)
+			for (int jjj{ n }; jjj >= 2; j--)
+			{
+				der[j - 1] = (2 * jjj - 1) * c[jjj];
+				c[j - 2] += c[j];
+			}
+			if (n > 1)
+				der[1] = 3 * c[2];	
+			der[0] = c[1];
+			c = der;
+
+		}
+		// c = np.moveaxis(c, 0, iaxis);
+		return c;
+	}
 }
 
 //hjälpreda till leggauss
