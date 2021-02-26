@@ -16,14 +16,16 @@
     double* V_array = new double [6];
      bool coupled = false;
 
+     LapackMat V_matrix = LapackMat(p.size(), p.size());
+
     for (QuantumState state : channel){
 
-        int L = state["l"];
-        int S = state["s"];
-        int J = state["j"];
-        int T = state["t"];
-        int Tz = state["tz"];
-    }
+        int L = state.state["l"];
+        int S = state.state["s"];
+        int J = state.state["j"];
+        int T = state.state["t"];
+        int Tz = state.state["tz"];
+    
 
     /* Define the 1S0 partial-wave quantum numbers */
     //int L = 0; // This argument is actually redundant due to a boolaen "coupled" we use later (which you may see when you compile this program)
@@ -33,7 +35,7 @@
 
     /* I set this to be a proton-neutron scattering system, meaning Tz=0.
      * For pp-scattering we would have Tz=-1 and for nn we would have Tz=+1 */
-    int Tz = 0;
+
     
     /* Array to be filled with potential elements. The ordering of the elements are:
      * V_array[0]="V_S0": S=0, L=LL=J
@@ -50,20 +52,22 @@
      * This tells the potential-program which parts the input-array V_array to calculate.
      * If coupled=true, then it calculates V_S0 and V_S1, otherwise it calculates V_pp, V_mm, V_pm, and V_mp
      * (since these are coupled states with respect to L!=J and LL!=J) */
-    bool coupled = false;
+
+    //bool coupled = false;
     
     /* Call class-member function V */
     /* Declare and set in- and out-momenta in c.m.*/
 
     
-    LapackMat V_matrix = LapackMat(p.size(), p.size());
+
     for (int p_in = 1; p_in < p.size(); p_in++) {
         for (int p_o = 1; p_o < p.size(); p_o++) {
-            potential_class_ptr->V(p[p_in], p[po], coupled, S, J, T, Tz, V_array);
+            potential_class_ptr->V(p[p_in], p[p_o], coupled, S, J, T, Tz, V_array);
             std::cout << V_array[0] << std::endl;
             V_matrix.setElement(p_in,p_o,V_array[0]);
         }
     }
 
+  }
     return V_matrix;
 }
