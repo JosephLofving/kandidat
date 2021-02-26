@@ -1,6 +1,8 @@
 ﻿//#include <boost/math/quadrature/gauss.hpp> //vi skriver den sj�lva ist�let
 #include "constants.h"
 #include "lapackAPI.h"
+#include "mesh.h"
+
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -8,6 +10,7 @@
 #include <list>
 #include <numeric> //beh�vs f�r std::iota
 #include <random>
+
 
 std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double> v2) {
 	std::vector<double> vec;
