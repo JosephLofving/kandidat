@@ -141,7 +141,7 @@ std::vector<double> legder(std::vector<double> c) {
 
 	// c = np.moveaxis(c, iaxis, 0)
 
-	int n{ c.size() };
+	int n = c.size();
 	for (int i{ 0 }; i < 1; i++)
 	{
 		n = n - 1;
