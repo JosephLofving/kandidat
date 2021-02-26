@@ -21,7 +21,7 @@ int main() {
 	std::vector<double> w{ k_and_w.v2 };
 
 	double sum{};
-	for (int i; i < N; i++)
+	for (int i = 0; i < N; i++)
 	{
 		double function{sin(k[i])/k[i]}; // function of k[i]
 		sum += function * w[i];
