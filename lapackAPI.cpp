@@ -18,7 +18,7 @@ public:
 	int height; // Matrishöjd
 	std::vector<double> contents;
 
-	LapackMat(int x, int y, std::vector<double>); // Constructor
+	LapackMat(int x, int y, std::vector<double> z); // Constructor
 	LapackMat(int x, int y); // Constructor för nollmatris
 	LapackMat(int x); // Constructor för identitetsmatris
 	double getElement(int row, int col); // Returnerar element med givna index. Notera att allt är 0-indexerat
