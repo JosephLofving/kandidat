@@ -14,7 +14,7 @@ std::string numberToFixedWidth(double num, int width) { // Gör num till en stri
 	return s;
 }
 
-void LapackMat::init(int x, int y, std::vector<double> z) { // { // Skapas separat från konstruktorerna för att göra konstruktorerna mer koncisa
+void LapackMat::init(int x, int y, std::vector<double> z) { // Skapas separat från konstruktorerna för att göra konstruktorerna mer koncisa
 		width = x;
 		height = y;
 		contents = z;
@@ -151,17 +151,3 @@ std::vector<double> eigenValues(LapackMat A) { // Compute eigenvalues of A.
 
 	return W;
 }
-
-// void eigenValues(LapackMat A, double* W) {
-// 	// LapackMat dummyA = LapackMat(A.width, A.height, A.contents); // dummyA is destroyed
-
-// 	char JOBZ = 'V'; // Compute eigenvalues only. 'V' for eigenvalues and eigenvectors
-// 	char UPLO = 'U'; // Store upper triangle of A.
-// 	int N = A.width;
-// 	int LDA = A.width;
-// 	double WORK[3*N-1];
-// 	int LWORK = 3*N-1;
-// 	int INFO = 0;
-
-// 	dsyev_(&JOBZ, &UPLO, &N, A.contents.data(), &LDA, W, WORK, &LWORK, &INFO);
-// }
