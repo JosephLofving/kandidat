@@ -1,10 +1,5 @@
 #include "lapackAPI.h"
 
-#include <iostream>
-#include <vector>
-#include <complex>
-#include <string> // Behövs för numberToFixedWidth()
-
 std::string numberToFixedWidth(std::complex<double> num, int width) { // Gör num till en string av bredd width med efterföljande blanksteg
 	std::string s = std::to_string(num.real()); // OBS! Printar bara realdel
 	if (s.length() > width) {
