@@ -73,14 +73,14 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> channel, std::string key, La
 	for (int index{ 0 }; index < Np_channel; ) { G0_part[index] = G0[index]; }  // potential off-by-one error here
 
 	// From here, functions from Lapack are needed... Not done yet
-	LapackMat VG[G0_part.size()][G0_part.size()]{};
+	LapackMat VG = LapackMat(G0_part.size());
 
 	for (int row{ 0 }; row < G0_part.size(); row++)
 	{
 		for (int column{ 0 }; column < G0_part.size(); column++)
 		{
 			// Think you need setElement here, not looked it up yet
-			VG(row, column) = V(row, column) * G0_part[column] * 2 * mu;
+			VG.setElement(V.getElement(row, column) * G0_part[column] * 2 * mu);
 		}
 	}
 
@@ -147,9 +147,11 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 
 		// Blatt - Biedenharn(BB) convention
 		// Maybe complex double
+		std::complex<double> complexOne(1);
+
 		double twoEpsilonJ_BB{ std::atan(2 * T12 / (T11 - T22)) };
-		double delta_plus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
-		double delta_minus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_plus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_minus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
 
 		std::vector<double> append_phases{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) }; 
 
@@ -160,7 +162,7 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 		Np -= 1;
 		double T{ T[Np, Np] };
 		double Z{ 1 - factor * 2 * I * T };
-		double delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
+		std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
 
 		phases.insert(std::end(phases), &delta, &delta);
 	}
