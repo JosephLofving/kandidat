@@ -226,7 +226,7 @@ Two_vectors gauss_legendre_line_mesh(int N, int a, int b) {
 
 
 /* This follows equation (2.18) and (2.19) with the same notation */
-Two_vectors gauss_legendre_inf_mesh(int N, double scale) {
+Two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0) {
 	Two_vectors X = leggauss(N);
 	std::vector<double> p = X.v1;
 	std::vector<double> w_prime = X.v2;
@@ -246,3 +246,5 @@ Two_vectors gauss_legendre_inf_mesh(int N, double scale) {
 
 	return k_and_w;
 }
+
+
