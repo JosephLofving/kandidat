@@ -195,7 +195,7 @@ LapackMat* legcompanion(std::vector<double> c) {
 	std::vector<double> bigProd = elementwise_mult(scl, c);
 	std::for_each(bigProd.begin(), bigProd.end(), [&](double& v) { v = v * N_div; });
 	for (int i = 0; i < N; i++) {
-		double prev_elem = mat->getElement(i, N);
+		std::complex<double> prev_elem = mat->getElement(i, N);
 		mat->setElement(i, N, prev_elem - bigProd[i]);
 	}
 	return mat;
