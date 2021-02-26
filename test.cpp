@@ -24,7 +24,7 @@ int main() {
 	for (int i; i < N; i++)
 	{
 		double function{}; // function of k[i]
-		sum += k[i] * w[i];
+		sum += function * w[i];
 	}
 	std::cout << "The integral evaluates to approximately " << sum;
 
