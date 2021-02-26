@@ -138,6 +138,7 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 
 	// no idea what the following does (if-else)
 	int Np{}; // T.shape?
+std::complex<double> complexOne(1);
 	if (number_of_blocks > 1)
 	{
 		Np = static_cast<int>(Np - 2 / 2); // why cast? what is type of Np originally?
@@ -147,7 +148,6 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 
 		// Blatt - Biedenharn(BB) convention
 		// Maybe complex double
-		std::complex<double> complexOne(1);
 
 		double twoEpsilonJ_BB{ std::atan(2 * T12 / (T11 - T22)) };
 		std::complex<double> delta_plus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
@@ -161,7 +161,7 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 	{
 		Np -= 1;
 		double T{ T[Np, Np] };
-		double Z{ 1 - factor * 2 * I * T };
+		std::complex<double> Z{ complexOne - factor * 2 * I * T };
 		std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
 
 		phases.insert(std::end(phases), &delta, &delta);
