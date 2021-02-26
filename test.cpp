@@ -10,6 +10,14 @@
 #include <numeric> //beh�vs f�r std::iota
 #include <random>
 
-void main(int N) {
-	std::cout << "hej";
+int main() {
+	N = 100;
+	double sum{};
+	for (int i; i < N; i++)
+	{
+		sum += k[i] * w[i];
+	}
+	std::cout << "The integral evaluates to approximately " << sum;
+
+	return 0;
 }
