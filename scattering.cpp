@@ -74,14 +74,14 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> channel, LapackMat V, std::v
 	for (int index{ 0 }; index < Np_channel; ) { G0_part[index] = G0[index]; }  // potential off-by-one error here
 
 	// From here, functions from Lapack are needed... Not done yet
-	LapackMat VG[G0_part.size()][G0_part.size()]{};
+	LapackMat VG = LapackMat(G0_part.size());
 
 	for (int row{ 0 }; row < G0_part.size(); row++)
 	{
 		for (int column{ 0 }; column < G0_part.size(); column++)
 		{
 			// Think you need setElement here, not looked it up yet
-			VG(row, column) = V(row, column) * G0_part[column] * 2 * mu;
+			VG.setElement(row, column V.getElement(row, column) * G0_part[column] * 2 * mu);
 		}
 	}
 
