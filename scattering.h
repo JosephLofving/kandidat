@@ -7,12 +7,11 @@
 #include <vector>
 #include <iostream>
 
-std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::vector<double> w, double k0);
-// setup_VG_kernel...
+std::vector<std::complex<double> > setup_G0_vector(std::vector<double> k, std::vector<double> w, double k0);
+LapackMat setup_VG_kernel(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0);
 std::vector<double> blattToStapp(double deltaMinusBB, double deltaPlusBB, double twoEpsilonJBB);
-// compute_T_matrix...
+LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0);
 std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,std::string key, double k0, std::vector<double> T);
-
 
 
 #endif
