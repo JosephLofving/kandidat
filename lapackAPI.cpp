@@ -14,43 +14,22 @@ std::string numberToFixedWidth(double num, int width) { // Gör num till en stri
 	return s;
 }
 
-class LapackMat {
-public:
-	int width;  // Matrisbredd
-	int height; // Matrishöjd
-	std::vector<double> contents;
-
-	LapackMat(int x, int y, std::vector<double> z); // Constructor
-	LapackMat(int x, int y); // Constructor för nollmatris
-	LapackMat(int x); // Constructor för identitetsmatris
-	double getElement(int row, int col); // Returnerar element med givna index. Notera att allt är 0-indexerat
-	void setElement(int row, int col, double value);
-	void print(); // Printar matrisen
-
-	friend LapackMat operator+(LapackMat &A, LapackMat &B);
-	friend LapackMat operator-(LapackMat &A, LapackMat &B);
-	friend LapackMat operator*(double scalar, LapackMat &A);
-	friend LapackMat operator*(LapackMat &A, double scalar);
-	friend LapackMat operator*(LapackMat &A, LapackMat &B);
-
-private: 
-	void init(int x, int y, std::vector<double> z) { // Skapas separat från konstruktorerna för att göra konstruktorerna mer koncisa
+void LapackMat::init(int x, int y, std::vector<double> z) { // { // Skapas separat från konstruktorerna för att göra konstruktorerna mer koncisa
 		width = x;
 		height = y;
 		contents = z;
-	}
-};
+}
 
 LapackMat::LapackMat(int x, int y, std::vector<double> z) {
-	init(x, y, z);
+	LapackMat::init(x, y, z);
 }
 
 LapackMat::LapackMat(int x, int y) {
-	init(x, y, std::vector<double>(x*y, 0.0)); // Kallar init med en nollvektor av rätt dimension som contents
+	LapackMat::init(x, y, std::vector<double>(x*y, 0.0)); // Kallar init med en nollvektor av rätt dimension som contents
 }
 
 LapackMat::LapackMat(int x) {
-	init(x, x, std::vector<double>(x*x, 0.0)); // Skapar en kvadratisk nollmatris som i nollmatriskonstruktorn
+	LapackMat::init(x, x, std::vector<double>(x*x, 0.0)); // Skapar en kvadratisk nollmatris som i nollmatriskonstruktorn
 	
 	for (int i = 0; i < x; i++) {
 		this->setElement(i, i, 1.0); // Sätter alla diagonalelement till 1

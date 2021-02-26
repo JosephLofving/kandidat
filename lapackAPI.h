@@ -5,7 +5,7 @@
 
 // A simple class for LAPACK-matrices
 class LapackMat {
-	public:
+public:
 	int width;  // Amount of columns in matrix
 	int height; // Amount of rows in matrix
 	std::vector<double> contents; // Matrix contents in column-major order
@@ -23,6 +23,13 @@ class LapackMat {
 	friend LapackMat operator*(double scalar, LapackMat &A); // Scalar multiplication. scalar*A
 	friend LapackMat operator*(LapackMat &A, double scalar); // Scalar multiplication. A*scalar
 	friend LapackMat operator*(LapackMat &A, LapackMat &B);  // Matrix multiplication. A*B
+
+private:
+	void init(int x, int y, std::vector<double> z); // { // Skapas separat från konstruktorerna för att göra konstruktorerna mer koncisa
+		// width = x;
+		// height = y;
+		// contents = z;
+	// }
 };
 
 struct Two_vectors { // Struct for storing two related vectors
