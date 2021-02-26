@@ -2,9 +2,8 @@
 #include "chiral_LO.h"
 #include "lapackAPI.h"
 #include "quantumStates.h"
-#include "lapackAPI.h"
 
- std::vector<double> potential(std::vector<QuantumState> channel, std::vector<double> p) {
+ LapackMat potential(std::vector<QuantumState> channel, std::vector<double> p) {
 //std::vector<double> potential(int argc, char* argv[]){
     
 
@@ -14,11 +13,23 @@
     /* Set the pointer to a new instance of the class */
     potential_class_ptr = new chiral_LO();
 
+    double* V_array = new double [6];
+     bool coupled = false;
+
+    for (QuantumState state : channel){
+
+        int L = state["l"];
+        int S = state["s"];
+        int J = state["j"];
+        int T = state["t"];
+        int Tz = state["tz"];
+    }
+
     /* Define the 1S0 partial-wave quantum numbers */
-    int L = 0; // This argument is actually redundant due to a boolaen "coupled" we use later (which you may see when you compile this program)
-    int S = 0;
-    int J = 0;
-    int T = 1; // I use generalised Pauli principle (L+S+T=odd) to determine T=1 since L=S=0
+    //int L = 0; // This argument is actually redundant due to a boolaen "coupled" we use later (which you may see when you compile this program)
+    //int S = 0;
+    //int J = 0;
+    //int T = 1; // I use generalised Pauli principle (L+S+T=odd) to determine T=1 since L=S=0
 
     /* I set this to be a proton-neutron scattering system, meaning Tz=0.
      * For pp-scattering we would have Tz=-1 and for nn we would have Tz=+1 */
@@ -32,7 +43,8 @@
      * V_array[4]="V_pm": S=1, L=J+1, LL=J-1
      * V_array[5]="V_mp": S=1, L=J-1, LL=J+1
      * So the 1S0-element will be given by V_array[0] */
-    double* V_array = new double [6];
+
+    //double* V_array = new double [6];
 
     /* Our potentials usually use an argument called "coupled", which is a bool-type.
      * This tells the potential-program which parts the input-array V_array to calculate.
@@ -42,14 +54,14 @@
     
     /* Call class-member function V */
     /* Declare and set in- and out-momenta in c.m.*/
-    std::vector<double> V_matrix(6*6);
-    for (int ppi = 1; ppi < 6; ppi++) {
-        for (int ppo = 1; ppo < 6; ppo++) {
-            double pi = 1.0 * ppi;
-            double po = 1.0 * ppo;
-            potential_class_ptr->V(pi, po, coupled, S, J, T, Tz, V_array);
+
+    
+    LapackMat V_matrix = LapackMat(p.size(), p.size());
+    for (int p_in = 1; p_in < p.size(); p_in++) {
+        for (int p_o = 1; p_o < p.size(); p_o++) {
+            potential_class_ptr->V(p[p_in], p[po], coupled, S, J, T, Tz, V_array);
             std::cout << V_array[0] << std::endl;
-            V_matrix[ppi + ppo*6] = V_array[0];
+            V_matrix.setElement(p_in,p_o,V_array[0]);
         }
     }
 
