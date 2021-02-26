@@ -10,8 +10,18 @@
 #include <numeric> //beh�vs f�r std::iota
 #include <random>
 
+
+// testing accuracy of gauss_legendre_inf_mesh
 int main() {
-	N = 100;
+	int N{ 100 };
+	int scale{ 100 };
+
+	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
+	std::vector<double> k{ k_and_w.v1 };
+	std::vector<double> w{ k_and_w.v2 };
+
+	double function
+
 	double sum{};
 	for (int i; i < N; i++)
 	{
