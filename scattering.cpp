@@ -161,7 +161,7 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 		Np -= 1;
 		double T{ T[Np, Np] };
 		double Z{ 1 - factor * 2 * I * T };
-		double std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
+		std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
 
 		phases.insert(std::end(phases), &delta, &delta);
 	}
