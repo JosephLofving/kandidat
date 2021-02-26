@@ -20,11 +20,10 @@ int main() {
 	std::vector<double> k{ k_and_w.v1 };
 	std::vector<double> w{ k_and_w.v2 };
 
-	double function
-
 	double sum{};
 	for (int i; i < N; i++)
 	{
+		double function{}; // function of k[i]
 		sum += k[i] * w[i];
 	}
 	std::cout << "The integral evaluates to approximately " << sum;
