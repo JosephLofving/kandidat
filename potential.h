@@ -1,5 +1,5 @@
-#pragma once //denna gör tydligen så koden bara inkluderas en gång. Vet ej hur nödvändig den är, men bra att veta att kommandot finns typ.
+#pragma once //denna gï¿½r tydligen sï¿½ koden bara inkluderas en gï¿½ng. Vet ej hur nï¿½dvï¿½ndig den ï¿½r, men bra att veta att kommandot finns typ.
 #include "chiral_LO.h"
+#include "quantumStates.h"
 
-std::vector<double>;
-std::vector<double> potential(int argc, char* argv[]);
+ std::vector<double> potential(std::vector<QuantumState> channel, std::vector<double> p);

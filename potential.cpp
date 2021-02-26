@@ -1,8 +1,9 @@
 
 #include "chiral_LO.h"
 #include "lapackAPI.h"
+#include "quantumStates.h"
 
-Two_vectors potential(chan, p, Tlab) {
+ std::vector<double> potential(std::vector<QuantumState> channel, std::vector<double> p) {
 //std::vector<double> potential(int argc, char* argv[]){
     
 
