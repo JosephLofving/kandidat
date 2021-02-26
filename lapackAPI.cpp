@@ -1,3 +1,5 @@
+#include "lapackAPI.h"
+
 #include <iostream>
 #include <vector>
 #include <string> // Behövs för numberToFixedWidth()
