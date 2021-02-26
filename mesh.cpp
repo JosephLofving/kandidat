@@ -134,21 +134,19 @@ std::vector<double> legder(std::vector<double> c) {
 	//	if cnt < 0 :
 	//		raise ValueError("The order of derivation must be non-negative")
 	//		iaxis = normalize_axis_index(iaxis, c.ndim)
-	
-	
-	if (cnt == 0) // what is cnt?
-		return c;
+
 
 	// c = np.moveaxis(c, iaxis, 0)
 
 	int n{ c.size() };
-	for (int iii{ 0 }; iii < cnt.size(); iii++)
+	for (int i{ 0 }; i < 1; i++)
 	{
 		n = n - 1;
 		// der = np.empty((n, ) + c.shape[1:], dtype = c.dtype)
-		for (int jjj{ n }; jjj >= 2; j--)
+		std::vector<double> der;
+		for (int j{ n }; j >= 2; j--)
 		{
-			der[j - 1] = (2 * jjj - 1) * c[jjj];
+			der[j - 1] = (2 * j - 1) * c[j];
 			c[j - 2] += c[j];
 		}
 		if (n > 1)
