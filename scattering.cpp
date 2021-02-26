@@ -81,7 +81,7 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> channel, LapackMat V, std::v
 		for (int column{ 0 }; column < G0_part.size(); column++)
 		{
 			// Think you need setElement here, not looked it up yet
-			VG.setElement(row, column V.getElement(row, column) * G0_part[column] * 2 * mu);
+			VG.setElement(V.getElement(row, column) * G0_part[column] * 2 * mu);
 		}
 	}
 
@@ -149,8 +149,8 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 		// Blatt - Biedenharn(BB) convention
 		// Maybe complex double
 		double twoEpsilonJ_BB{ std::atan(2 * T12 / (T11 - T22)) };
-		double delta_plus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
-		double delta_minus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_plus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) + I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_minus_BB{ -0.5 * I * std::log(1 - I * factor * (T11 + T22) - I * factor * (2 * T12) / std::sin(twoEpsilonJ_BB)) };
 
 		std::vector<double> append_phases{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) }; 
 
@@ -161,7 +161,7 @@ std::vector<double> compute_phase_shifts(std::vector<QuantumState> NN_channel,st
 		Np -= 1;
 		double T{ T[Np, Np] };
 		double Z{ 1 - factor * 2 * I * T };
-		double delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
+		double std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
 
 		phases.insert(std::end(phases), &delta, &delta);
 	}
