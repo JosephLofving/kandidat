@@ -43,7 +43,7 @@ Two_vectors leggauss(int N) {
 	std::vector<double> c(N);
 	c[N - 1] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
 	LapackMat* m = legcompanion(c); //se legcompanion
-	std::vector<double> x = eigenValues(m);
+	std::vector<double> x = eigenValues(*m);
 
 	//improve roots by one application of Newton
 	std::vector<double> dy = legval(x, c);
