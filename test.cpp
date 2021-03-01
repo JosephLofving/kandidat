@@ -26,7 +26,7 @@ int main() {
 		double function{sin(k[i])/k[i]}; // function of k[i]
 		sum += function * w[i];
 	}
-	std::cout << "The integral evaluates to approximately " << sum;
+	std::cout << "The integral evaluates to approximately " << sum << std::endl;
 
 	return 0;
 }

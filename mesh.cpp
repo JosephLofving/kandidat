@@ -13,18 +13,28 @@
 
 
 std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double> v2) {
-	std::vector<double> vec = v1;
+	std::vector<double> vec(v1.size(), 0);
 	if (v1.size() != v2.size())
-		std::cout << "Error: vectors must be same length\n";
+		abort();
 	for (int i = 0; i < v1.size(); i++) {
 		vec[i] = v1[i] * v2[i];
 	}
 	return vec;
 }
 
+std::vector<double> elementwise_add(std::vector<double> v1, std::vector<double> v2) {
+	std::vector<double> vec(v1.size(), 0);
+	if (v1.size() != v2.size())
+		abort();
+	for (int i = 0; i < v1.size(); i++) {
+		vec[i] = v1[i] + v2[i];
+	}
+	return vec;
+}
+
 //först opererar den abs() på alla vektorns element, och sen returnar den det största av dessa element.
 double absmax(std::vector<double> vec) {
-	std::vector<double> vec1 = vec;
+	std::vector<double> vec1(vec.size(), 0);
 	for (int i = 0; i < vec.size(); ++i) {
 		vec1[i] = abs(vec[i]);
 	}
@@ -101,7 +111,8 @@ Two_vectors leggauss(int N) {
 
 //c.size > 2 ty.
 std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
-	std::vector<double> c0, c1(x.size());
+	std::vector<double> c0(x.size());
+	std::vector<double> c1(x.size());
 
 	int nd = c.size();
 	c0[0] = c[nd - 2]; //näst sista elementet i c
@@ -109,7 +120,7 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 	for (int i = 3; i < nd + 1; i++) {
 		std::vector<double> tmp = c0;
 		nd -= 1;
-		std::vector<double> c1_times_const;
+		std::vector<double> c1_times_const(c0.size());
 		std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
 			v *= (nd-1)/nd;
 			});
@@ -118,14 +129,12 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 			v = c[nd-i] - v;
 			}); //c0 = c[nd - i] - c1_times_const;
 		std::vector<double> c1x = elementwise_mult(c1, x);
-		c1 = tmp;
-		c1.insert(c1.end(), c1x.begin(), c1x.end());
+		c1 = elementwise_add(tmp, c1x);
 		
 	}
 	std::vector<double> c1x_2 = elementwise_mult(c1, x);
-	std::vector<double> c0_cat_c1x = c0;
-	c0_cat_c1x.insert(c0_cat_c1x.end(), c1x_2.begin(), c1x_2.end());
-	return c0_cat_c1x;
+	std::vector<double> vec = elementwise_add(c0, c1x_2);
+	return vec;
 }
 
 std::vector<double> legder(std::vector<double> c) {
@@ -146,7 +155,7 @@ std::vector<double> legder(std::vector<double> c) {
 	{
 		n = n - 1;
 		// der = np.empty((n, ) + c.shape[1:], dtype = c.dtype)
-		std::vector<double> der;
+		std::vector<double> der(c.size());
 		for (int j{ n }; j >= 2; j--)
 		{
 			der[j - 1] = (2 * j - 1) * c[j];
