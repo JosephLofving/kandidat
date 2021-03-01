@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string> // Behövs för numberToFixedWidth()
+#include <complex>
 
 // A simple class for LAPACK-matrices
 class LapackMat {
