@@ -76,7 +76,7 @@ Two_vectors leggauss(int N) {
 	std::vector<double> c_removedFirst = c;
 	c_removedFirst.erase(c_removedFirst.begin()); //c med första elementet borttaget
 	std::vector<double> fm = legval(x, c_removedFirst);
-	std::vector<double> w;
+	std::vector<double> w(fm.size());
 	
 	double fm_absmax = absmax(fm);
 	double df_absmax = absmax(df);
