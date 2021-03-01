@@ -101,7 +101,8 @@ Two_vectors leggauss(int N) {
 
 //c.size > 2 ty.
 std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
-	std::vector<double> c0, c1(x.size());
+	std::vector<double> c0(x.size());
+	std::vector<double> c1(x.size());
 
 	int nd = c.size();
 	c0[0] = c[nd - 2]; //näst sista elementet i c
