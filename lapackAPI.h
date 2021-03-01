@@ -1,7 +1,9 @@
 #ifndef LAPACKAPI_H
 #define LAPACKAPI_H
 
+#include <iostream>
 #include <vector>
+#include <string> // Behövs för numberToFixedWidth()
 
 // A simple class for LAPACK-matrices
 class LapackMat {
