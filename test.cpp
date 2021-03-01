@@ -28,5 +28,11 @@ int main() {
 	}
 	std::cout << "The integral evaluates to approximately " << sum << std::endl;
 
+	std::vector<double> test(N, 0);
+	test[N - 1] = 0;
+	std::vector<double> vec = legder(test);
+	for (std::vector<double>::const_iterator i = vec.begin(); i != vec.end(); ++i)
+		std::cout << *i << ' ';
+
 	return 0;
 }
