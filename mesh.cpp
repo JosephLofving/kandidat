@@ -15,7 +15,7 @@
 std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double> v2) {
 	std::vector<double> vec(v1.size(), 0);
 	if (v1.size() != v2.size())
-		std::cout << "Error: vectors must be same length\n";
+		abort();
 	for (int i = 0; i < v1.size(); i++) {
 		vec[i] = v1[i] * v2[i];
 	}
