@@ -120,7 +120,7 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 		nd -= 1;
 		std::vector<double> c1_times_const(c0.size());
 		std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
-			v *= (nd-1)/nd;
+			v = c1[0] * (nd-1) / nd;
 			});
 		c0 = c1_times_const;
 		std::for_each(c0.begin(), c0.end(), [&](double v) {
@@ -207,8 +207,8 @@ Two_vectors gauss_legendre_line_mesh(int N, int a, int b) {
 
 	/* Translate p and w_prime values for [-1,1] to a general
 	 * interval [a,b]  for quadrature points k and weights w */
-	std::vector<double> k{};
-	std::vector<double> w{};
+	std::vector<double> k(p.size(), 0);
+	std::vector<double> w(p.size(), 0);
 	for (int j{ 0 }; j < p.size(); j++)
 	{
 		k[j] = 0.5 * (p[j] + 1) * (b - a) + a;
