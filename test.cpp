@@ -38,5 +38,8 @@ int main() {
 	std::vector<double> x = eigenValues(*m);
 	std::vector<double> dy = legval(x, c);
 
+	for (std::vector<double>::const_iterator i = dy.begin(); i != dy.end(); ++i)
+		std::cout << *i << ' ';
+
 	return 0;
 }
