@@ -13,8 +13,8 @@
 
 // testing accuracy of gauss_legendre_inf_mesh
 int main() {
-	int N{ 100 };
-	int scale{ 10 };
+	int N{ 10 };
+	double scale{ 100 };
 
 	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
 	std::vector<double> k{ k_and_w.v1 };
@@ -35,7 +35,7 @@ int main() {
 		std::cout << *i << ' ';
 
 	LapackMat* m = legcompanion(test);
-
+	m->print();
 
 	std::vector<double> x = eigenValues(*m);
 	for (std::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i)
