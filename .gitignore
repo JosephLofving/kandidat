@@ -17,3 +17,5 @@ solveLS.obj
 *.json
 .gitignore
 testJoseph*
+*.obj
+*.exe
