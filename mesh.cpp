@@ -60,7 +60,7 @@ Two_vectors leggauss(int N) {
 	}
 	//first approximation of roots.We use the fact that the companion
 	//matrix is symmetric in this case in order to obtain better zeros.
-	std::vector<double> c(N);
+	std::vector<double> c(N, 0);
 	c[N - 1] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
 	LapackMat* m = legcompanion(c); //se legcompanion
 	std::vector<double> x = eigenValues(*m);
@@ -197,16 +197,7 @@ LapackMat* legcompanion(std::vector<double> c) {
 		mat->setElement(i, i + 1, top[i]);
 		mat->setElement(i + 1, i, top[i]); //nää det är nåt fel med syntax fortfarande, den tror att mat är en pointer nu?
 	}
-	c.pop_back(); //nu är c bara nollor, samt 1 element kortare.
-	double scl_lastValue = scl.back();
-	std::for_each(scl.begin(), scl.end(), [&](double& v) { v = v / scl_lastValue; });
-	double N_div = N / (2 * N - 1);
-	std::vector<double> bigProd = elementwise_mult(scl, c);
-	std::for_each(bigProd.begin(), bigProd.end(), [&](double& v) { v = v * N_div; });
-	for (int i = 0; i < N; i++) {
-		std::complex<double> prev_elem = mat->getElement(i, N-1);
-		mat->setElement(i, N-1, prev_elem - bigProd[i]);
-	}
+
 	return mat;
 
 }
