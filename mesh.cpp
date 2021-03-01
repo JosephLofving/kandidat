@@ -66,6 +66,16 @@ Two_vectors leggauss(int N) {
 	//improve roots by one application of Newton
 	std::vector<double> dy = legval(x, c);
 	std::vector<double> df = legval(x, legder(c));
+
+	for (std::vector<double>::const_iterator i = df.begin(); i != df.end(); ++i)
+		std::cout << *i << ' ';
+
+	std::cout << std::endl;
+
+	for (std::vector<double>::const_iterator i = dy.begin(); i != dy.end(); ++i)
+		std::cout << *i << ' ';	
+
+
 	for (int i = 0; i < x.size(); ++i) {
 		x[i] -= dy[i] / df[i];
 	}
@@ -107,32 +117,74 @@ Two_vectors leggauss(int N) {
 	return x_and_w;
 };
 
+std::vector<double> scale(double a, std::vector<double> v) {
+	std::vector<double> w(v.size());
+	for (int i = 0; i < v.size(); i++) {
+		w[i] = a*v[i];
+	}
+
+	return w;
+}
+
 //c.size > 2 ty.
 std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
+	int ND = c.size();
+	int nd = ND*1.0; // Double kanske är onödigt
+	
 	std::vector<double> c0(x.size());
 	std::vector<double> c1(x.size());
+	std::vector<double> identityVector(x.size(), 1.0);
 
-	int nd = c.size();
-	c0[0] = c[nd - 2]; //näst sista elementet i c
-	c1[0] = c[nd - 1]; //sista elementet i c
-	for (int i = 3; i < nd + 1; i++) {
+	c0[0] = c[nd-2];
+	c1[0] = c[nd-1];
+
+	for (int i = 3; i < ND + 1; i++) {
 		std::vector<double> tmp = c0;
 		nd -= 1;
-		std::vector<double> c1_times_const(c0.size());
-		std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
-			v = c1[0] * (nd-1) / nd;
-			});
-		c0 = c1_times_const;
-		std::for_each(c0.begin(), c0.end(), [&](double v) {
-			v = c[nd-i] - v;
-			}); //c0 = c[nd - i] - c1_times_const;
-		std::vector<double> c1x = elementwise_mult(c1, x);
-		c1 = elementwise_add(tmp, c1x);
-		
+	
+		/* c0 = c[-i] - c1*(nd - 1) / nd
+		 * c1 = tmp + c1*x*(2*nd - 1) / nd */
+		if (i == 3) { // c0 and c1 are effectively scalars for the first iteration
+			c0 = elementwise_add(scale(c[ND-i], identityVector), scale((1.0-nd)/nd, scale(c1[0], identityVector)));
+			c1 = elementwise_add(scale(tmp[0], identityVector), scale((c1[0]*(2.0*nd-1.0))/nd, x));
+		} else {
+			c0 = elementwise_add(scale(c[ND-i], identityVector), scale((1.0-nd)/nd, c1));
+			c1 = elementwise_add(tmp, scale((2.0*nd-1.0)/nd, elementwise_mult(c1, x)));
+		}
 	}
-	std::vector<double> c1x_2 = elementwise_mult(c1, x);
-	std::vector<double> vec = elementwise_add(c0, c1x_2);
-	return vec;
+
+	std::cout << std::endl << std::endl;
+
+	return elementwise_add(c0, elementwise_mult(c1, x)); // c0 + c1*x
+
+
+	// std::vector<double> c0(x.size());
+	// std::vector<double> c1(x.size());
+
+	// int nd = c.size();
+	// c0[0] = c[nd - 2]; //näst sista elementet i c
+	// c1[0] = c[nd - 1]; //sista elementet i c
+	// for (int i = 3; i < nd + 1; i++) {
+	// 	std::vector<double> tmp = c0;
+	// 	nd -= 1;
+	// 	std::vector<double> c1_times_const(c0.size());
+	// 	std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
+	// 		v = c1[0] * (nd-1) / nd;
+	// 		});
+	// 	c0 = c1_times_const;
+	// 	std::for_each(c0.begin(), c0.end(), [&](double v) {
+	// 		v = c[nd-i] - v;
+	// 		}); //c0 = c[nd - i] - c1_times_const;
+	// 	std::vector<double> c1x = c1;
+	// 	std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
+	// 		v = c1[0] * (nd-1) / nd;
+	// 		});
+	// 	c1 = elementwise_add(tmp, c1x);
+		
+	// }
+	// std::vector<double> c1x_2 = elementwise_mult(c1, x);
+	// std::vector<double> vec = elementwise_add(c0, c1x_2);
+	// return vec;
 }
 
 std::vector<double> legder(std::vector<double> c) {
