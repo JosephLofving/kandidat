@@ -155,7 +155,7 @@ std::vector<double> legder(std::vector<double> c) {
 	{
 		n = n - 1;
 		// der = np.empty((n, ) + c.shape[1:], dtype = c.dtype)
-		std::vector<double> der;
+		std::vector<double> der(c.size());
 		for (int j{ n }; j >= 2; j--)
 		{
 			der[j - 1] = (2 * j - 1) * c[j];
