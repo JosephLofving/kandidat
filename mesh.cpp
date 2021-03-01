@@ -182,8 +182,6 @@ LapackMat* legcompanion(std::vector<double> c) {
 	//std::vector<double> bot(N - 1, 0);
 	std::vector<double> scll(N-1);
 	std::iota(std::begin(scll), std::end(scll), 1); //scll= {1,...,N-1} (börjar på 1, men har denna gång endast N-1 element, till skillnad från scl).
-	for (std::vector<double>::const_iterator i = scll.begin(); i != scll.end(); ++i)
-		std::cout << *i << ' ';
 	
 	std::vector<double> scl_removedLast = scl; //scl fast med sista elementet borttaget
 	std::vector<double> scl_removedFirst = scl; //scl fast med första elementet borttaget
@@ -209,8 +207,8 @@ Two_vectors gauss_legendre_line_mesh(int N, int a, int b) {
 
 	/* Translate p and w_prime values for [-1,1] to a general
 	 * interval [a,b]  for quadrature points k and weights w */
-	std::vector<double> k{};
-	std::vector<double> w{};
+	std::vector<double> k(p.size(), 0);
+	std::vector<double> w(p.size(), 0);
 	for (int j{ 0 }; j < p.size(); j++)
 	{
 		k[j] = 0.5 * (p[j] + 1) * (b - a) + a;
