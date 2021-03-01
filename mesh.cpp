@@ -55,8 +55,8 @@ double absmax(std::vector<double> vec) {
 //degree : math:`2*deg - 1` or less over the interval : math:`[ - 1, 1]` with
 //the weight function : math:`f(x) = 1`.
 Two_vectors leggauss(int N) {
-	if (N < 1) {
-		std::cout << "Index must be >=1\n";
+	if (N < 3) {
+		std::cout << "Index must be > 2\n";
 	}
 	//first approximation of roots.We use the fact that the companion
 	//matrix is symmetric in this case in order to obtain better zeros.
@@ -174,10 +174,7 @@ std::vector<double> legder(std::vector<double> c) {
 //hjälpreda till leggauss
 LapackMat* legcompanion(std::vector<double> c) {
 	int N = c.size();
-	if (N == 2) {
-		LapackMat* mat = new LapackMat(1,1);
-		return mat;
-	}
+
 	LapackMat* mat = new LapackMat(N, N); //Skapar matris mat = zeros(N*N)
 	std::vector<double> scl(N);
 	std::iota(std::begin(scl), std::end(scl), 0); //scl= {0,1,...,N-1}
@@ -195,7 +192,7 @@ LapackMat* legcompanion(std::vector<double> c) {
 	std::vector<double> top = elementwise_mult(scl_prod, scll);
 	for (int i = 0; i < N-1; i++) {
 		mat->setElement(i, i + 1, top[i]);
-		mat->setElement(i + 1, i, top[i]); //nää det är nåt fel med syntax fortfarande, den tror att mat är en pointer nu?
+		mat->setElement(i + 1, i, top[i]);
 	}
 
 	return mat;
