@@ -120,7 +120,7 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 		nd -= 1;
 		std::vector<double> c1_times_const(c0.size());
 		std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
-			v *= (nd-1)/nd;
+			v = c1[0] * (nd-1) / nd;
 			});
 		c0 = c1_times_const;
 		std::for_each(c0.begin(), c0.end(), [&](double v) {
