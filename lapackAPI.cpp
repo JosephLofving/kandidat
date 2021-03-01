@@ -33,10 +33,26 @@ LapackMat::LapackMat(int x) {
 }
 
 std::complex<double> LapackMat::getElement(int row, int col) {
+	if (row >= this->height) {
+		std::cout << "Invalid row: " << row << " (Column: " << col << ")" << std::endl;
+		abort();
+	}
+	if (col >= this->width) {
+		std::cout << "Invalid column: " << col << " (Row: " << row << ")" << std::endl;
+		abort();
+	}
 	return contents[row + col*height]; // Lapack har column-major order. row*height ger början av varje kolonn
 }
 
 void LapackMat::setElement(int row, int col, std::complex<double> value) {
+	if (row >= this->height) {
+		std::cout << "Invalid row: " << row << " (Column: " << col << ")" << std::endl;
+		abort();
+	}
+	if (col >= this->width) {
+		std::cout << "Invalid column: " << col << " (Row: " << row << ")" << std::endl;
+		abort();
+	}
 	contents[row + col*height] = value;
 }
 
