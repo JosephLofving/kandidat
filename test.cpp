@@ -14,7 +14,7 @@
 // testing accuracy of gauss_legendre_inf_mesh
 int main() {
 	int N{ 100 };
-	int scale{ 100 };
+	int scale{ 10 };
 
 	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
 	std::vector<double> k{ k_and_w.v1 };
