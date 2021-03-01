@@ -35,7 +35,11 @@ int main() {
 		std::cout << *i << ' ';
 
 	LapackMat* m = legcompanion(test);
-	m->print();
+
+
+	std::vector<double> x = eigenValues(*m);
+	for (std::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i)
+		std::cout << *i << ' ';
 
 	return 0;
 }
