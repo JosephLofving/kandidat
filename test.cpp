@@ -28,18 +28,15 @@ int main() {
 	}
 	std::cout << "The integral evaluates to approximately " << sum << std::endl;
 
-	std::vector<double> test(N, 0);
-	test[N - 1] = 1;
-	std::vector<double> vec = legder(test);
+	std::vector<double> c(N, 0);
+	c[N - 1] = 1;
+	std::vector<double> vec = legder(c);
 	for (std::vector<double>::const_iterator i = vec.begin(); i != vec.end(); ++i)
 		std::cout << *i << ' ';
 
-	LapackMat* m = legcompanion(test);
-	m->print();
-
+	LapackMat* m = legcompanion(c);
 	std::vector<double> x = eigenValues(*m);
-	for (std::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i)
-		std::cout << *i << ' ';
+	std::vector<double> dy = legval(x, c);
 
 	return 0;
 }
