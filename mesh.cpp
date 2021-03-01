@@ -99,35 +99,28 @@ Two_vectors leggauss(int N) {
 	return x_and_w;
 };
 
+//c.size > 2 ty.
 std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
-	std::vector<double> c0, c1;
-	if (c.size() == 1) {
-		c0[0] = c[0];
-		c1[0] = 0;
-	}
-	else if (c.size() == 2) {
-		c0[0] = c[0];
-		c1[0] = c[1];
-	}
-	else {
-		int nd = c.size();
-		c0[0] = c[nd - 2]; //näst sista elementet i c
-		c1[0] = c[nd - 1]; //sista elementet i c
-		for (int i = 3; i < nd + 1; i++) {
-			std::vector<double> tmp = c0;
-			nd -= 1;
-			std::vector<double> c1_times_const;
-			std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
-				v *= (nd-1)/nd;
-				});
-			c0 = c1_times_const;
-			std::for_each(c0.begin(), c0.end(), [&](double v) {
-				v = c[nd-i] - v;
-				}); //c0 = c[nd - i] - c1_times_const;
-			std::vector<double> c1x = elementwise_mult(c1, x);
-			c1 = tmp;
-			c1.insert(c1.end(), c1x.begin(), c1x.end());
-		}
+	std::vector<double> c0, c1(x.size());
+
+	int nd = c.size();
+	c0[0] = c[nd - 2]; //näst sista elementet i c
+	c1[0] = c[nd - 1]; //sista elementet i c
+	for (int i = 3; i < nd + 1; i++) {
+		std::vector<double> tmp = c0;
+		nd -= 1;
+		std::vector<double> c1_times_const;
+		std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
+			v *= (nd-1)/nd;
+			});
+		c0 = c1_times_const;
+		std::for_each(c0.begin(), c0.end(), [&](double v) {
+			v = c[nd-i] - v;
+			}); //c0 = c[nd - i] - c1_times_const;
+		std::vector<double> c1x = elementwise_mult(c1, x);
+		c1 = tmp;
+		c1.insert(c1.end(), c1x.begin(), c1x.end());
+		
 	}
 	std::vector<double> c1x_2 = elementwise_mult(c1, x);
 	std::vector<double> c0_cat_c1x = c0;
