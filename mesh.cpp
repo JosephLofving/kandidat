@@ -34,7 +34,7 @@ std::vector<double> elementwise_add(std::vector<double> v1, std::vector<double> 
 double absmax(std::vector<double> vec) {
 	std::vector<double> vec1(vec.size(), 0);
 	for (int i = 0; i < vec.size(); ++i) {
-		vec1[i] = abs(vec[i]);
+		vec1[i] = std::abs(vec[i]);
 	}
 
 	double max = 0;
@@ -66,15 +66,6 @@ Two_vectors leggauss(int N) {
 	//improve roots by one application of Newton
 	std::vector<double> dy = legval(x, c);
 	std::vector<double> df = legval(x, legder(c));
-
-	for (std::vector<double>::const_iterator i = df.begin(); i != df.end(); ++i)
-		std::cout << *i << ' ';
-
-	std::cout << std::endl;
-
-	for (std::vector<double>::const_iterator i = dy.begin(); i != dy.end(); ++i)
-		std::cout << *i << ' ';	
-
 
 	for (int i = 0; i < x.size(); ++i) {
 		x[i] -= dy[i] / df[i];
@@ -152,8 +143,6 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 			c1 = elementwise_add(tmp, scale((2.0*nd-1.0)/nd, elementwise_mult(c1, x)));
 		}
 	}
-
-	std::cout << std::endl << std::endl;
 
 	return elementwise_add(c0, elementwise_mult(c1, x)); // c0 + c1*x
 

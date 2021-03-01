@@ -9,11 +9,14 @@
 #include <list>
 #include <numeric> //beh�vs f�r std::iota
 #include <random>
+#include <stdio.h>
+#include <fenv.h>
 
 
 // testing accuracy of gauss_legendre_inf_mesh
 int main() {
-	int N{ 10 };
+	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW); // Får programmet att krascha när NaN/inf uppstår
+	int N{ 100 };
 	double scale{ 100 };
 
 	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
@@ -28,18 +31,18 @@ int main() {
 	}
 	std::cout << "The integral evaluates to approximately " << sum << std::endl;
 
-	std::vector<double> c(N, 0);
-	c[N - 1] = 1;
-	std::vector<double> vec = legder(c);
-	for (std::vector<double>::const_iterator i = vec.begin(); i != vec.end(); ++i)
-		std::cout << *i << ' ';
+	// std::vector<double> c(N, 0);
+	// c[N - 1] = 1;
+	// std::vector<double> vec = legder(c);
+	// for (std::vector<double>::const_iterator i = vec.begin(); i != vec.end(); ++i)
+	// 	std::cout << *i << ' ';
 
-	LapackMat* m = legcompanion(c);
-	std::vector<double> x = eigenValues(*m);
-	std::vector<double> dy = legval(x, c);
+	// LapackMat* m = legcompanion(c);
+	// std::vector<double> x = eigenValues(*m);
+	// std::vector<double> dy = legval(x, c);
 
-	for (std::vector<double>::const_iterator i = dy.begin(); i != dy.end(); ++i)
-		std::cout << *i << ' ';
+	// for (std::vector<double>::const_iterator i = dy.begin(); i != dy.end(); ++i)
+	// 	std::cout << *i << ' ';
 
 	return 0;
 }
