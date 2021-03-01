@@ -34,5 +34,8 @@ int main() {
 	for (std::vector<double>::const_iterator i = vec.begin(); i != vec.end(); ++i)
 		std::cout << *i << ' ';
 
+	LapackMat* m = legcompanion(test);
+	m->print();
+
 	return 0;
 }
