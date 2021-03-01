@@ -28,7 +28,14 @@ double absmax(std::vector<double> vec) {
 	for (int i = 0; i < vec.size(); ++i) {
 		vec1[i] = abs(vec[i]);
 	}
-	double max = *max_element(vec1.begin(), vec1.end());
+
+	double max = 0;
+	for (int j{ 0 }; j < vec1.size(); j++) //max(vec1)
+	{
+		if (vec1[j] > max) {
+			max = vec1[j];
+		}
+	}
 	return max;
 }
 
