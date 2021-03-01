@@ -14,7 +14,7 @@
 // testing accuracy of gauss_legendre_inf_mesh
 int main() {
 	int N{ 100 };
-	int scale{ 100 };
+	int scale{ 10 };
 
 	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
 	std::vector<double> k{ k_and_w.v1 };
@@ -24,7 +24,7 @@ int main() {
 	for (int i = 0; i < N; i++)
 	{
 		double function{exp(-k[i]*k[i])}; // function of k[i]
-		sum += function * w[i];
+		sum += function * w[i]; //Integralen = sqrt(pi)/2 = 0.886227
 	}
 	std::cout << "The integral evaluates to approximately " << sum << std::endl;
 
