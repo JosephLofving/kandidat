@@ -152,7 +152,6 @@ std::vector<double> eigenValues(LapackMat A) { // Compute eigenvalues of A. A ha
 
 	zheev_(&JOBZ, &UPLO, &N, dummyA.contents.data(), &LDA, W.data(), WORK.data(), &LWORK, RWORK.data(), &INFO);
 
-	dummyA.print();
 	std::cout << std::endl;
 
 	return W;
