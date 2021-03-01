@@ -13,7 +13,7 @@
 
 
 std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double> v2) {
-	std::vector<double> vec;
+	std::vector<double> vec = v1;
 	if (v1.size() != v2.size())
 		std::cout << "Error: vectors must be same length\n";
 	for (int i = 0; i < v1.size(); i++) {
@@ -24,7 +24,7 @@ std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double>
 
 //först opererar den abs() på alla vektorns element, och sen returnar den det största av dessa element.
 double absmax(std::vector<double> vec) {
-	std::vector<double> vec1;
+	std::vector<double> vec1 = vec;
 	for (int i = 0; i < vec.size(); ++i) {
 		vec1[i] = abs(vec[i]);
 	}
