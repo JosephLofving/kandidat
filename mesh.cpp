@@ -243,8 +243,8 @@ Two_vectors gauss_legendre_inf_mesh(int N, double scale) {
 
 	/* Translate p and w_prime values for [-1,1] to a infinte
 	 * interval [0,inf]  for quadrature points k and weights w */
-	std::vector<double> k{};
-	std::vector<double> w{};
+	std::vector<double> k(p.size());
+	std::vector<double> w(w_prime.size());
 	for (int j{ 0 }; j < p.size(); j++)
 	{
 		k[j] = (1 + p[j]) / (1 - p[j]);
