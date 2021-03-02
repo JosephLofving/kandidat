@@ -275,8 +275,10 @@ Two_vectors gauss_legendre_inf_mesh(int N, double scale) {
 	std::vector<double> w(w_prime.size());
 	for (int j{ 0 }; j < p.size(); j++)
 	{
-		k[j] = scale * (1 + p[j]) / (1 - p[j]);
-		w[j] = 2 * scale * w_prime[j] / pow(1 - k[j], 2);
+		//k[j] = scale * (1 + p[j]) / (1 - p[j]);
+		//w[j] = 2 * scale * w_prime[j] / pow(1 - k[j], 2);
+		k[j] = scale * std::tan(constants::pi * (p[j] + 1.0) / 4);
+		w[j] = w_prime[j] * scale * (constants::pi / 4) / pow(std::cos(constants::pi * (p[j] + 1.0) / 4), 2);
 	}
 
 	Two_vectors k_and_w{ k, w };
