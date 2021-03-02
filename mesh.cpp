@@ -58,8 +58,8 @@ Two_vectors leggauss(int N) {
 	}
 	//first approximation of roots.We use the fact that the companion
 	//matrix is symmetric in this case in order to obtain better zeros.
-	std::vector<double> c(N, 0);
-	c[N - 1] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
+	std::vector<double> c(N+1, 0);
+	c[N] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
 	LapackMat* m = legcompanion(c); //se legcompanion
 	std::vector<double> x = eigenValues(*m);
 
@@ -82,7 +82,7 @@ Two_vectors leggauss(int N) {
 	for (int i = 0; i < fm.size(); ++i) {
 		fm[i] /= fm_absmax;
 		df[i] /= df_absmax;
-		w[i] = 1 / (fm[i] / df[i]);
+		w[i] = 1 / (fm[i] * df[i]);
 	}
 
 	//for Legendre we can also symmetrize
@@ -212,24 +212,25 @@ std::vector<double> legder(std::vector<double> c) {
 
 //hjälpreda till leggauss
 LapackMat* legcompanion(std::vector<double> c) {
-	int N = c.size();
+	int N = c.size()-1;
 
 	LapackMat* mat = new LapackMat(N, N); //Skapar matris mat = zeros(N*N)
 	std::vector<double> scl(N);
 	std::iota(std::begin(scl), std::end(scl), 0); //scl= {0,1,...,N-1}
 	std::for_each(scl.begin(), scl.end(), [](double& v) {v = sqrt(2 * v + 1); }); //scl[i] = sqrt(2*scl[i]+1) forall i
 	std::for_each(scl.begin(), scl.end(), [](double& v) { v = 1 / v; });
-	//std::vector<double> top(N - 1, 0); //bös, behövs nog ej
-	//std::vector<double> bot(N - 1, 0);
+
 	std::vector<double> scll(N-1);
 	std::iota(std::begin(scll), std::end(scll), 1); //scll= {1,...,N-1} (börjar på 1, men har denna gång endast N-1 element, till skillnad från scl).
-	
+
 	std::vector<double> scl_removedLast = scl; //scl fast med sista elementet borttaget
 	std::vector<double> scl_removedFirst = scl; //scl fast med första elementet borttaget
 	scl_removedLast.pop_back();
 	scl_removedFirst.erase(scl_removedFirst.begin());
+
 	std::vector<double> scl_prod = elementwise_mult(scl_removedLast, scl_removedFirst); //elementvis produkt mellan dessa
 	std::vector<double> top = elementwise_mult(scl_prod, scll);
+	
 	for (int i = 0; i < N-1; i++) {
 		mat->setElement(i, i + 1, top[i]);
 		mat->setElement(i + 1, i, top[i]);
