@@ -16,8 +16,9 @@ int main() {
 	std::vector<double> k{ k_and_w.v1 };
 
 
-	std::string key = "j:0 s:0 tz:0 pi:0"; //could change key format
+	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
 	std::vector<QuantumState> channel = channels[key]; 
+	printStates(channel);
 
 	double Tlab = 100.0;
 

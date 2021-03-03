@@ -155,7 +155,7 @@ std::map<std::string, std::vector<QuantumState> > setup_NN_channels(std::vector<
 	 * is added to the vector with that key.
 	 */
 	for (QuantumState state : allowedStates){
-		key = "j: "+std::to_string(state.state["j"])+" s: "+std::to_string(state.state["s"])+" tz: " +std::to_string(state.state["tz"]) +" pi: "+ std::to_string(state.state["pi"]);
+		key = "j:"+std::to_string(state.state["j"])+" s:"+std::to_string(state.state["s"])+" tz:" +std::to_string(state.state["tz"]) +" pi:"+ std::to_string(state.state["pi"]);
 		if(channels.count(key)==0){ //checks if channel contais key. True if key is not present
 			std::vector<QuantumState> vec_state;
 			vec_state.push_back(state);

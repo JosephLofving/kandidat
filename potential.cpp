@@ -6,7 +6,7 @@
 
 
 double get_k0(std::vector<QuantumState> channel, double Tlab){
-    int tz_channel{ channel[0].state["tz"] };
+    int tz_channel= channel[0].state["tz"];
     double k0_squared;
 	if (tz_channel == -1){	  // Proton-proton scattering
 		k0_squared = 2*constants::proton_mass*Tlab;
@@ -42,7 +42,9 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
 
     LapackMat V_matrix = LapackMat(p.size()+1, p.size()+1);
     
-    p.insert(p.begin(),k_0);
+    //p.insert(p.begin(),k_0);
+
+    p.push_back(k_0);
 
     for (QuantumState state : channel){
 
@@ -86,10 +88,9 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
 
     
 
-    for (int p_in = 1; p_in < p.size(); p_in++) {
-        for (int p_o = 1; p_o < p.size(); p_o++) {
+    for (int p_in = 0; p_in < p.size(); p_in++) {
+        for (int p_o = 0; p_o < p.size(); p_o++) {
             potential_class_ptr->V(p[p_in], p[p_o], coupled, S, J, T, Tz, V_array);
-            std::cout << V_array[0] << std::endl;
             V_matrix.setElement(p_in,p_o,V_array[0]);
         }
     }
