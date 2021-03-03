@@ -16,7 +16,6 @@ int main() {
 	std::vector<double> k{ k_and_w.v1 };
 	std::vector<double> w{ k_and_w.v2 };
 
-
 	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
 	std::vector<QuantumState> channel = channels[key]; 
 	printStates(channel);
@@ -24,6 +23,8 @@ int main() {
 	double Tlab = 100.0;
 
 	LapackMat V_matrix = potential(channel, k, Tlab);
+
+	std::cout<<V_matrix.getElement(10,10);
 
 	//V_matrix.print();
 

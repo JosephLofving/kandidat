@@ -11,11 +11,12 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
 	if (tz_channel == -1)	  // Proton-proton scattering
 		k0_squared = 2*constants::proton_mass*Tlab;
 	else if (tz_channel == 0) // Proton-neutron scattering
-		k0_squared = pow(constants::neutron_mass,2)*Tlab*(Tlab+2*constants::proton_mass)/(pow(constants::proton_mass+constants::neutron_mass,2)+2*Tlab*constants::neutron_mass);
+		k0_squared = pow(constants::neutron_mass,2)*Tlab*(Tlab+2*constants::proton_mass)/((pow(constants::proton_mass+constants::neutron_mass,2)+2*Tlab*constants::neutron_mass));
 	else if (tz_channel == 1) // Neutron-neutron scattering
 		k0_squared = 2*constants::neutron_mass*Tlab;
-
     return sqrt(k0_squared); // Does not handle case where tz is NOT -1, 0 or 1.
+	std::cout << "Incorrect tz_channel";
+	abort();
 }
 
  LapackMat potential(std::vector<QuantumState> channel, std::vector<double> p, double Tlab) {
@@ -34,8 +35,6 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
     double k_0 = get_k0(channel,Tlab);
 
     LapackMat V_matrix = LapackMat(p.size()+1, p.size()+1);
-    
-    //p.insert(p.begin(),k_0);
 
     p.push_back(k_0);
 
@@ -46,13 +45,21 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
         int J = state.state["j"];
         int T = state.state["t"];
         int Tz = state.state["tz"];
+
+        double temp =5;
+
+        potential_class_ptr->V(temp, temp, coupled, S, J, T, Tz, V_array);
+
+        std::cout <<"V(5)" << V_array[0];
     
 
-    /* Define the 1S0 partial-wave quantum numbers */
-    //int L = 0; // This argument is actually redundant due to a boolaen "coupled" we use later (which you may see when you compile this program)
-    //int S = 0;
-    //int J = 0;
-    //int T = 1; // I use generalised Pauli principle (L+S+T=odd) to determine T=1 since L=S=0
+    /* Define the 1S0 partial-wave quantum numbers 
+    int L = 0; // This argument is actually redundant due to a boolaen "coupled" we use later (which you may see when you compile this program)
+    int S = 0;
+    int J = 0;
+    int T = 1; // I use generalised Pauli principle (L+S+T=odd) to determine T=1 since L=S=0
+    int Tz = 0;
+    */
 
     /* I set this to be a proton-neutron scattering system, meaning Tz=0.
      * For pp-scattering we would have Tz=-1 and for nn we would have Tz=+1 */
@@ -87,7 +94,6 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
             V_matrix.setElement(p_in,p_o,V_array[0]);
         }
     }
-
   }
     return V_matrix;
 }
