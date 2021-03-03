@@ -33,6 +33,6 @@ int main() {
 	for (std::vector<std::complex<double>>::const_iterator i = phase.begin(); i != phase.end(); ++i) { //print(phase)
 			std::cout << *i << ' ' << std::endl;
 		}
-	std::cout << "hej";
+	std::cout << "The code ran successfully :)";
 	return 0;
 }
