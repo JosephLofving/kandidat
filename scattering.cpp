@@ -152,6 +152,8 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 
 		phases.push_back(delta_plus);
 		phases.push_back(delta_minus);
+		//std::cout << "\nDELTA_PLUS: " << delta_plus << "\n";
+		//std::cout << "\nDELTA_MINUS: " << delta_minus << "\n";
 
 		// phases.insert(std::end(phases), std::begin(append_phases), std::end(append_phases));
 	}
@@ -165,6 +167,7 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 
 		phases.push_back(delta);
 		phases.push_back(delta);
+		//std::cout << "\nDELTA: " << delta << "\n";
 
 		// phases.insert(std::end(phases), &delta, &delta);
 	}
