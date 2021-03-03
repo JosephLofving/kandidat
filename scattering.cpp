@@ -150,7 +150,8 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 
 		std::vector<std::complex<double>> append_phases{ blattToStapp(delta_minus, delta_plus, twoEpsilonJ) };
 
-		phases.push_back(delta);
+		phases.push_back(delta_plus);
+		phases.push_back(delta_minus);
 
 		// phases.insert(std::end(phases), std::begin(append_phases), std::end(append_phases));
 	}
@@ -162,6 +163,7 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 		std::complex<double> Z = complexOne - factor * 2 * I * Telem;
 		std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
 
+		phases.push_back(delta);
 		phases.push_back(delta);
 
 		// phases.insert(std::end(phases), &delta, &delta);
