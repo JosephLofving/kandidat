@@ -1,3 +1,6 @@
+#ifndef MESH_H
+#define MESH_H
+
 #include "constants.h"
 #include "lapackAPI.h"
 #include <iostream>
@@ -18,3 +21,5 @@ LapackMat* legcompanion(std::vector<double> c);
 Two_vectors gauss_legendre_line_mesh(int N, int a, int b);
 Two_vectors gauss_legendre_inf_mesh(int N, double scale = 100.0);
 std::vector<double> scale(double a, std::vector<double> v);
+
+#endif
