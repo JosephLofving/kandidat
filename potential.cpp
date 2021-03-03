@@ -7,22 +7,15 @@
 
 double get_k0(std::vector<QuantumState> channel, double Tlab){
     int tz_channel= channel[0].state["tz"];
-    double k0_squared;
-	if (tz_channel == -1){	  // Proton-proton scattering
+    double k0_squared{};
+	if (tz_channel == -1)	  // Proton-proton scattering
 		k0_squared = 2*constants::proton_mass*Tlab;
-        return sqrt(k0_squared);
-    }
-	else if (tz_channel == 0){ // Proton-neutron scattering
+	else if (tz_channel == 0) // Proton-neutron scattering
 		k0_squared = pow(constants::neutron_mass,2)*(Tlab+2*constants::proton_mass*Tlab)/(pow(constants::proton_mass+constants::neutron_mass,2)+2*Tlab*constants::neutron_mass);
-        return sqrt(k0_squared);
-    }
-	else if (tz_channel == 1){ // Neutron-neutron scattering
+	else if (tz_channel == 1) // Neutron-neutron scattering
 		k0_squared = 2*constants::neutron_mass*Tlab;
-        return sqrt(k0_squared);
-    }
-	std::cout << "Du fuckade upp";
-	return 0.0;
-    
+
+    return sqrt(k0_squared); // Does not handle case where tz is NOT -1, 0 or 1.
 }
 
  LapackMat potential(std::vector<QuantumState> channel, std::vector<double> p, double Tlab) {
