@@ -20,3 +20,7 @@ testJoseph*
 test
 *.obj
 *.exe
+*.dll
+*.dll.a
+*.exp
+*.lib
