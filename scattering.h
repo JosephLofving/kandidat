@@ -7,6 +7,12 @@
 #include <vector>
 #include <iostream>
 
+#include "constants.h"	// namespace constants
+#include "quantumStates.h"
+#include "lapackAPI.h"
+
+double get_reduced_mass(std::vector<QuantumState> channel);
+
 std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::vector<double> w, double k0);
 LapackMat setup_VG_kernel(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0);
 std::vector<std::complex<double>> blattToStapp(double deltaMinusBB, double deltaPlusBB, double twoEpsilonJBB);

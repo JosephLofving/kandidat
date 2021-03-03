@@ -1,6 +1,6 @@
 #include <iostream>
 #include "mesh.h"
-//#include "scattering.h"
+#include "scattering.h"
 #include "potential.h"
 
 
@@ -14,10 +14,16 @@ int main() {
 
 	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
 	std::vector<double> k{ k_and_w.v1 };
-	
-	double Tlab = 100.0;
+
+
 	std::string key = "j:0 s:0 tz:0 pi:0"; //could change key format
 	std::vector<QuantumState> channel = channels[key]; 
+
+	double Tlab = 100.0;
+	double getReduced
+
+
+
 	LapackMat V_and_k0 = potential(channel, k, Tlab);
 
 	V_and_k0.print();

@@ -35,8 +35,8 @@ double get_reduced_mass(std::vector<QuantumState> channel)
 		return constants::nucleon_reduced_mass;
 	else if (tz_channel == 1) // Peutron-neutron scattering
 		return constants::neutron_mass / 2;
-	std::cout << "Du fuckade upp";
-	return 0;
+	std::cout << "Incorrect tz_channel";
+	abort();
 }
 
 
