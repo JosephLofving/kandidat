@@ -30,10 +30,8 @@ int main() {
 	double k0 = get_k0(channel, Tlab);
 	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
 	std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
-	for (std::vector<double>::const_iterator i = phase.begin(); i != phase.end(); ++i) {
-		for (std::vector<double>::const_iterator j = i.begin(); j != i.end(); ++j) { //print(phase)
+	for (std::vector<std::complex<double>>::const_iterator i = phase.begin(); i != phase.end(); ++i) { //print(phase)
 			std::cout << *i << ' ';
 		}
-	}
 	return 0;
 }
