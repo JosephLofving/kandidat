@@ -5,7 +5,7 @@
 
 
 int main() {
-	std::vector<QuantumState> base = setup_Base(0,2,0,0);
+	std::vector<QuantumState> base = setup_Base(0,2,0,2);
     std::map<std::string, std::vector<QuantumState> > channels = setup_NN_channels(base);
 	printChannels(channels);
 
