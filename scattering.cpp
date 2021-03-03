@@ -126,7 +126,7 @@ std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB
 /* TODO: Explain theory for this. */
 std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState> NN_channel,std::string key, double k0, LapackMat T)
 {
-	std::cout << "Computing phase shifts in channel " << key;
+	std::cout << "Computing phase shifts in channel " << key << std::endl;
 
 	std::vector<std::complex<double>> phases{};
 	int number_of_blocks = NN_channel.size();			 // what blocks? block = quantumstate in channel
