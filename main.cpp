@@ -34,6 +34,7 @@ int main() {
 			std::cout << *i << ' ';
 		}
 	std::cout << std::endl;
-	std::cout << "hej";
+	std::cout << "\nThe code ran successfully :)\n";
+
 	return 0;
 }
