@@ -74,7 +74,7 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 
 	/* Copy G0 up to (N_channel-1):th element */
 	double mu{ get_reduced_mass(NN_channel) };
-	std::vector<std::complex<double>> G0_part{};
+	std::vector<std::complex<double>> G0_part(N_channel);
 	for (int index{ 0 }; index < N_channel; index++) { G0_part[index] = G0[index] * 2.0 * mu; } // TODO: May not work since G0_part not fixed size?
 
 	/* Create VG by initializing identity matrix and then using VG[i,j] = V[i,j] * G[j] */
