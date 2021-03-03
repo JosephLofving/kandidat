@@ -1,3 +1,6 @@
+#ifndef QUANTUMSTATE_H
+#define QUANTUMSTATE_H
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -19,3 +22,5 @@ void printStates(std::vector<QuantumState> states);
 std::vector<QuantumState> setup_Base(int j2min, int j2max, int tzmin, int tzmax);
 std::map<std::string, std::vector<QuantumState> > setup_NN_channels(std::vector<QuantumState> base);
 void printChannels(std::map<std::string, std::vector<QuantumState> > channels);
+
+#endif
