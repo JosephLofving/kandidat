@@ -4,6 +4,24 @@
 #include "quantumStates.h"
 #include "constants.h"
 
+
+double get_k0(std::vector<QuantumState> channel, double Tlab){
+    int tz_channel{ channel[0].state["tz"] };
+    double k0_squared;
+	if (tz_channel == -1)	  // Proton-proton scattering
+		k0_squared = 2*constants::proton_mass*Tlab;
+        return sqrt(k0_squared);
+	else if (tz_channel == 0) // Proton-neutron scattering
+		k0_squared = pow(constants::neutron_mass,2)*(Tlab+2*constants::proton_mass*Tlab)/(pow(constants::proton_mass+constants::neutron_mass,2)+2*Tlab*constants::neutron_mass));
+        return sqrt(k0_squared);
+	else if (tz_channel == 1) // Neutron-neutron scattering
+		k0_squared = 2*constants::neutron_mass*Tlab;
+        return sqrt(k0_squared);
+	std::cout << "Du fuckade upp";
+	return 0;
+    
+}
+
  LapackMat potential(std::vector<QuantumState> channel, std::vector<double> p, double Tlab) {
 //std::vector<double> potential(int argc, char* argv[]){
     
@@ -17,7 +35,11 @@
     double* V_array = new double [6];
     bool coupled = false;
 
-    LapackMat V_matrix = LapackMat(p.size(), p.size());
+    double k_0 = get_k0(channel,Tlab);
+
+    LapackMat V_matrix = LapackMat(p.size()+1, p.size()+1);
+    
+    p.insert(p.begin(),k_0);
 
     for (QuantumState state : channel){
 

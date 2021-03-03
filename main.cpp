@@ -20,9 +20,6 @@ int main() {
 	std::vector<QuantumState> channel = channels[key]; 
 
 	double Tlab = 100.0;
-	double getReduced
-
-
 
 	LapackMat V_and_k0 = potential(channel, k, Tlab);
 
