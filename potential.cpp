@@ -2,8 +2,9 @@
 #include "chiral_LO.h"
 #include "lapackAPI.h"
 #include "quantumStates.h"
+#include "constants.h"
 
- LapackMat potential(std::vector<QuantumState> channel, std::vector<double> p) {
+ LapackMat potential(std::vector<QuantumState> channel, std::vector<double> p, double Tlab) {
 //std::vector<double> potential(int argc, char* argv[]){
     
 
@@ -14,9 +15,9 @@
     potential_class_ptr = new chiral_LO();
 
     double* V_array = new double [6];
-     bool coupled = false;
+    bool coupled = false;
 
-     LapackMat V_matrix = LapackMat(p.size(), p.size());
+    LapackMat V_matrix = LapackMat(p.size(), p.size());
 
     for (QuantumState state : channel){
 

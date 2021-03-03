@@ -3,4 +3,4 @@
 #include "lapackAPI.h"
 #include "quantumStates.h"
 
-LapackMat potential(std::vector<QuantumState> channel, std::vector<double> p);
+LapackMat potential(std::vector<QuantumState> channel, std::vector<double> p, double Tlab);

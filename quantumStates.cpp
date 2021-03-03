@@ -179,7 +179,7 @@ void printChannels(std::map<std::string, std::vector<QuantumState> > channels){
 	std::map<std::string, std::vector<QuantumState> >::iterator itr;
 	for (itr = channels.begin(); itr != channels.end(); ++itr){
 		std::cout << "Key: [" << itr->first<< " ] " << std::endl;
-		std::cout << " value: ";
+		std::cout << " value: "<< std::endl;
 		printStates(itr->second);
 	}
 
