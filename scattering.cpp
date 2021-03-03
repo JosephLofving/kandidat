@@ -102,7 +102,7 @@ LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, 
 
 	// LapackMat IVG = identity - constants_matrix; // WHY? Diagonal elements 1 - 2/pi?
 
-	LapackMat T = solveMatrixEq(identity - constants_matrix, V); // IVG*T = V
+	LapackMat T = solveMatrixEq((identity - constants_matrix)*VG, V); // IVG*T = V
 
 	return T;
 }
