@@ -25,6 +25,7 @@ int main() {
 	LapackMat V_and_k0 = potential(channel, k, Tlab);
 
 	V_and_k0.print();
+	std::cout << "hej";
 
 
 
@@ -34,6 +35,10 @@ int main() {
 	//std::vector<double> phase = compute_phase_shifts(channel,key, k0, T);
 	//for (std::vector<double>::const_iterator i = phase.begin(); i != phase.end(); ++i) //print(phase)
 		//std::cout << *i << ' ';
+
+	std::cin.clear(); // reset any error flags
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // ignore any characters in the input buffer until we find an enter character
+	std::cin.get(); // get one more char from the user
 
 	return 0;
 }

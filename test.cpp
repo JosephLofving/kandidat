@@ -11,11 +11,12 @@
 #include <random>
 #include <stdio.h>
 #include <fenv.h>
+#include <limits>
 
 
 // testing accuracy of gauss_legendre_inf_mesh
 int main() {
-	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW); // Får programmet att krascha när NaN/inf uppstår
+	//feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW); // Får programmet att krascha när NaN/inf uppstår
 	int N{ 100 };
 	double scale{ 100 };
 
@@ -43,6 +44,11 @@ int main() {
 
 	// for (std::vector<double>::const_iterator i = dy.begin(); i != dy.end(); ++i)
 	// 	std::cout << *i << ' ';
+
+
+	std::cin.clear(); // reset any error flags
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // ignore any characters in the input buffer until we find an enter character
+	std::cin.get(); // get one more char from the user
 
 	return 0;
 }
