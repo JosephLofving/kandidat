@@ -14,6 +14,7 @@ int main() {
 
 	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
 	std::vector<double> k{ k_and_w.v1 };
+	std::vector<double> w{ k_and_w.v2 };
 
 
 	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
@@ -22,23 +23,15 @@ int main() {
 
 	double Tlab = 100.0;
 
-	LapackMat V_and_k0 = potential(channel, k, Tlab);
+	LapackMat V_matrix = potential(channel, k, Tlab);
 
-	V_and_k0.print();
-	std::cout << "hej";
+	//V_matrix.print();
 
-
-
-	//std::vector<double> V = V_and_k0.v1;
-	//std::vector<double> k0 = V_and_k0.v2;
-	//LapackMat T = compute_Tmatrix(channel, V, k0, p, w);
-	//std::vector<double> phase = compute_phase_shifts(channel,key, k0, T);
-	//for (std::vector<double>::const_iterator i = phase.begin(); i != phase.end(); ++i) //print(phase)
-		//std::cout << *i << ' ';
-
-	std::cin.clear(); // reset any error flags
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // ignore any characters in the input buffer until we find an enter character
-	std::cin.get(); // get one more char from the user
-
+	double k0 = get_k0(channel, Tlab);
+	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
+	std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
+	for (std::vector<std::complex<double>>::const_iterator i = phase.begin(); i != phase.end(); ++i) { //print(phase)
+			std::cout << *i << ' ';
+		}
 	return 0;
 }
