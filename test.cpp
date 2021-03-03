@@ -15,7 +15,7 @@
 
 // testing accuracy of gauss_legendre_inf_mesh
 int main() {
-	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW); // Får programmet att krascha när NaN/inf uppstår
+	//feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW); // Får programmet att krascha när NaN/inf uppstår
 	int N{ 100 };
 	double scale{ 100 };
 
