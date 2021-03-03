@@ -50,7 +50,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
     /* Equation (2.22) is used to set elements in D. */
 	double pre_factor{ (2.0 / constants::pi) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
 	double sum{}; // for D[0]
-	for (int ind{ 0 }; ind <= N; ind++)
+	for (int ind{ 0 }; ind < N; ind++)
 	{
 		D[ind + 1] = -pre_factor * pow(k[ind], 2) * w[ind] / (pow(k0, 2) - pow(k[ind], 2));   // Define D[1,N] with k and w vectors
 		sum += w[ind] / (k0 * k0 - k[ind] * k[ind]);										  // Use in D[0]
@@ -65,7 +65,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 
 LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)
 {
-	std::cout << "Setting up G0(k0) in channel " << key;
+	std::cout << "Setting up G0(k0) in channel " << key << std::endl;
 
 	int N = k.size();
 	int number_of_blocks = NN_channel.size();								 // TODO: What does this do?
