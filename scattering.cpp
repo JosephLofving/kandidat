@@ -35,6 +35,8 @@ double get_reduced_mass(std::vector<QuantumState> channel)
 		return constants::nucleon_reduced_mass;
 	else if (tz_channel == 1) // Peutron-neutron scattering
 		return constants::neutron_mass / 2;
+	std::cout << "Du fuckade upp";
+	return 0;
 }
 
 
@@ -98,9 +100,9 @@ LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, 
 	LapackMat identity = LapackMat(VG.width);
 	LapackMat constants_matrix = (2.0 / constants::pi) * identity;
 
-	LapackMat IVG = identity - constants_matrix; // WHY? Diagonal elements 1 - 2/pi?
+	// LapackMat IVG = identity - constants_matrix; // WHY? Diagonal elements 1 - 2/pi?
 
-	LapackMat T = solveMatrixEq(IVG, V); // IVG*T = V
+	LapackMat T = solveMatrixEq(identity - constants_matrix, V); // IVG*T = V
 
 	return T;
 }
