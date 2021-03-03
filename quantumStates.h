@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 #ifndef QUANTUMSTATES_H
 #define QUANTUMSTATES_H
-=======
-#ifndef QUANTUMSTATE_H
-#define QUANTUMSTATE_H
->>>>>>> 0d8ba2c69f0c99505658b3e06eb76f06fe1ea20f
 
 #include <iostream>
 #include <map>
