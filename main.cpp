@@ -31,7 +31,7 @@ int main() {
 	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
 	std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
 	for (std::vector<std::complex<double>>::const_iterator i = phase.begin(); i != phase.end(); ++i) { //print(phase)
-			std::cout << *i << ' ';
+			std::cout << *i << ' ' << std::endl;
 		}
 	std::cout << "hej";
 	return 0;
