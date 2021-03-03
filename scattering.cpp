@@ -159,7 +159,6 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 	}
 	else
 	{
-		std::cout << "Hej mamma\n";
 		N -= 1;
 		std::complex<double> Telem = T.getElement(N, N);
 		std::complex<double> Z = complexOne - factor * 2 * I * Telem;
