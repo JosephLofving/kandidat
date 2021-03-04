@@ -6,7 +6,7 @@
 #include <fenv.h>
 
 int main() {
-	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+	//feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 	std::vector<QuantumState> base = setup_Base(0,2,0,2);
     std::map<std::string, std::vector<QuantumState> > channels = setup_NN_channels(base);
 	printChannels(channels);
