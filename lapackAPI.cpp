@@ -62,8 +62,7 @@ void LapackMat::print() {
 	for (int i = 0; i < height; i++) { // Loopar genom raderna
 		for (int j = 0; j < width; j++) { // Loopar genom kolonnerna
 			std::complex<double> element = getElement(i, j);
-			std::cout << element.real() << " + " << element.imag() << "i  ";
-			 numberToFixedWidth(getElement(i, j), 15); // Printar elementet
+			std::cout << element.real() << " + " << element.imag() << "i \t";
     	}
     	std::cout << std::endl; // Radbrytning när ny rad påbörjas
   	}
