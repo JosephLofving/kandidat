@@ -105,12 +105,15 @@ std::cout << N << "\n" << number_of_blocks << "\n" << N_channel << "\n";
 
 std::cout << "mu and G0[1] \n";
 std::cout << mu << "\n";
-std::cout << G0_part[1];
+std::cout << G0_part[1] \n;
 
 
 
 	/* Create VG by initializing identity matrix and then using VG[i,j] = V[i,j] * G[j] */
 	LapackMat VG = LapackMat(G0_part.size());
+
+	std::cout << G0_part.size()
+
 	for (int column{ 0 }; column < G0_part.size(); column++)
 	{
 		for (int row{ 0 }; row < G0_part.size(); row++)
