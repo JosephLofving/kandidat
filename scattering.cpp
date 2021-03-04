@@ -49,7 +49,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	std::vector<std::complex<double>> D(2* (N + 1)); // Setup D vector, size N + 1
 
     /* Equation (2.22) is used to set elements in D. */
-	//double pre_factor{ 1.0 };//(2.0 / constants::pi) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
+	double pi_over_two{ (2.0 / constants::pi) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
 	double sum{}; // for D[0]
 	for (int ind{ 0 }; ind < N; ind++)
 	{
@@ -59,10 +59,8 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 		sum += w[ind] * pow(k0, 2) / (pow(k0, 2) - pow(k[ind], 2));										  // Use in D[0]
 	}
 	
-	D[N] = - sum - (constants::pi/2) * I * k0;
-	
+	D[N] = - sum - pi_over_two * I * k0;
 	D[2 *( N + 1) - 1] = D[N];
-
 	
 	return D;
 }
@@ -93,41 +91,41 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 	std::cout << "Setting up G0(k0) in channel " << key << std::endl;
 
 	int N = k.size();
-	int number_of_blocks = NN_channel.size();								 // TODO: What does this do?
-	int N_channel = static_cast<int>(std::sqrt(number_of_blocks) * (N + 1)); // TODO: What does this do?
+	int number_of_blocks = NN_channel.size();								 // Is either 1 (uncoupled) or 4 (coupled)
+	int N_channel = static_cast<int>(std::sqrt(number_of_blocks) * (N + 1)); // If coupled, use second half of G0
 	std::vector<std::complex<double>> G0{ setup_G0_vector(k, w, k0) };		 // G0 has dimension N+1 here, as opposed to Python code
 
-std::cout << "N, number_of_blocks and N_channel";
-std::cout << N << "\n" << number_of_blocks << "\n" << N_channel << "\n";
+//std::cout << "N, number_of_blocks and N_channel";
+//std::cout << N << "\n" << number_of_blocks << "\n" << N_channel << "\n";
 
 	/* Copy G0 up to (N_channel-1):th element */
 	double mu{ get_reduced_mass(NN_channel) };
 	std::vector<std::complex<double>> G0_part(N_channel);
 	for (int index{ 0 }; index < N_channel; index++) { G0_part[index] = G0[index] * 2.0 * mu; } // * 2.0 * mu 
 
-std::cout << "mu and G0[1] \n";
-std::cout << mu << "\n";
-std::cout << G0_part[1] << "\n";
+//std::cout << "mu and G0[1] \n";
+//std::cout << mu << "\n";
+//std::cout << G0_part[1] << "\n";
 
 
 
 	/* Create VG by initializing identity matrix and then using VG[i,j] = V[i,j] * G[j] */
 	LapackMat VG = LapackMat(G0_part.size());
 
-std::cout << G0_part.size();
+//std::cout << G0_part.size();
 
-	for (int column{ 0 }; column < G0_part.size(); column++)
+	for (int row{ 0 }; row < G0_part.size(); row++)
 	{
-		for (int row{ 0 }; row < G0_part.size(); row++)
+		for (int column{ 0 }; column < G0_part.size(); column++)
 		{
 			VG.setElement(row, column, V.getElement(row, column) * G0_part[column]);
-std::cout << V.getElement(row, column) << " ";
+//std::cout << V.getElement(row, column) << " ";
 		}
 	}
 
-	std::cout << "\n     This is VG:\n";
-	VG.print();
-	std::cout << "     VG ends here\n";
+//std::cout << "\n     This is VG:\n";
+//VG.print();
+//std::cout << "     VG ends here\n";
 
 	return VG;
 }
@@ -171,46 +169,42 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 	std::cout << "Computing phase shifts in channel " << key << std::endl;
 
 	std::vector<std::complex<double>> phases{};
-	int number_of_blocks = NN_channel.size();			 // what blocks? block = quantumstate in channel
-
+	int number_of_blocks = NN_channel.size(); // 1 if uncoupled, 4 if coupled
 	double mu{ get_reduced_mass(NN_channel) };
-	double factor{ 2 * mu * k0 }; // TODO: This might give wrong result depending on other constants used
-
+	double factor{ 2 * mu * k0 }; 
 	int N{ T.width };
+
 	std::complex<double> complexOne(1);
-	if (number_of_blocks > 1)
+	if (number_of_blocks > 1) // if coupled 
 	{
-		N = static_cast<int>( (N - 2) / 2); // WHY?
+		N = static_cast<int>( (N - 2) / 2);				// WHY?
 		std::complex<double> T11 = T.getElement(N,N);
 		std::complex<double> T12 = T.getElement(2 * N + 1, N);
 		std::complex<double> T22 = T.getElement(2 * N + 1, 2 * N + 1);
 
 		/* Blatt - Biedenharn(BB) convention */
-		std::complex<double> twoEpsilonJ{ std::atan(2.0 * T12 / (T11 - T22)) };
-		std::complex<double> delta_plus{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) + I * factor * (2.0 * T12) / std::sin(twoEpsilonJ)) };
-		std::complex<double> delta_minus{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) - I * factor * (2.0 * T12) / std::sin(twoEpsilonJ)) };
+		std::complex<double> twoEpsilonJ_BB{ std::atan(2.0 * T12 / (T11 - T22)) };
+		std::complex<double> delta_plus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) + I * factor * (2.0 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_minus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) - I * factor * (2.0 * T12) / std::sin(twoEpsilonJ_BB)) };
 
-		std::vector<std::complex<double>> append_phases{ blattToStapp(delta_minus, delta_plus, twoEpsilonJ) };
+		std::vector<std::complex<double>> phases_append{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) };
 
-		phases.push_back(delta_plus);
-		phases.push_back(delta_minus);
-		//std::cout << "\nDELTA_PLUS: " << delta_plus << "\n";
-		//std::cout << "\nDELTA_MINUS: " << delta_minus << "\n";
+		phases.push_back(phases_append[0]);
+		phases.push_back(phases_append[1]);
+		phases.push_back(phases_append[2]);
 
-		// phases.insert(std::end(phases), std::begin(append_phases), std::end(append_phases));
+//std::cout << "\nDELTA_PLUS: " << delta_plus << "\n";
+//std::cout << "\nDELTA_MINUS: " << delta_minus << "\n";
 	}
 	else
 	{
 		N -= 1;
-		std::complex<double> Telem = T.getElement(N, N);
-		std::complex<double> Z = complexOne - factor * 2 * I * Telem;
+		std::complex<double> T_element = T.getElement(N, N);
+		std::complex<double> Z = complexOne - factor * 2 * I * T_element;
 		std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
 
 		phases.push_back(delta);
-		phases.push_back(delta);
-		//std::cout << "\nDELTA: " << delta << "\n";
-
-		// phases.insert(std::end(phases), &delta, &delta);
+//std::cout << "\nDELTA: " << delta << "\n";
 	}
 
 	return phases;
