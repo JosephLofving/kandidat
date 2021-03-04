@@ -63,7 +63,6 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	std::cout << "pi/2: " << pi_over_two << std::endl;
 	
 	D[N] = - sum - pi_over_two * I * k0;
-	std::cout << "\n TEST\n" << 1;
 	D[2 *( N + 1) - 1] = D[N];
 	
 

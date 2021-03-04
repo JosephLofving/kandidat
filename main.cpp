@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <fenv.h>
 
+
+#include <iomanip> // can use std::cout << std::setprecision(16) to get 16 decimals
+
+
 int main() {
 	//feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 	std::vector<QuantumState> base = setup_Base(0,2,0,2);
@@ -43,10 +47,11 @@ int main() {
 	// 	std::cout << *i << ' ';
 	// }
 
+
 	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
 	std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
 	for (auto i = phase.begin(); i != phase.end(); ++i) { // former type for i:   std::vector<std::complex<double>>::const_iterator
-			std::cout << *i << ' ';
+			std::cout << *i << ' '; 
 		}
 	std::cout << std::endl;
 	std::cout << "\nThe code ran successfully :)\n";
