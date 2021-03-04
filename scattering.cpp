@@ -48,7 +48,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	std::vector<std::complex<double>> D(N + 1); // Setup D vector, size N + 1
 
     /* Equation (2.22) is used to set elements in D. */
-	double pre_factor{ (2.0 / constants::pi) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
+	double pre_factor{ 1.0 };//(2.0 / constants::pi) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
 	double sum{}; // for D[0]
 	for (int ind{ 0 }; ind < N; ind++)
 	{
@@ -56,7 +56,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 		sum += w[ind] / (k0 * k0 - k[ind] * k[ind]);										  // Use in D[0]
 	}
 	
-	D[N] = pre_factor * pow(k0, 2) * sum + I * k0;
+	D[N] = -pre_factor * pow(k0, 2) * sum - constants::pi/2 * I * k0;
 	
 	return D;
 }
@@ -115,6 +115,10 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) 
 {
 	LapackMat VG = setup_VG_kernel(NN_channel, key, V, k, w, k0);
+
+	std::cout << "VG:\n";
+	VG.print();
+	std::cout << std::endl;
 
 	LapackMat identity = LapackMat(VG.width);
 	LapackMat constants_matrix = (2.0 / constants::pi) * identity;
