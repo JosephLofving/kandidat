@@ -1,16 +1,8 @@
-#include <iostream>
 #include "mesh.h"
 #include "scattering.h"
 #include "potential.h"
-#include <stdio.h>
-#include <fenv.h>
-
-
-#include <iomanip> // can use std::cout << std::setprecision(16) to get 16 decimals
-
 
 int main() {
-	//feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 	std::vector<QuantumState> base = setup_Base(0,2,0,2);
     std::map<std::string, std::vector<QuantumState> > channels = setup_NN_channels(base);
 	printChannels(channels);
