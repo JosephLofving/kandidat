@@ -61,16 +61,6 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	
 	D[N] = - sum - pi_over_two * I * k0;
 	D[2 *( N + 1) - 1] = D[N];
-	
-
-
-    // D[0:N] = w*p**2/(ko**2 - p**2)		# Gaussian integral
-
-    // D[N]  = -np.sum( w/(ko**2 - p**2 ) )*ko**2 	# Principal value
-    // D[N] -= 1j*ko * (np.pi/2)
-
-
-
 
 	return D;
 }
