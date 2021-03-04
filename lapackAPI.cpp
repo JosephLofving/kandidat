@@ -57,9 +57,13 @@ void LapackMat::setElement(int row, int col, std::complex<double> value) {
 }
 
 void LapackMat::print() {
+	std::cout.precision(2);
+	std::cout << std::scientific;
 	for (int i = 0; i < height; i++) { // Loopar genom raderna
 		for (int j = 0; j < width; j++) { // Loopar genom kolonnerna
-			std::cout << numberToFixedWidth(getElement(i, j), 15); // Printar elementet
+			std::complex<double> element = getElement(i, j);
+			std::cout << element.real() << " + " << element.imag() << "i  ";
+			 numberToFixedWidth(getElement(i, j), 15); // Printar elementet
     	}
     	std::cout << std::endl; // Radbrytning när ny rad påbörjas
   	}
