@@ -3,13 +3,12 @@
 #include "scattering.h"
 #include "potential.h"
 
-
 int main() {
 	std::vector<QuantumState> base = setup_Base(0,2,0,2);
     std::map<std::string, std::vector<QuantumState> > channels = setup_NN_channels(base);
 	printChannels(channels);
 
-	int N{ 100 };
+	int N{ 5 };
 	double scale{ 100 };
 
 	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };

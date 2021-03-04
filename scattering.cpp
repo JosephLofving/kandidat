@@ -48,7 +48,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	std::vector<std::complex<double>> D(2* (N + 1)); // Setup D vector, size N + 1
 
     /* Equation (2.22) is used to set elements in D. */
-	//double pre_factor{ 1.0 };//(2.0 / constants::pi) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
+	double pi_over_two{ (2.0 / constants::pi) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
 	double sum{}; // for D[0]
 	for (int ind{ 0 }; ind < N; ind++)
 	{
@@ -58,9 +58,10 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 		sum += w[ind] * pow(k0, 2) / (pow(k0, 2) - pow(k[ind], 2));										  // Use in D[0]
 	}
 	
-	D[N] = - sum - (constants::pi/2) * I * k0;
+	D[N] = - sum - pi_over_two * I * k0;
+std::cout << "\n D[n] is " << D[N] << "\n";
 	D[2 *( N + 1) - 1] = D[N];
-
+std::cout << "k0 is: " << k0;
 	
 	return D;
 }
@@ -91,8 +92,8 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 	std::cout << "Setting up G0(k0) in channel " << key << std::endl;
 
 	int N = k.size();
-	int number_of_blocks = NN_channel.size();								 // TODO: What does this do?
-	int N_channel = static_cast<int>(std::sqrt(number_of_blocks) * (N + 1)); // TODO: What does this do?
+	int number_of_blocks = NN_channel.size();								 // Is either 1 (uncoupled) or 4 (coupled)
+	int N_channel = static_cast<int>(std::sqrt(number_of_blocks) * (N + 1)); // If coupled, use second half of G0
 	std::vector<std::complex<double>> G0{ setup_G0_vector(k, w, k0) };		 // G0 has dimension N+1 here, as opposed to Python code
 
 //std::cout << "N, number_of_blocks and N_channel";
@@ -114,18 +115,18 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 
 //std::cout << G0_part.size();
 
-	for (int column{ 0 }; column < G0_part.size(); column++)
+	for (int row{ 0 }; row < G0_part.size(); row++)
 	{
-		for (int row{ 0 }; row < G0_part.size(); row++)
+		for (int column{ 0 }; column < G0_part.size(); column++)
 		{
 			VG.setElement(row, column, V.getElement(row, column) * G0_part[column]);
-std::cout << V.getElement(row, column) << " ";
+//std::cout << V.getElement(row, column) << " ";
 		}
 	}
 
-std::cout << "\n     This is VG:\n";
-VG.print();
-std::cout << "     VG ends here\n";
+//std::cout << "\n     This is VG:\n";
+//VG.print();
+//std::cout << "     VG ends here\n";
 
 	return VG;
 }
