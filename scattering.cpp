@@ -52,14 +52,15 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	double sum{}; // for D[0]
 	for (int ind{ 0 }; ind < N; ind++)
 	{
-		D[ind] = pow(k[ind], 2) * w[ind] / (pow(k0, 2) - pow(k[ind], 2));   // Define D[1,N] with k and w vectors
+		D[ind] = w[ind] * pow(k[ind], 2) / (pow(k0, 2) - pow(k[ind], 2));   // Define D[1,N] with k and w vectors
 		D[ind + (N+1)] = D[ind];
 		
-		sum += w[ind] / (k0 * k0 - k[ind] * k[ind]);										  // Use in D[0]
+		sum += w[ind] * pow(k0, 2) / (pow(k0, 2) - pow(k[ind], 2));										  // Use in D[0]
 	}
 	
-	D[N] = -pow(k0, 2) * sum - (constants::pi/2) * I * k0;
+	D[N] = - sum - (constants::pi/2) * I * k0;
 	D[2 *( N + 1) - 1] = D[N];
+
 	
 	return D;
 }
@@ -94,20 +95,33 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 	int N_channel = static_cast<int>(std::sqrt(number_of_blocks) * (N + 1)); // TODO: What does this do?
 	std::vector<std::complex<double>> G0{ setup_G0_vector(k, w, k0) };		 // G0 has dimension N+1 here, as opposed to Python code
 
+std::cout << "N, number_of_blocks and N_channel";
+std::cout << N << "\n" << number_of_blocks << "\n" << N_channel << "\n";
+
 	/* Copy G0 up to (N_channel-1):th element */
 	double mu{ get_reduced_mass(NN_channel) };
 	std::vector<std::complex<double>> G0_part(N_channel);
-	for (int index{ 0 }; index < N_channel; index++) { G0_part[index] = G0[index] * 2.0 * mu; } // TODO: May not work since G0_part not fixed size?
+	for (int index{ 0 }; index < N_channel; index++) { G0_part[index] = G0[index]; } // * 2.0 * mu 
+
+std::cout << "mu and G0[1] \n";
+std::cout << mu << "\n";
+std::cout << G0_part[1];
+
+
 
 	/* Create VG by initializing identity matrix and then using VG[i,j] = V[i,j] * G[j] */
 	LapackMat VG = LapackMat(G0_part.size());
-	for (int row{ 0 }; row < G0_part.size(); row++)
+	for (int column{ 0 }; column < G0_part.size(); column++)
 	{
-		for (int column{ 0 }; column < G0_part.size(); column++)
+		for (int row{ 0 }; row < G0_part.size(); row++)
 		{
-			VG.setElement(row, column, V.getElement(row, column) * G0_part[column] );
+			VG.setElement(row, column, V.getElement(row, column) * G0_part[column] * 2.0 * mu);
 		}
 	}
+
+	std::cout << " \n     This is VG: \n";
+	VG.print();
+	std::cout << "     VG ends here. \n \n";
 
 	return VG;
 }
@@ -118,10 +132,6 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) 
 {
 	LapackMat VG = setup_VG_kernel(NN_channel, key, V, k, w, k0);
-
-	std::cout << "VG:\n";
-	VG.print();
-	std::cout << std::endl;
 
 	LapackMat identity = LapackMat(VG.width);
 	LapackMat constants_matrix = (2.0 / constants::pi) * identity;

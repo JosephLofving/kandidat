@@ -9,7 +9,7 @@ int main() {
     std::map<std::string, std::vector<QuantumState> > channels = setup_NN_channels(base);
 	printChannels(channels);
 
-	int N{ 5 };
+	int N{ 3 };
 	double scale{ 100 };
 
 	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
@@ -30,6 +30,10 @@ int main() {
 	// std::cout<<V_matrix.getElement(10,10);
 
 	//V_matrix.print();
+
+
+
+
 
 	double k0 = get_k0(channel, Tlab);
 	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
