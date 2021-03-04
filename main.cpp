@@ -8,7 +8,7 @@ int main() {
     std::map<std::string, std::vector<QuantumState> > channels = setup_NN_channels(base);
 	printChannels(channels);
 
-	int N{ 5 };
+	int N{ 3 };
 	double scale{ 100 };
 
 	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
