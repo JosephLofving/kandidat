@@ -101,30 +101,31 @@ std::cout << N << "\n" << number_of_blocks << "\n" << N_channel << "\n";
 	/* Copy G0 up to (N_channel-1):th element */
 	double mu{ get_reduced_mass(NN_channel) };
 	std::vector<std::complex<double>> G0_part(N_channel);
-	for (int index{ 0 }; index < N_channel; index++) { G0_part[index] = G0[index]; } // * 2.0 * mu 
+	for (int index{ 0 }; index < N_channel; index++) { G0_part[index] = G0[index] * 2.0 * mu; } // * 2.0 * mu 
 
 std::cout << "mu and G0[1] \n";
 std::cout << mu << "\n";
-std::cout << G0_part[1] \n;
+std::cout << G0_part[1] << "\n";
 
 
 
 	/* Create VG by initializing identity matrix and then using VG[i,j] = V[i,j] * G[j] */
 	LapackMat VG = LapackMat(G0_part.size());
 
-	std::cout << G0_part.size()
+std::cout << G0_part.size();
 
 	for (int column{ 0 }; column < G0_part.size(); column++)
 	{
 		for (int row{ 0 }; row < G0_part.size(); row++)
 		{
-			VG.setElement(row, column, V.getElement(row, column) * G0_part[column] * 2.0 * mu);
+			VG.setElement(row, column, V.getElement(row, column) * G0_part[column]);
+std::cout << V.getElement(row, column) << " ";
 		}
 	}
 
-	std::cout << " \n     This is VG: \n";
+	std::cout << "\n     This is VG:\n";
 	VG.print();
-	std::cout << "     VG ends here. \n \n";
+	std::cout << "     VG ends here\n";
 
 	return VG;
 }

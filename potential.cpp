@@ -40,23 +40,17 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
 
     for (QuantumState state : channel){
 
-    
         int L = state.state["l"];
         int S = state.state["s"];
         int J = state.state["j"];
         int T = state.state["t"];
         int Tz = state.state["tz"];
-    
-
-
 
         double temp =5;
 
         potential_class_ptr->V(temp, temp, coupled, S, J, T, Tz, V_array);
 
         std::cout <<"V(5)" << V_array[0];
-
-       // i python fås -7.140916824386738e-06
     
 
     /* Define the 1S0 partial-wave quantum numbers 
