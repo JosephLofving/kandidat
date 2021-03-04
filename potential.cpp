@@ -46,12 +46,6 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
         int T = state.state["t"];
         int Tz = state.state["tz"];
 
-        double temp =5;
-
-        potential_class_ptr->V(temp, temp, coupled, S, J, T, Tz, V_array);
-
-        std::cout <<"V(5)" << V_array[0];
-    
 
     /* Define the 1S0 partial-wave quantum numbers 
     int L = 0; // This argument is actually redundant due to a boolaen "coupled" we use later (which you may see when you compile this program)
@@ -91,7 +85,7 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
     for (int p_in = 0; p_in < p.size(); p_in++) {
         for (int p_o = 0; p_o < p.size(); p_o++) {
             potential_class_ptr->V(p[p_in], p[p_o], coupled, S, J, T, Tz, V_array);
-            V_matrix.setElement(p_in,p_o,V_array[0]);
+            V_matrix.setElement(p_in,p_o,constants::pi/2.0*V_array[0]);
         }
     }
   }
