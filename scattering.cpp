@@ -193,7 +193,6 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 	double factor{ 2 * mu * k0 }; 
 	int N{ T.width };
 
-	std::complex<double> complexOne(1);
 	if (number_of_blocks > 1) // if coupled 
 	{
 		N = static_cast<int>( (N - 2) / 2);				// WHY?
@@ -203,8 +202,8 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 
 		/* Blatt - Biedenharn(BB) convention */
 		std::complex<double> twoEpsilonJ_BB{ std::atan(2.0 * T12 / (T11 - T22)) };
-		std::complex<double> delta_plus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) + I * factor * (2.0 * T12) / std::sin(twoEpsilonJ_BB)) };
-		std::complex<double> delta_minus_BB{ -0.5 * I * std::log(complexOne - I * factor * (T11 + T22) - I * factor * (2.0 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_plus_BB{ -0.5 * I * std::log(1.0 - I * factor * (T11 + T22) + I * factor * (2.0 * T12) / std::sin(twoEpsilonJ_BB)) };
+		std::complex<double> delta_minus_BB{ -0.5 * I * std::log(1.0 - I * factor * (T11 + T22) - I * factor * (2.0 * T12) / std::sin(twoEpsilonJ_BB)) };
 
 		std::vector<std::complex<double>> phases_append{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) };
 
@@ -219,7 +218,7 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 	{
 		N -= 1;
 		std::complex<double> T_element = T.getElement(N, N);
-		std::complex<double> Z = complexOne - factor * 2 * I * T_element;
+		std::complex<double> Z = 1.0 - factor * 2 * I * T_element;
 		std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
 
 		phases.push_back(delta);
