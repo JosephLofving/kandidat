@@ -22,8 +22,9 @@
 
 
 
-inline constexpr std::complex<double> I{ (0.0,1.0) }; // Temporary way to get imaginary unit in this file
+inline constexpr std::complex<double> I(0.0,1.0); // Temporary way to get imaginary unit in this file
 
+//std::complex<double> I(0,1);
 
 /* To get the reduced mass, check the isospin channel to determine the type of scattering */
 double get_reduced_mass(std::vector<QuantumState> channel)
@@ -59,9 +60,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	}
 	
 	D[N] = - sum - pi_over_two * I * k0;
-std::cout << "\n D[n] is " << D[N] << "\n";
 	D[2 *( N + 1) - 1] = D[N];
-std::cout << "k0 is: " << k0;
 	
 	return D;
 }
