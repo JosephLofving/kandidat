@@ -58,12 +58,8 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 		
 		sum += w[ind] * pow(k0, 2) / (pow(k0, 2) - pow(k[ind], 2));          // Use in D[0]
 	}
-
-
-	std::cout << "pi/2: " << pi_over_two << std::endl;
 	
 	D[N] = - sum - pi_over_two * I * k0;
-	std::cout << "\n TEST\n" << 1;
 	D[2 *( N + 1) - 1] = D[N];
 	
 
@@ -109,43 +105,22 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 	int N_channel = static_cast<int>(std::sqrt(number_of_blocks) * (N + 1)); // If coupled, use second half of G0
 	std::vector<std::complex<double>> G0{ setup_G0_vector(k, w, k0) };		 // G0 has dimension N+1 here, as opposed to Python code
 
-	std::cout << "G0:" << std::endl;
-	for (std::vector<std::complex<double>>::const_iterator i = G0.begin(); i != G0.end(); ++i) { //print(phase)
-			std::cout << *i << ' ';
-		}
-	std::cout << std::endl;
-
-//std::cout << "N, number_of_blocks and N_channel";
-//std::cout << N << "\n" << number_of_blocks << "\n" << N_channel << "\n";
-
 	/* Copy G0 up to (N_channel-1):th element */
 	double mu{ get_reduced_mass(NN_channel) };
 	std::vector<std::complex<double>> G0_part(N_channel);
 	for (int index{ 0 }; index < N_channel; index++) { G0_part[index] = G0[index] * 2.0 * mu; } // * 2.0 * mu 
 
-//std::cout << "mu and G0[1] \n";
-//std::cout << mu << "\n";
-//std::cout << G0_part[1] << "\n";
-
-
 
 	/* Create VG by initializing identity matrix and then using VG[i,j] = V[i,j] * G[j] */
 	LapackMat VG = LapackMat(G0_part.size());
-
-//std::cout << G0_part.size();
 
 	for (int row{ 0 }; row < G0_part.size(); row++)
 	{
 		for (int column{ 0 }; column < G0_part.size(); column++)
 		{
 			VG.setElement(row, column, V.getElement(row, column) * G0_part[column]);
-//std::cout << V.getElement(row, column) << " ";
 		}
 	}
-
-//std::cout << "\n     This is VG:\n";
-//VG.print();
-//std::cout << "     VG ends here\n";
 
 	return VG;
 }
@@ -221,7 +196,7 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 		std::complex<double> T_element = T.getElement(N, N);
 		std::complex<double> Z = 1.0 - factor * 2 * I * T_element;
 		std::complex<double> delta{ (-0.5 * I) * std::log(Z) * constants::rad2deg };
-
+     
 		phases.push_back(delta);
 //std::cout << "\nDELTA: " << delta << "\n";
 	}
