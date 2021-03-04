@@ -31,11 +31,18 @@ int main() {
 
 	// std::cout<<V_matrix.getElement(10,10);
 
-	std::cout << "V_matrix" << std::endl;
-	V_matrix.print();
+	// std::cout << "V_matrix" << std::endl;
+	// V_matrix.print();
 
 
 	double k0 = get_k0(channel, Tlab);
+
+	std::cout << "k0: " << k0 << std::endl;
+
+	// for (std::vector<double>::const_iterator i = w.begin(); i != w.end(); ++i) { //print(phase)
+	// 	std::cout << *i << ' ';
+	// }
+
 	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
 	std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
 	for (auto i = phase.begin(); i != phase.end(); ++i) { // former type for i:   std::vector<std::complex<double>>::const_iterator
@@ -44,6 +51,7 @@ int main() {
 	std::cout << std::endl;
 	std::cout << "\nThe code ran successfully :)\n";
 
+	std::cout << "--- T-matrisen ---" << std::endl;
 	T.print();
 
 	return 0;

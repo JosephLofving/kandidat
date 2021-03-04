@@ -49,7 +49,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	std::vector<std::complex<double>> D(2* (N + 1)); // Setup D vector, size N + 1
 
     /* Equation (2.22) is used to set elements in D. */
-	double pi_over_two{ (2.0 / constants::pi) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
+	double pi_over_two{ (constants::pi / 2.0) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
 	double sum{}; // for D[0]
 	for (int ind{ 0 }; ind < N; ind++)
 	{
@@ -58,11 +58,24 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 		
 		sum += w[ind] * pow(k0, 2) / (pow(k0, 2) - pow(k[ind], 2));          // Use in D[0]
 	}
+
+
+	std::cout << "pi/2: " << pi_over_two << std::endl;
 	
 	D[N] = - sum - pi_over_two * I * k0;
 	std::cout << "\n TEST\n" << 1;
 	D[2 *( N + 1) - 1] = D[N];
 	
+
+
+    // D[0:N] = w*p**2/(ko**2 - p**2)		# Gaussian integral
+
+    // D[N]  = -np.sum( w/(ko**2 - p**2 ) )*ko**2 	# Principal value
+    // D[N] -= 1j*ko * (np.pi/2)
+
+
+
+
 	return D;
 }
 
@@ -95,6 +108,12 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 	int number_of_blocks = NN_channel.size();								 // Is either 1 (uncoupled) or 4 (coupled)
 	int N_channel = static_cast<int>(std::sqrt(number_of_blocks) * (N + 1)); // If coupled, use second half of G0
 	std::vector<std::complex<double>> G0{ setup_G0_vector(k, w, k0) };		 // G0 has dimension N+1 here, as opposed to Python code
+
+	std::cout << "G0:" << std::endl;
+	for (std::vector<std::complex<double>>::const_iterator i = G0.begin(); i != G0.end(); ++i) { //print(phase)
+			std::cout << *i << ' ';
+		}
+	std::cout << std::endl;
 
 //std::cout << "N, number_of_blocks and N_channel";
 //std::cout << N << "\n" << number_of_blocks << "\n" << N_channel << "\n";
@@ -143,7 +162,6 @@ LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, 
 	LapackMat identity = LapackMat(VG.width);
 	LapackMat two_over_pi_VG = (2.0 / constants::pi) * VG;
 	LapackMat IVG = identity - two_over_pi_VG;
-	//LapackMat LHS = IVG*VG;
 
 	LapackMat T = solveMatrixEq(IVG, V); // IVG*T = V
 
