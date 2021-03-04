@@ -33,7 +33,7 @@ double get_reduced_mass(std::vector<QuantumState> channel)
 		return constants::proton_mass / 2;
 	else if (tz_channel == 0) // Proton-neutron scattering
 		return constants::nucleon_reduced_mass;
-	else if (tz_channel == 1) // Peutron-neutron scattering
+	else if (tz_channel == 1) // Neutron-neutron scattering
 		return constants::neutron_mass / 2;
 	std::cout << "Incorrect tz_channel";
 	abort();
@@ -52,15 +52,34 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 	double sum{}; // for D[0]
 	for (int ind{ 0 }; ind < N; ind++)
 	{
-		D[ind + 1] = -pre_factor * pow(k[ind], 2) * w[ind] / (pow(k0, 2) - pow(k[ind], 2));   // Define D[1,N] with k and w vectors
+		D[ind] = -pre_factor * pow(k[ind], 2) * w[ind] / (pow(k0, 2) - pow(k[ind], 2));   // Define D[1,N] with k and w vectors
 		sum += w[ind] / (k0 * k0 - k[ind] * k[ind]);										  // Use in D[0]
 	}
 	
-	D[0] = pre_factor * pow(k0, 2) * sum + I * k0;
+	D[N] = pre_factor * pow(k0, 2) * sum + I * k0;
 	
 	return D;
 }
 
+///* k is quadrature points (was "p" in python), w is weights, k0 is on-shell-point. */
+//std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::vector<double> w, double k0)
+//{
+//	int N = k.size();							// k has N elements k_j for j = 1,...,N
+//	std::vector<std::complex<double>> D(N + 1); // Setup D vector, size N + 1
+//
+//	/* Equation (2.22) is used to set elements in D. */
+//	double pre_factor{ (2.0 / constants::pi) }; // Later we will also multiply by 2.0 * mu (in setup_VG_kernel)
+//	double sum{}; // for D[0]
+//	for (int ind{ 0 }; ind < N; ind++)
+//	{
+//		D[ind + 1] = -pre_factor * pow(k[ind], 2) * w[ind] / (pow(k0, 2) - pow(k[ind], 2));   // Define D[1,N] with k and w vectors
+//		sum += w[ind] / (k0 * k0 - k[ind] * k[ind]);										  // Use in D[0]
+//	}
+//
+//	D[0] = pre_factor * pow(k0, 2) * sum + I * k0;
+//
+//	return D;
+//}
 
 
 LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)
