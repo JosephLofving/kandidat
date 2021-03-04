@@ -56,10 +56,11 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<double> k, std::ve
 		D[ind] = w[ind] * pow(k[ind], 2) / (pow(k0, 2) - pow(k[ind], 2));   // Define D[1,N] with k and w vectors
 		D[ind + (N+1)] = D[ind];
 		
-		sum += w[ind] * pow(k0, 2) / (pow(k0, 2) - pow(k[ind], 2));										  // Use in D[0]
+		sum += w[ind] * pow(k0, 2) / (pow(k0, 2) - pow(k[ind], 2));          // Use in D[0]
 	}
 	
 	D[N] = - sum - pi_over_two * I * k0;
+	std::cout << "\n TEST\n" << 1;
 	D[2 *( N + 1) - 1] = D[N];
 	
 	return D;
@@ -135,15 +136,16 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key,
 /* Use equation ??? */
 LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) 
 {
+	std::cout << "Solving for the complex T-matrix in channel " << key << ":";
+
 	LapackMat VG = setup_VG_kernel(NN_channel, key, V, k, w, k0);
 
 	LapackMat identity = LapackMat(VG.width);
-	LapackMat constants_matrix = (2.0 / constants::pi) * identity;
-	LapackMat IVG = identity - constants_matrix;
-	LapackMat LHS = IVG*VG;
+	LapackMat two_over_pi_VG = (2.0 / constants::pi) * VG;
+	LapackMat IVG = identity - two_over_pi_VG;
+	//LapackMat LHS = IVG*VG;
 
-
-	LapackMat T = solveMatrixEq(LHS, V); // IVG*T = V
+	LapackMat T = solveMatrixEq(IVG, V); // IVG*T = V
 
 	return T;
 }
@@ -153,10 +155,10 @@ LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, 
 /* TODO: Explain theory for this. */
 std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB) 
 {
-	std::complex<double> twoEpsilonJ = asin(sin(twoEpsilonJBB) * sin(deltaMinusBB - deltaPlusBB));
+	std::complex<double> twoEpsilonJ = std::asin(std::sin(twoEpsilonJBB) * std::sin(deltaMinusBB - deltaPlusBB));
 
-	std::complex<double> deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB))) * constants::rad2deg;
-	std::complex<double> deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - asin(tan(twoEpsilonJ) / tan(twoEpsilonJBB))) * constants::rad2deg;
+	std::complex<double> deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
+	std::complex<double> deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
 	std::complex<double> epsilon = 0.5 * twoEpsilonJ * constants::rad2deg;
 
 	return { deltaMinus, deltaPlus, epsilon };
