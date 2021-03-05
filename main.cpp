@@ -16,8 +16,8 @@ int main() {
 
 	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
 	std::vector<QuantumState> channel = channels[key]; 
-	if(channel.size()==0){
-		std::cout <<"Unvalid key";
+	if (channel.size()==0) {
+		std::cout << "Invalid key";
 		abort();
 	}
 	printStates(channel);
