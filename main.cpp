@@ -16,6 +16,10 @@ int main() {
 
 	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
 	std::vector<QuantumState> channel = channels[key]; 
+	if(channel.size()==0){
+		std::cout <<"Unvalid key"
+		abort();
+	}
 	printStates(channel);
 
 	double Tlab = 100.0;
@@ -25,6 +29,7 @@ int main() {
 	double k0 = get_k0(channel, Tlab);
 
 	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
+	//T.print();
 
 	std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
 
