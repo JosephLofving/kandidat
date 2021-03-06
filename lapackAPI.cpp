@@ -5,10 +5,10 @@
    @param height The height of the matrix (the amount of rows)
    @param contents The contents of the vector in column major order
 */
-void LapackMat::init(int width, int height, std::vector<std::complex<double>> contents) {
-		width = width;
-		height = height;
-		contents = contents;
+void LapackMat::init(int x, int y, std::vector<std::complex<double>> z) {
+		width = x;
+		height = y;
+		contents = z;
 }
 
 /* Default constructor.
@@ -16,25 +16,25 @@ void LapackMat::init(int width, int height, std::vector<std::complex<double>> co
    @param height The height of the matrix (the amount of rows)
    @param contents The contents of the vector in column major order
 */
-LapackMat::LapackMat(int width, int height, std::vector<std::complex<double>> contents) {
-	LapackMat::init(width, height, contents);
+LapackMat::LapackMat(int x, int y, std::vector<std::complex<double>> z) {
+	LapackMat::init(x, y, z);
 }
 
 /* Zero-matrix constructor. Creates a zero-filled matrix with given dimensions.
    @param @param width The width of the matrix (the amount of columns)
    @param height The height of the matrix (the amount of rows)
 */
-LapackMat::LapackMat(int width, int height) {
-	LapackMat::init(width, height, std::vector<std::complex<double>>(width*height, 0.0));
+LapackMat::LapackMat(int x, int y) {
+	LapackMat::init(x, y, std::vector<std::complex<double>>(x*y, 0.0));
 }
 
 /* Identity matrix constructor. Creates an identity matrix with given size.
    @param @param size The size (width and height, which are equal) of the matrix.
 */
-LapackMat::LapackMat(int size) {
-	LapackMat::init(size, size, std::vector<std::complex<double>>(size*size, 0.0)); // Creates a zero-filled matrix with given size.
+LapackMat::LapackMat(int x) {
+	LapackMat::init(x, x, std::vector<std::complex<double>>(x*x, 0.0)); // Creates a zero-filled matrix with given size.
 	
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < x; i++) {
 		this->setElement(i, i, 1.0); // Sets all diagonal elements to 1.0.
 	}
 }
@@ -78,9 +78,10 @@ void LapackMat::setElement(int row, int col, std::complex<double> value) {
 void LapackMat::print() {
 	std::cout.precision(2); // Amount of decimals to be printed.
 	std::cout << std::scientific; // Ensures scientific notation.
-	for (int row = 0; row < height; row++) {
-		for (int col = 0; col < width; col++) {
-			std::complex<double> element = getElement(row, col);
+
+	for (int currentRow = 0; currentRow < height; currentRow++) {
+		for (int currentCol = 0; currentCol < width; currentCol++) {
+			std::complex<double> element = getElement(currentRow, currentCol);
 			std::cout << element.real() << " + " << element.imag() << "i \t"; // Prints the real and imaginary part and aligns to terminal tabs
     	}
     	std::cout << std::endl; // Line break for new row.
