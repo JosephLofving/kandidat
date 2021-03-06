@@ -13,12 +13,13 @@ public:
 	int height; // Amount of rows in matrix
 	std::vector<std::complex<double>> contents; // Matrix contents in column-major order
 
-	LapackMat(int x, int y, std::vector<std::complex<double>> z); // Default constructor
-	LapackMat(int x, int y); // Creates a matrix with given dimensions filled with zeroes
-	LapackMat(int x); // Creates an identity matrix with given dimension
+	LapackMat(int width, int height, std::vector<std::complex<double>> contents); // Default constructor. Note that contents is in column major order
+	LapackMat(int width, int height); // Creates a matrix with given dimensions filled with zeroes
+	LapackMat(int size); // Creates an identity matrix with given dimension
 
 	std::complex<double> getElement(int row, int col); // Returns the element at given indices
 	void setElement(int row, int col, std::complex<double> value); // Sets the element at given indices
+
 	void print(); // Prints the matrix
 
 	friend LapackMat operator+(LapackMat &A, LapackMat &B);  // Matrix addition. A+B
@@ -28,7 +29,7 @@ public:
 	friend LapackMat operator*(LapackMat &A, LapackMat &B);  // Matrix multiplication. A*B
 
 private:
-	void init(int x, int y, std::vector<std::complex<double>> z); // Skapas separat från konstruktorerna för att göra dem mer koncisa
+	void init(int width, int height, std::vector<std::complex<double>> contents); // Function called by all constructors. Avoids duplicate code
 };
 
 struct Two_vectors { // Struct for storing two related vectors
