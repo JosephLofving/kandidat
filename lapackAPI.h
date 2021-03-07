@@ -32,7 +32,7 @@ private:
 	void init(int x, int y, std::vector<std::complex<double>> z); // Function called by all constructors. Avoids duplicate code
 };
 
-struct Two_vectors { // Struct for storing two related vectors
+struct TwoVectors { // Struct for storing two related vectors
 	std::vector<double> v1;
 	std::vector<double> v2;
 };
