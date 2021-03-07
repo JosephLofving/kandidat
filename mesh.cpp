@@ -12,7 +12,7 @@
 #include <vector>
 #include <algorithm>
 #include <list>
-#include <numeric> //Is needed for std::iota
+#include <numeric> //is needed for std::iota
 #include <random>
 
 
@@ -144,32 +144,33 @@ TwoVectors leggauss(int N) {
 		std::cout << "Number of quadrature points must be > 2\n";
 		abort();
 	}
+
+	/*
+		We wish to obtain the N roots to a Legendre polynomial of degree N.
+		These are our quadrature points x. x.size() = N
+	*/
 	//first approximation of roots. We use the fact that the companion
 	//matrix is symmetric in this case in order to obtain better zeros.
 	std::vector<double> c(N+1, 0);
-	c[N] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
-	LapackMat* m = legcompanion(N); //se legcompanion
+	c[N] = 1; //c = (0,0,0,...,0,1), c.size() = N+1
+	LapackMat* m = legcompanion(N); //see legcompanion
 	std::vector<double> x = eigenValues(*m);
 
-	//improve roots by one application of Newton
-	std::vector<double> dy = legval(x, c);
-	std::vector<double> df = legval(x, legder(c));
-
+	//We improve the roots by using one application of Newton's method
+	std::vector<double> function = legval(x, c);
+	std::vector<double> derivative = legval(x, legder(c));
 	for (int i = 0; i < x.size(); ++i) {
-		x[i] -= dy[i] / df[i];
+		x[i] -= function[i] / derivative[i];
 	}
 
-	//compute the weights. We scale the factor to avoid possible numerical overflow.
-	std::vector<double> cRemovedFirst = vecRemoveFirst(c); //c with the first element removed
-	std::vector<double> fm = legval(x, cRemovedFirst);
-	std::vector<double> w(fm.size());
-	
-	double fmAbsmax = absmax(fm);
-	double dfAbsmax = absmax(df);
-	for (int i = 0; i < fm.size(); ++i) {
-		fm[i] /= fmAbsmax;
-		df[i] /= dfAbsmax;
-		w[i] = 1 / (fm[i] * df[i]);
+	//Now we compute the weights. We scale the factor to avoid possible numerical overflow.
+	std::vector<double> function2 = legval(x, vecRemoveFirst(c));
+	std::vector<double> w(N);
+	//std::cout << "AAAAAAAAAAAAAAAAAAA:  " << w.size() << "\n";
+
+	double constant = absmax(function2) * absmax(derivative);
+	for (int i = 0; i < function2.size(); ++i) {
+		w[i] = constant / (function2[i] * derivative[i]);
 	}
 
 	//for Legendre we can also symmetrize
@@ -180,7 +181,7 @@ TwoVectors leggauss(int N) {
 		x[i] = (x[i] - xReverse[i]) / 2;
 	}
 
-	//vecScale w to get the right value
+	//Scale w to get the right value
 	double wSum = vecSum(w);
 	for (int i = 0; i < w.size(); ++i) {
 		w[i] *= 2 / wSum;
@@ -192,6 +193,12 @@ TwoVectors leggauss(int N) {
 
 
 //c.size >= 3 ty.
+/*
+	Evaluates the Legendre series p(x) = c[0]L_0(x) + c[1]L_1(x) + ... c[N-1]L_N-1(x)
+	at points x
+	@param x: Points to evaluate series at; c: coefficients
+	@return The evaluated values p(x)
+*/
 std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 	int ND = c.size();
 	int nd = ND*1.0; // Double kanske är onödigt
@@ -221,6 +228,12 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 	return elementwiseAdd(c0, elementwiseMult(c1, x)); // c0 + c1*x
 }
 
+/*
+	Differentiates a Legendre series with coefficients c.
+	Note that the differentiation differens from normal power series differentiation.
+	@param Coefficients c of a Legendre series
+	@return Coefficients of the differentiated Legendre series.
+*/
 std::vector<double> legder(std::vector<double> c) {
 	int N = c.size() - 1; //Samma N som i leggauss
 	std::vector<double> der(c.size());
@@ -239,13 +252,13 @@ std::vector<double> legder(std::vector<double> c) {
 
 //hjälpreda till leggauss
 LapackMat* legcompanion(int N) {
-	std::vector<double> scl = iota(0, N);
+	std::vector<double> scl = iota(0, N); //scl = (0,1,2,...,N-1)
 
 	for (int i = 0; i < scl.size(); i++) {
 		scl[i] = 1/sqrt(2 * scl[i] + 1);
 	}
 
-	std::vector<double> top = elementwiseMult(elementwiseMult(vecRemoveLast(scl), vecRemoveFirst(scl)), iota(1, N - 1));
+	std::vector<double> top = elementwiseMult(elementwiseMult(vecRemoveLast(scl), vecRemoveFirst(scl)), iota(1, N - 1)); //iota(1, N - 1) = (1,2,3,...,N-1)
 	
 	LapackMat* mat = new LapackMat(N, N); //Matrix mat = zeros(N*N)
 	for (int i = 0; i < N-1; i++) {
