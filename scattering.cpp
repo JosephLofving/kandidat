@@ -79,6 +79,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<QuantumState> NN_c
 
 LapackMat setup_VG_kernel(std::vector<QuantumState> NN_channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) {
 	std::cout << "Setting up G0(k0) in channel " << key << std::endl;
+	std::cout << "IN SCATTERING BRANCH";
 	std::vector<std::complex<double>> G0{ setup_G0_vector(NN_channel, k, w, k0) };
 
 	/* If coupled, append G0 to itself to facilitate calculations. This means the second half of G0 is a copy of the first. */
