@@ -43,7 +43,6 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<QuantumState> chan
 }
 
 
-
 LapackMat setup_VG_kernel(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) {
 	std::cout << "Setting up G0(k0) in channel " << key << std::endl;
 	std::vector<std::complex<double>> G0 = setup_G0_vector(channel, k, w, k0);
@@ -66,7 +65,6 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> channel, std::string key, La
 }
 
 
-
 /* Equation (2.24): [F][T] = [V]. */
 LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)  {
 	std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
@@ -79,7 +77,6 @@ LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, Lap
 
 	return T;
 }
-
 
 
 /* TODO: Explain theory for this. */
