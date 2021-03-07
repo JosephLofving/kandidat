@@ -1,6 +1,7 @@
 #include "constants.h"	// namespace constants
 #include "quantumStates.h"
 #include "lapackAPI.h"
+#include "scattering.h"
 
 #include <complex>
 #include <tuple>
@@ -134,8 +135,7 @@ LapackMat computeTMatrix(std::vector<QuantumState> NN_channel, std::string key, 
 	LapackMat VG = setup_VG_kernel(NN_channel, key, V, k, w, k0);
 
 	LapackMat identity = LapackMat(VG.width);
-	LapackMat two_over_pi_VG = (2.0 / constants::pi) * VG;
-	LapackMat IVG = identity - two_over_pi_VG;
+	LapackMat IVG = identity - (( std::complex<double>(2.0 / constants::pi) ) * VG);
 
 	LapackMat T = solveMatrixEq(IVG, V); // IVG*T = V
 

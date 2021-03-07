@@ -22,11 +22,11 @@ public:
 
 	void print(); // Prints the matrix
 
-	friend LapackMat operator+(LapackMat &A, LapackMat &B);  // Matrix addition. A+B
-	friend LapackMat operator-(LapackMat &A, LapackMat &B);  // Matrix subtraction. A-B
-	friend LapackMat operator*(std::complex<double> scalar, LapackMat &A); // Scalar multiplication. scalar*A
-	friend LapackMat operator*(LapackMat &A, std::complex<double> scalar); // Scalar multiplication. A*scalar
-	friend LapackMat operator*(LapackMat &A, LapackMat &B);  // Matrix multiplication. A*B
+	friend LapackMat operator+(LapackMat A, LapackMat B);  // Matrix addition. A+B
+	friend LapackMat operator-(LapackMat A, LapackMat B);  // Matrix subtraction. A-B
+	friend LapackMat operator*(std::complex<double> scalar, LapackMat A); // Scalar multiplication. scalar*A
+	friend LapackMat operator*(LapackMat A, std::complex<double> scalar); // Scalar multiplication. A*scalar
+	friend LapackMat operator*(LapackMat A, LapackMat B);  // Matrix multiplication. A*B
 
 private:
 	void init(int x, int y, std::vector<std::complex<double>> z); // Function called by all constructors. Avoids duplicate code
