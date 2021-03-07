@@ -1,4 +1,8 @@
-﻿//#include <boost/math/quadrature/gauss.hpp> //vi skriver den sj�lva ist�let
+﻿/*
+	This class creates the weights and quadrature points for the Gauss-Legendre quadrature.
+	Use gaussLegendreInfMesh for improper integrals and gaussLegendreLineMesh for integrals on a finite interval.
+*/
+
 #include "constants.h"
 #include "lapackAPI.h"
 #include "mesh.h"
@@ -8,11 +12,16 @@
 #include <vector>
 #include <algorithm>
 #include <list>
-#include <numeric> //beh�vs f�r std::iota
+#include <numeric> //Is needed for std::iota
 #include <random>
 
 
-std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double> v2) {
+/*
+	Multiplies each corresponding element from the two input vectors.
+	@param v1, v2: two vectors of the same length
+	@return the vector with multiplied elements
+*/
+std::vector<double> elementwiseMult(std::vector<double> v1, std::vector<double> v2) {
 	std::vector<double> vec(v1.size(), 0);
 
 	for (int i = 0; i < v1.size(); i++) {
@@ -21,7 +30,12 @@ std::vector<double> elementwise_mult(std::vector<double> v1, std::vector<double>
 	return vec;
 }
 
-std::vector<double> elementwise_add(std::vector<double> v1, std::vector<double> v2) {
+/*
+	Adds each corresponding element from the two input vectors.
+	@param v1, v2: two vectors of the same length
+	@return the vector with added elements
+*/
+std::vector<double> elementwiseAdd(std::vector<double> v1, std::vector<double> v2) {
 	std::vector<double> vec(v1.size(), 0);
 
 	for (int i = 0; i < v1.size(); i++) {
@@ -30,37 +44,111 @@ std::vector<double> elementwise_add(std::vector<double> v1, std::vector<double> 
 	return vec;
 }
 
-//först opererar den abs() på alla vektorns element, och sen returnar den det största av dessa element.
-double absmax(std::vector<double> vec) {
-	std::vector<double> vec1(vec.size(), 0);
-	for (int i = 0; i < vec.size(); ++i) {
-		vec1[i] = std::abs(vec[i]);
+/*
+	Reverses a vector
+	@param v1, a vector
+	@return The reversed vector
+*/
+std::vector<double> vecReverse(std::vector<double> v1) {
+	std::reverse(v1.begin(), v1.end());
+	return v1;
+}
+
+/*
+	Sums all the elements of a vector
+	@param v1, a vector
+	@return The sum
+*/
+double vecSum(std::vector<double> v1) {
+	double sum = 0;
+	std::for_each(v1.begin(), v1.end(), [&](double v) {
+		sum += v;
+		});
+	return sum;
+}
+
+/*
+	Multiplies each vector element with a constant
+	@param v1, a vector; a, a constant
+	@return The vecScaled vector
+*/
+std::vector<double> vecScale(double a, std::vector<double> v1) {
+	std::vector<double> w(v1.size());
+	for (int i = 0; i < v1.size(); i++) {
+		w[i] = a * v1[i];
+	}
+
+	return w;
+}
+
+/*
+	Removes the first vector element, the vector is now 1 shorter
+	@param v1, a vector
+	@return A 1 element shorter vector
+*/
+std::vector<double> vecRemoveFirst(std::vector<double> v1) {
+	v1.erase(v1.begin());
+	return v1;
+}
+
+/*
+	Removes the last vector element, the vector is now 1 shorter
+	@param v1, a vector
+	@return A 1 element shorter vector
+*/
+std::vector<double> vecRemoveLast(std::vector<double> v1) {
+	v1.pop_back();
+	return v1;
+}
+
+/*
+	Creates a vector of size N with elements (a, a+1, a+2,..., N+a-2, N+a-1).
+	@param a, the starting value; N, the vector size.
+	@return A vector with N elements: (a, a+1, a+2,..., N+a-2, N+a-1).
+*/
+std::vector<double> iota(int a, int N) {
+	std::vector<double> v(N);
+	std::iota(std::begin(v), std::end(v), a);
+	return v;
+}
+
+/*
+	Finds the largest element in a vector according to its absolute size.
+	@param v1: a vector
+	@return The absolute-largest element
+*/
+double absmax(std::vector<double> v1) {
+	std::vector<double> v(v1.size(), 0);
+	for (int i = 0; i < v1.size(); ++i) {
+		v[i] = std::abs(v1[i]);
 	}
 
 	double max = 0;
-	for (int j{ 0 }; j < vec1.size(); j++) //max(vec1)
+	for (int j{ 0 }; j < v.size(); j++)
 	{
-		if (vec1[j] > max) {
-			max = vec1[j];
+		if (v[j] > max) {
+			max = v[j];
 		}
 	}
 	return max;
 }
 
-//Gauss-Legendre quadrature
-//Computes the sample pointsand weights for Gauss - Legendre quadrature.
-//These sample points and weights will correctly integrate polynomials of
-//degree : math:`2*deg - 1` or less over the interval : math:`[ - 1, 1]` with
-//the weight function : math:`f(x) = 1`.
-Two_vectors leggauss(int N) {
+/*
+	Computes the sample points and weights for Gauss - Legendre quadrature.
+	int_-1^1 f(x)dx = sum_x_n w(x_n)f(x_n)
+	@param int N, the number of quadrature points
+	@returm Two vectors, first one is the quadrature points, second is the weights.
+*/
+TwoVectors leggauss(int N) {
 	if (N < 3) {
-		std::cout << "Index must be > 2\n";
+		std::cout << "Number of quadrature points must be > 2\n";
+		abort();
 	}
-	//first approximation of roots.We use the fact that the companion
+	//first approximation of roots. We use the fact that the companion
 	//matrix is symmetric in this case in order to obtain better zeros.
 	std::vector<double> c(N+1, 0);
 	c[N] = 1; //nu är alltså alla element 0, förutom det sista som är 1.
-	LapackMat* m = legcompanion(c); //se legcompanion
+	LapackMat* m = legcompanion(N); //se legcompanion
 	std::vector<double> x = eigenValues(*m);
 
 	//improve roots by one application of Newton
@@ -72,52 +160,38 @@ Two_vectors leggauss(int N) {
 	}
 
 	//compute the weights. We scale the factor to avoid possible numerical overflow.
-	std::vector<double> c_removedFirst = c;
-	c_removedFirst.erase(c_removedFirst.begin()); //c med första elementet borttaget
-	std::vector<double> fm = legval(x, c_removedFirst);
+	std::vector<double> cRemovedFirst = vecRemoveFirst(c); //c with the first element removed
+	std::vector<double> fm = legval(x, cRemovedFirst);
 	std::vector<double> w(fm.size());
 	
-	double fm_absmax = absmax(fm);
-	double df_absmax = absmax(df);
+	double fmAbsmax = absmax(fm);
+	double dfAbsmax = absmax(df);
 	for (int i = 0; i < fm.size(); ++i) {
-		fm[i] /= fm_absmax;
-		df[i] /= df_absmax;
+		fm[i] /= fmAbsmax;
+		df[i] /= dfAbsmax;
 		w[i] = 1 / (fm[i] * df[i]);
 	}
 
 	//for Legendre we can also symmetrize
-	std::vector<double> w_reverse = w;
-	std::reverse(w_reverse.begin(), w_reverse.end());
-	std::vector<double> x_reverse = x;
-	std::reverse(x_reverse.begin(), x_reverse.end());
+	std::vector<double> wReverse = vecReverse(w);
+	std::vector<double> xReverse = vecReverse(x);
 	for (int i = 0; i < w.size(); ++i) {
-		w[i] = (w[i] + w_reverse[i]) / 2;
-		x[i] = (x[i] - x_reverse[i]) / 2;
+		w[i] = (w[i] + wReverse[i]) / 2;
+		x[i] = (x[i] - xReverse[i]) / 2;
 	}
 
-	//scale w to get the right value
-	double w_sum;
-	std::for_each(w.begin(), w.end(), [&](double v) {
-		w_sum += v;
-		});
+	//vecScale w to get the right value
+	double wSum = vecSum(w);
 	for (int i = 0; i < w.size(); ++i) {
-		w[i] *= 2 / w_sum;
+		w[i] *= 2 / wSum;
 	}
 
-	Two_vectors x_and_w{ x, w };
-	return x_and_w;
+	TwoVectors xAndW{ x, w };
+	return xAndW;
 };
 
-std::vector<double> scale(double a, std::vector<double> v) {
-	std::vector<double> w(v.size());
-	for (int i = 0; i < v.size(); i++) {
-		w[i] = a*v[i];
-	}
 
-	return w;
-}
-
-//c.size > 2 ty.
+//c.size >= 3 ty.
 std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 	int ND = c.size();
 	int nd = ND*1.0; // Double kanske är onödigt
@@ -129,164 +203,102 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 	c0[0] = c[nd-2];
 	c1[0] = c[nd-1];
 
-	for (int i = 3; i < ND + 1; i++) {
+	for (int i = 3; i < ND + 1; ++i) {
 		std::vector<double> tmp = c0;
 		nd -= 1;
 	
 		/* c0 = c[-i] - c1*(nd - 1) / nd
 		 * c1 = tmp + c1*x*(2*nd - 1) / nd */
 		if (i == 3) { // c0 and c1 are effectively scalars for the first iteration
-			c0 = elementwise_add(scale(c[ND-i], identityVector), scale((1.0-nd)/nd, scale(c1[0], identityVector)));
-			c1 = elementwise_add(scale(tmp[0], identityVector), scale((c1[0]*(2.0*nd-1.0))/nd, x));
+			c0 = vecScale(c[ND-i] + c1[0] * (1.0 - nd) / nd, identityVector);
+			c1 = elementwiseAdd(vecScale(tmp[0], identityVector), vecScale((c1[0]*(2.0*nd-1.0))/nd, x));
 		} else {
-			c0 = elementwise_add(scale(c[ND-i], identityVector), scale((1.0-nd)/nd, c1));
-			c1 = elementwise_add(tmp, scale((2.0*nd-1.0)/nd, elementwise_mult(c1, x)));
+			c0 = elementwiseAdd(vecScale(c[ND-i], identityVector), vecScale((1.0-nd)/nd, c1));
+			c1 = elementwiseAdd(tmp, vecScale((2.0*nd-1.0)/nd, elementwiseMult(c1, x)));
 		}
 	}
 
-	return elementwise_add(c0, elementwise_mult(c1, x)); // c0 + c1*x
-
-
-	// std::vector<double> c0(x.size());
-	// std::vector<double> c1(x.size());
-
-	// int nd = c.size();
-	// c0[0] = c[nd - 2]; //näst sista elementet i c
-	// c1[0] = c[nd - 1]; //sista elementet i c
-	// for (int i = 3; i < nd + 1; i++) {
-	// 	std::vector<double> tmp = c0;
-	// 	nd -= 1;
-	// 	std::vector<double> c1_times_const(c0.size());
-	// 	std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
-	// 		v = c1[0] * (nd-1) / nd;
-	// 		});
-	// 	c0 = c1_times_const;
-	// 	std::for_each(c0.begin(), c0.end(), [&](double v) {
-	// 		v = c[nd-i] - v;
-	// 		}); //c0 = c[nd - i] - c1_times_const;
-	// 	std::vector<double> c1x = c1;
-	// 	std::for_each(c1_times_const.begin(), c1_times_const.end(), [&](double v) {
-	// 		v = c1[0] * (nd-1) / nd;
-	// 		});
-	// 	c1 = elementwise_add(tmp, c1x);
-		
-	// }
-	// std::vector<double> c1x_2 = elementwise_mult(c1, x);
-	// std::vector<double> vec = elementwise_add(c0, c1x_2);
-	// return vec;
+	return elementwiseAdd(c0, elementwiseMult(c1, x)); // c0 + c1*x
 }
 
 std::vector<double> legder(std::vector<double> c) {
-	//c = np.array(c, ndmin = 1, copy = True)
-	//	if c.dtype.char in '?bBhHiIlLqQpP':
-	//c = c.astype(np.double)
-	//	cnt = pu._deprecate_as_int(m, "the order of derivation")
-	//	iaxis = pu._deprecate_as_int(axis, "the axis")
-	//	if cnt < 0 :
-	//		raise ValueError("The order of derivation must be non-negative")
-	//		iaxis = normalize_axis_index(iaxis, c.ndim)
+	int N = c.size() - 1; //Samma N som i leggauss
+	std::vector<double> der(c.size());
 
-
-	// c = np.moveaxis(c, iaxis, 0)
-
-	int n = c.size();
-	for (int i{ 0 }; i < 1; i++)
+	for (int j = N; j >= 2; j--)
 	{
-		n = n - 1;
-		// der = np.empty((n, ) + c.shape[1:], dtype = c.dtype)
-		std::vector<double> der(c.size());
-		for (int j{ n }; j >= 2; j--)
-		{
-			der[j - 1] = (2 * j - 1) * c[j];
-			c[j - 2] += c[j];
-		}
-		if (n > 1)
-			der[1] = 3 * c[2];	
-		der[0] = c[1];
-		c = der;
-
+		der[j - 1] = (2 * j - 1) * c[j];
+		c[j - 2] += c[j];
 	}
-	// c = np.moveaxis(c, 0, iaxis);
-	return c;
+
+	der[1] = 3 * c[2];	
+	der[0] = c[1];
+
+	return der;
 }
 
 //hjälpreda till leggauss
-LapackMat* legcompanion(std::vector<double> c) {
-	int N = c.size()-1;
+LapackMat* legcompanion(int N) {
+	std::vector<double> scl = iota(0, N);
 
-	LapackMat* mat = new LapackMat(N, N); //Skapar matris mat = zeros(N*N)
-	std::vector<double> scl(N);
-	std::iota(std::begin(scl), std::end(scl), 0); //scl= {0,1,...,N-1}
-	std::for_each(scl.begin(), scl.end(), [](double& v) {v = sqrt(2 * v + 1); }); //scl[i] = sqrt(2*scl[i]+1) forall i
-	std::for_each(scl.begin(), scl.end(), [](double& v) { v = 1 / v; });
+	for (int i = 0; i < scl.size(); i++) {
+		scl[i] = 1/sqrt(2 * scl[i] + 1);
+	}
 
-	std::vector<double> scll(N-1);
-	std::iota(std::begin(scll), std::end(scll), 1); //scll= {1,...,N-1} (börjar på 1, men har denna gång endast N-1 element, till skillnad från scl).
-
-	std::vector<double> scl_removedLast = scl; //scl fast med sista elementet borttaget
-	std::vector<double> scl_removedFirst = scl; //scl fast med första elementet borttaget
-	scl_removedLast.pop_back();
-	scl_removedFirst.erase(scl_removedFirst.begin());
-
-	std::vector<double> scl_prod = elementwise_mult(scl_removedLast, scl_removedFirst); //elementvis produkt mellan dessa
-	std::vector<double> top = elementwise_mult(scl_prod, scll);
+	std::vector<double> top = elementwiseMult(elementwiseMult(vecRemoveLast(scl), vecRemoveFirst(scl)), iota(1, N - 1));
 	
+	LapackMat* mat = new LapackMat(N, N); //Matrix mat = zeros(N*N)
 	for (int i = 0; i < N-1; i++) {
 		mat->setElement(i, i + 1, top[i]);
 		mat->setElement(i + 1, i, top[i]);
 	}
 
 	return mat;
-
 }
 
 
 /* Get quadrature points and weights for an interval [a,b]*/
-Two_vectors gauss_legendre_line_mesh(int N, int a, int b) {
-	Two_vectors X = leggauss(N);
+TwoVectors gaussLegendreLineMesh(int N, int a, int b) {
+	TwoVectors X = leggauss(N);
 	std::vector<double> p = X.v1;
-	std::vector<double> w_prime = X.v2;
+	std::vector<double> wPrime = X.v2;
 
-	/* Translate p and w_prime values for [-1,1] to a general
+	/* Translate p and wPrime values for [-1,1] to a general
 	 * interval [a,b]  for quadrature points k and weights w */
 	std::vector<double> k(p.size(), 0);
 	std::vector<double> w(p.size(), 0);
 	for (int j{ 0 }; j < p.size(); j++)
 	{
 		k[j] = 0.5 * (p[j] + 1) * (b - a) + a;
-		w[j] = w_prime[j] * 0.5 * (b - a);
+		w[j] = wPrime[j] * 0.5 * (b - a);
 	}
 
-	Two_vectors k_and_w{ k, w };
+	TwoVectors kAndW{ k, w };
 
-	return k_and_w;
+	return kAndW;
 }
 
 
 /* This follows equation (2.18) and (2.19) with the same notation */
-Two_vectors gauss_legendre_inf_mesh(int N, double scale) {
-	Two_vectors X = leggauss(N);
+TwoVectors gaussLegendreInfMesh(int N, double vecScale) {
+	TwoVectors X = leggauss(N);
 	std::vector<double> p = X.v1;
-	std::vector<double> w_prime = X.v2;
+	std::vector<double> wPrime = X.v2;
 
 
-	/* Translate p and w_prime values for [-1,1] to a infinte
+	/* Translate p and wPrime values for [-1,1] to a infinte
 	 * interval [0,inf]  for quadrature points k and weights w */
 	std::vector<double> k(p.size());
-	std::vector<double> w(w_prime.size());
+	std::vector<double> w(wPrime.size());
 	for (int j{ 0 }; j < p.size(); j++)
 	{
-		//k[j] = scale * (1 + p[j]) / (1 - p[j]);
-		//w[j] = 2 * scale * w_prime[j] / pow(1 - k[j], 2);
-
-		//test: copied from python
-		k[j] = scale * std::tan(constants::pi * (p[j] + 1.0) / 4);
-		w[j] = w_prime[j] * scale * (constants::pi / 4) / pow(std::cos(constants::pi * (p[j] + 1.0) / 4), 2);
+		k[j] = vecScale * std::tan(constants::pi * (p[j] + 1.0) / 4);
+		w[j] = wPrime[j] * vecScale * (constants::pi / 4) / pow(std::cos(constants::pi * (p[j] + 1.0) / 4), 2);
 	}
 
-	Two_vectors k_and_w{ k, w };
+	TwoVectors kAndW{ k, w };
 
-	return k_and_w;
+	return kAndW;
 }
 
 

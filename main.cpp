@@ -10,7 +10,7 @@ int main() {
 	int N{ 100 };
 	double scale{ 100 };
 
-	Two_vectors k_and_w{ gauss_legendre_inf_mesh(N, scale) };
+	TwoVectors k_and_w{ gaussLegendreInfMesh(N, scale) };
 	std::vector<double> k{ k_and_w.v1 };
 	std::vector<double> w{ k_and_w.v2 };
 
