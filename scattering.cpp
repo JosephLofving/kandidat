@@ -23,7 +23,7 @@
 
 
 
-inline constexpr std::complex<double> I(0.0,1.0); // Temporary way to get imaginary unit in this file
+constexpr std::complex<double> I(0.0,1.0); // Temporary way to get imaginary unit in this file
 
 //std::complex<double> I(0,1);
 
