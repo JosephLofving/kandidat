@@ -17,9 +17,9 @@ double absmax(std::vector<double> vec);
 TwoVectors leggauss(int N);
 std::vector<double> legval(std::vector<double> x, std::vector<double> c);
 std::vector<double> legder(std::vector<double> c);
-LapackMat* legcompanion(std::vector<double> c);
+LapackMat* legcompanion(int N);
 TwoVectors gaussLegendreLineMesh(int N, int a, int b);
 TwoVectors gaussLegendreInfMesh(int N, double scale = 100.0);
-std::vector<double> scale(double a, std::vector<double> v);
+std::vector<double> vecScale(double a, std::vector<double> v);
 
 #endif
