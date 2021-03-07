@@ -1,8 +1,5 @@
 
-#include "chiral_LO.h"
-#include "lapackAPI.h"
-#include "quantumStates.h"
-#include "constants.h"
+#include "potential.h"
 
 
 double get_k0(std::vector<QuantumState> channel, double Tlab){
@@ -14,6 +11,7 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
 		k0_squared = pow(constants::neutron_mass,2)*Tlab*(Tlab+2*constants::proton_mass)/((pow(constants::proton_mass+constants::neutron_mass,2)+2*Tlab*constants::neutron_mass));
 	else if (tz_channel == 1) // Neutron-neutron scattering
 		k0_squared = 2*constants::neutron_mass*Tlab;
+    
     return sqrt(k0_squared); // Does not handle case where tz is NOT -1, 0 or 1.
 }
 
