@@ -11,7 +11,7 @@
 #include <vector>
 
 
-inline constexpr std::complex<double> I(0.0, 1.0);
+constexpr std::complex<double> I(0.0, 1.0);
 
 double get_reduced_mass(std::vector<QuantumState> channel);
 bool isCoupled(std::vector<QuantumState> channel);
