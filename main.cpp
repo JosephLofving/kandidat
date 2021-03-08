@@ -7,7 +7,7 @@ int main() {
 	std::ofstream myfile;
     myfile.open ("data.csv");
 
-	myfile << "Realdel av fasskift";
+	myfile << "imaginärdel av fasskift";
 	myfile << ",";
 	myfile << "Tlab [Mev]";
 	myfile << "\n";
@@ -48,7 +48,7 @@ int main() {
 
 		std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
 
-		double realPart = phase[0].real();
+		double realPart = phase[0].imag();
 		myfile << realPart;
 		myfile << ",";
 		myfile << Tlab;
