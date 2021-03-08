@@ -69,7 +69,7 @@ void printStates(std::vector<QuantumState> states){
 	@return The set of allowed quantum states as a vector
 	
 */
-std::vector<QuantumState> setup_Base(int jmin, int jmax, int tzmin, int tzmax){
+std::vector<QuantumState> setupBase(int jmin, int jmax, int tzmin, int tzmax){
 	std::vector<QuantumState> basis; 
 	for (int tz = tzmin; tz <= tzmax; tz++){
 		for (int j = jmin; j <= jmax; j++){
@@ -109,7 +109,7 @@ std::vector<QuantumState> setup_Base(int jmin, int jmax, int tzmin, int tzmax){
 			these values (only ll can differ).
 	
 */
-std::map<std::string, std::vector<QuantumState> > setup_NN_channels(std::vector<QuantumState> base){
+std::map<std::string, std::vector<QuantumState> > setupNNChannels(std::vector<QuantumState> base){
 
 
 	//A vector of strings that specify which quantum numbers to be conserved
