@@ -33,7 +33,7 @@ LapackMat::LapackMat(int x, int y) {
 */
 LapackMat::LapackMat(int x) {
 	LapackMat::init(x, x, std::vector<std::complex<double>>(x*x, 0.0)); // Creates a zero-filled matrix with given size.
-	
+
 	for (int i = 0; i < x; i++) {
 		this->setElement(i, i, 1.0); // Sets all diagonal elements to 1.0.
 	}
@@ -107,7 +107,7 @@ extern "C" { // Allows the usage of the following C function. Its arguments are 
    @param &B Second matrix. (Dimensions m*n)
    @return A+B. (Dimensions m*n)
 */
-LapackMat operator+(LapackMat &A, LapackMat &B) {
+LapackMat operator+(LapackMat A, LapackMat B) {
 	LapackMat dummyB   = LapackMat(B.width, B.height, B.contents); // Clones the B matrix. zgemm_ modifies the B matrix, so a cloning is performed to not lose any data
 	LapackMat identity = LapackMat(A.height); // Identity matrix. A*I + B = A + B
 	char TRANS = 'N'; // No transposition
@@ -124,7 +124,7 @@ LapackMat operator+(LapackMat &A, LapackMat &B) {
    @param &B Second matrix. (Dimensions m*n)
    @return A-B. (Dimensions m*n)
 */
-LapackMat operator-(LapackMat &A, LapackMat &B) {
+LapackMat operator-(LapackMat A, LapackMat B) {
 	LapackMat dummyB   = LapackMat(B.width, B.height, B.contents); // Clones the B matrix. zgemm_ modifies the B matrix, so a cloning is performed to not lose any data
 	LapackMat identity = LapackMat(A.height); // Identity matrix. A*I - B = A - B
 	char TRANS = 'N'; // No transposition
@@ -141,7 +141,7 @@ LapackMat operator-(LapackMat &A, LapackMat &B) {
    @param &A Matrix to be scaled. (Dimensions m*n)
    @return scalar*A. (Dimensions m*n)
 */
-LapackMat operator*(std::complex<double> scalar, LapackMat &A) {
+LapackMat operator*(std::complex<double> scalar, LapackMat A) {
 	LapackMat B = LapackMat(A.height); // Creates an identity matrix in order to preserve A when multiplying. scalar*A*I + C = scalar*A + C
 	LapackMat C(A.width, A.height); // Creates a zero matrix in order to not add anything. scalar*A*I + 0 = scalar*A
 	char TRANS = 'N'; // No transposition
@@ -157,7 +157,7 @@ LapackMat operator*(std::complex<double> scalar, LapackMat &A) {
    @param &A Matrix to be scaled. (Dimensions m*n)
    @return scalar*A. (Dimensions m*n)
 */
-LapackMat operator*(LapackMat &A, std::complex<double> scalar) {
+LapackMat operator*(LapackMat A, std::complex<double> scalar) {
 	return scalar*A; // Scalar multiplication is commutative. This function simply rearranges the arguments and calls the other scalar multiplication function.
 }
 
@@ -166,7 +166,7 @@ LapackMat operator*(LapackMat &A, std::complex<double> scalar) {
    @param &B Second matrix. (Dimensions k*n)
    @return A*B. (Dimensions m*n)
 */
-LapackMat operator*(LapackMat &A, LapackMat &B) {
+LapackMat operator*(LapackMat A, LapackMat B) {
 	LapackMat C(A.height, B.width); // Creates a matrix to write the product to. Initializes to all zeroes in order to not add anything to the product.
 	char TRANS = 'N'; // No transposition
 	std::complex<double> ALPHA = 1; // Scale A*B by 1 (in other words, do nothing)
@@ -183,7 +183,7 @@ extern "C" {
 }
 
 /* Solves matrix equations of the form AX = B and returns X. The command zgetrf_ creates a partial pivot LU-decomposition. The
- * L and U matrices and the pivot vector are then provided to zgetrs_, which uses them to calculate X. 
+ * L and U matrices and the pivot vector are then provided to zgetrs_, which uses them to calculate X.
  * Note, however, that the L and U matrices are combined. zgetrf_ takes a pointer to the A matrix and replaces its contents
  * with a combination of the L and U matrices (the strict lower left triangle being U (though lacking an identity diagonal) and
  * the upper right triangle being U). To avoid destroying the initial contents of A this way (and B, which is destroyed similarly

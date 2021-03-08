@@ -80,7 +80,7 @@ LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, Lap
 
 
 /* TODO: Explain theory for this. */
-std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB) 
+std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB)
 {
 	std::complex<double> twoEpsilonJ = std::asin(std::sin(twoEpsilonJBB) * std::sin(deltaMinusBB - deltaPlusBB));
 
