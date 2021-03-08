@@ -2,7 +2,7 @@
 #define CONSTANTS_H //tror denna namnger kodblocket
 
 namespace constants {
-	constexpr double pi{ 3.1415926535 }; // C++ verkar inte ha pi smidigt definierat (include <cmath>?)
+	inline constexpr double pi{ 3.1415926535 }; // C++ verkar inte ha pi smidigt definierat (include <cmath>?)
 	constexpr double rad2deg{ 180 / pi };		 
 	constexpr double proton_mass{ 938.27208816 };														  // protonmassa (MeV/c^2)
 	constexpr double neutron_mass{ 939.56542052 };													   	  // neutronmassa (MeV/c^2)
