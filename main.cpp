@@ -1,10 +1,19 @@
 #include "mesh.h"
 #include "scattering.h"
 #include "potential.h"
+#include <fstream>
 
 int main() {
-	std::vector<QuantumState> base = setup_Base(0,2,0,2);
-    std::map<std::string, std::vector<QuantumState> > channels = setup_NN_channels(base);
+	std::ofstream myfile;
+    myfile.open ("data.csv");
+
+	myfile << "Realdel av fasskift";
+	myfile << ",";
+	myfile << "Tlab [Mev]";
+	myfile << "\n";
+
+	std::vector<QuantumState> base = setupBase(0,2,0,2);
+    std::map<std::string, std::vector<QuantumState> > channels = setupNNChannels(base);
 	printChannels(channels);
 
 	int N{ 100 };
@@ -22,18 +31,29 @@ int main() {
 	}
 	printStates(channel);
 
-	double Tlab = 100.0;
+	double Tlab = 0.0;
 
-	LapackMat V_matrix = potential(channel, k, Tlab);
+	for (int i = 1; i <= 350*5; i++)
+	{
+		Tlab = i/5.0;
+	
+	
 
-	double k0 = get_k0(channel, Tlab);
+		LapackMat V_matrix = potential(channel, k, Tlab);
 
-	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
-	//T.print();
+		double k0 = get_k0(channel, Tlab);
 
-	std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
+		LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
+		//T.print();
 
-	std::cout << phase[0] << std::endl;
+		std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
 
+		double realPart = phase[0].real();
+		myfile << realPart;
+		myfile << ",";
+		myfile << Tlab;
+		myfile << "\n";
+	}
+	myfile.close();
 	return 0;
 }
