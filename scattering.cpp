@@ -23,7 +23,7 @@ bool isCoupled(std::vector<QuantumState> channel) {
 
 
 /* k is quadrature points (was "p" in python), w is weights, k0 is on-shell-point. */
-std::vector<std::complex<double>> setup_G0_vector(std::vector<QuantumState> channel, std::vector<double> k, std::vector<double> w, double k0) { 
+std::vector<std::complex<double>> setup_G0_vector(std::vector<QuantumState> channel, std::vector<double> k, std::vector<double> w, double k0) {
 	int N = k.size();  // k has N elements k_j for j = 1,...,N
 	std::vector<std::complex<double>> D(N + 1);
 
@@ -36,7 +36,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<QuantumState> chan
 		D[i] = - two_over_pi * two_mu * pow(k[i], 2) * w[i] / (pow(k0, 2) - pow(k[i], 2)); // Define D[0,N-1] with k and w vectors
 		sum += w[i] / (pow(k0, 2) - pow(k[i], 2));										   // Used in D[N]
 	}
-	
+
 	D[N] = two_over_pi * two_mu * pow(k0, 2) * sum + two_mu * I * k0; // In the theory, this element is placed at index 0
 
 	return D;
@@ -66,6 +66,15 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> channel, std::string key, La
 
 
 /* Equation (2.24): [F][T] = [V]. */
+/* Computes the T-matrix
+   @param NN_channel The scattering channel
+   @param key The channel key (?)
+   @param V The potential matrix
+   @param k The quadrature points from the Gauss-Legendre mesh
+   @param w The weights of the quadrature points in k
+   @param k0 The scattering momentum
+   @return T-matrix
+*/
 LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)  {
 	std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
 
@@ -96,7 +105,7 @@ std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB
 std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState> channel, std::string key, double k0, LapackMat T) {
 	std::cout << "Computing phase shifts in channel " << key << std::endl;
 	std::vector<std::complex<double>> phases;
-	
+
 	double mu = get_reduced_mass(channel);
 	double rho_T =  2 * mu * k0; // Equation (2.27) in the theory
 	int N = T.width;
@@ -113,7 +122,7 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 		std::complex<double> delta_minus_BB{ -0.5 * I * std::log(1.0 - I * rho_T * (T11 + T22) - I * rho_T * (2.0 * T12) / std::sin(twoEpsilonJ_BB)) };
 
 		std::vector<std::complex<double>> phases_append{ blattToStapp(delta_minus_BB, delta_plus_BB, twoEpsilonJ_BB) };
-		
+
 		phases.push_back(phases_append[0]);
 		phases.push_back(phases_append[1]);
 		phases.push_back(phases_append[2]);
@@ -124,7 +133,7 @@ std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState>
 		std::complex<double> T0 = T.getElement(N, N);
 		std::complex<double> argument = 1.0 - 2.0 * I * rho_T * T0;
 		std::complex<double> delta = (-0.5 * I) * std::log(argument) * constants::rad2deg;
-     
+
 		phases.push_back(delta);
 	}
 
