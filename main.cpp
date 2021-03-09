@@ -2,6 +2,7 @@
 #include "scattering.h"
 #include "potential.h"
 #include <fstream>
+#include <iomanip>
 
 int main() {
 	std::ofstream myfile;
@@ -21,7 +22,7 @@ int main() {
 
 
 	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
-	std::vector<QuantumState> channel = channels[key]; 
+	std::vector<QuantumState> channel = channels[key];
 	if (channel.size()==0) {
 		std::cout << "Invalid key";
 		abort();
@@ -30,13 +31,13 @@ int main() {
 
 	double Tlab = 100.0;
 
-	for (int i = 3; i <= 500; i++)
+	for (int i = 3; i <= 100; i++)
 	{
 		N=i;
 		TwoVectors k_and_w{ gaussLegendreInfMesh(N, scale) };
 		std::vector<double> k{ k_and_w.v1 };
 		std::vector<double> w{ k_and_w.v2 };
-	
+
 
 		LapackMat V_matrix = potential(channel, k, Tlab);
 
@@ -48,6 +49,7 @@ int main() {
 		std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
 
 		double realPart = phase[0].real();
+		myfile << std::fixed << std::setprecision(20) << std::endl;
 		myfile << realPart;
 		myfile << ",";
 		myfile << N;
