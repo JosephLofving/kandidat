@@ -1,21 +1,28 @@
 #include "mesh.h"
 #include "scattering.h"
 #include "potential.h"
+#include <fstream>
+#include <iomanip>
 
 int main() {
-	std::vector<QuantumState> base = setup_Base(0,2,0,2);
-    std::map<std::string, std::vector<QuantumState> > channels = setup_NN_channels(base);
+	std::ofstream myfile;
+    myfile.open ("data.csv");
+
+	myfile << "Real av fasskift";
+	myfile << ",";
+	myfile << "N";
+	myfile << "\n";
+
+	std::vector<QuantumState> base = setupBase(0,2,0,2);
+    std::map<std::string, std::vector<QuantumState> > channels = setupNNChannels(base);
 	printChannels(channels);
 
 	int N{ 100 };
 	double scale{ 100 };
 
-	TwoVectors k_and_w{ gaussLegendreInfMesh(N, scale) };
-	std::vector<double> k{ k_and_w.v1 };
-	std::vector<double> w{ k_and_w.v2 };
 
 	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
-	std::vector<QuantumState> channel = channels[key]; 
+	std::vector<QuantumState> channel = channels[key];
 	if (channel.size()==0) {
 		std::cout << "Invalid key";
 		abort();
@@ -24,16 +31,30 @@ int main() {
 
 	double Tlab = 100.0; //Rörelseenergin hos 
 
-	LapackMat V_matrix = potential(channel, k, Tlab);
+	for (int i = 3; i <= 100; i++)
+	{
+		N=i;
+		TwoVectors k_and_w{ gaussLegendreInfMesh(N, scale) };
+		std::vector<double> k{ k_and_w.v1 };
+		std::vector<double> w{ k_and_w.v2 };
 
-	double k0 = get_k0(channel, Tlab);
 
-	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
-	//T.print();
+		LapackMat V_matrix = potential(channel, k, Tlab);
 
-	std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
+		double k0 = get_k0(channel, Tlab);
 
-	std::cout << phase[0] << std::endl;
+		LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
+		//T.print();
 
+		std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
+
+		double realPart = phase[0].real();
+		myfile << std::fixed << std::setprecision(20) << std::endl;
+		myfile << realPart;
+		myfile << ",";
+		myfile << N;
+		myfile << "\n";
+	}
+	myfile.close();
 	return 0;
 }

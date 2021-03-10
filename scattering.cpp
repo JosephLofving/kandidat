@@ -44,7 +44,7 @@ std::vector<std::complex<double>> setup_G0_vector(std::vector<QuantumState> chan
 
 
 LapackMat setup_VG_kernel(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) {
-	std::cout << "Setting up G0(k0) in channel " << key << std::endl;
+	//std::cout << "Setting up G0(k0) in channel " << key << std::endl;
 	std::vector<std::complex<double>> G0 = setup_G0_vector(channel, k, w, k0);
 
 	/* If coupled, append G0 to itself to facilitate calculations. This means the second half of G0 is a copy of the first. */
@@ -76,7 +76,7 @@ LapackMat setup_VG_kernel(std::vector<QuantumState> channel, std::string key, La
    @return T-matrix
 */
 LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)  {
-	std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
+	//std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
 
 	LapackMat VG = setup_VG_kernel(channel, key, V, k, w, k0);
 	LapackMat identity = LapackMat(VG.width);
@@ -103,7 +103,7 @@ std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB
 
 /* Computes the phase shift for a given channel and T matrix. */
 std::vector<std::complex<double>> compute_phase_shifts(std::vector<QuantumState> channel, std::string key, double k0, LapackMat T) {
-	std::cout << "Computing phase shifts in channel " << key << std::endl;
+	//std::cout << "Computing phase shifts in channel " << key << std::endl;
 	std::vector<std::complex<double>> phases;
 
 	double mu = get_reduced_mass(channel);
