@@ -31,10 +31,10 @@ int main() {
 
 	double Tlab = 100.0; //Rörelseenergin hos 
 
-	for (int i = 3; i <= 100; i++) {
-		for (int j = 1; j <= 1750; j++) {
+	for (int j = 1; j <= 1750; j++) {
+		Tlab = 1.0 * j;
+		for (int i = 3; i <= 100; i++) {
 			N = i;
-			Tlab = 1.0 * j;
 			TwoVectors k_and_w{ gaussLegendreInfMesh(N, scale) };
 			std::vector<double> k{ k_and_w.v1 };
 			std::vector<double> w{ k_and_w.v2 };
@@ -51,10 +51,13 @@ int main() {
 
 			double realPart = phase[0].real();
 			myfile << std::fixed << std::setprecision(20) << std::endl;
+			myfile << Tlab;
+			myfile << ",";
 			myfile << realPart;
 			myfile << ",";
 			myfile << N;
 		}
+		std::cout << Tlab << "\n";
 	}
 	myfile.close();
 	return 0;
