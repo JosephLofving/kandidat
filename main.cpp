@@ -22,7 +22,7 @@ int main() {
 	}
 	printStates(channel);
 
-	double Tlab = 100.0;
+	double Tlab = 100.0; //Rörelseenergin hos 
 
 	LapackMat V_matrix = potential(channel, k, Tlab);
 

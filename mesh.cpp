@@ -32,7 +32,8 @@ std::vector<double> elementwiseMult(std::vector<double> v1, std::vector<double> 
 
 /*
 	Adds each corresponding element from the two input vectors.
-	@param v1, v2: two vectors of the same length
+	@param v1 (vector of length n)
+	@param v2 (vector of length n)
 	@return the vector with added elements
 */
 std::vector<double> elementwiseAdd(std::vector<double> v1, std::vector<double> v2) {
@@ -173,7 +174,7 @@ TwoVectors leggauss(int N) {
 		w[i] = constant / (function2[i] * derivative[i]);
 	}
 
-	//for Legendre we can also symmetrize
+	//We have to symmetrize and scale w to get the correct values
 	std::vector<double> wReverse = vecReverse(w);
 	std::vector<double> xReverse = vecReverse(x);
 	for (int i = 0; i < w.size(); ++i) {
@@ -181,7 +182,6 @@ TwoVectors leggauss(int N) {
 		x[i] = (x[i] - xReverse[i]) / 2;
 	}
 
-	//Scale w to get the right value
 	double wSum = vecSum(w);
 	for (int i = 0; i < w.size(); ++i) {
 		w[i] *= 2 / wSum;
