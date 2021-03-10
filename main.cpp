@@ -31,29 +31,30 @@ int main() {
 
 	double Tlab = 100.0; //Rörelseenergin hos 
 
-	for (int i = 3; i <= 100; i++)
-	{
-		N=i;
-		TwoVectors k_and_w{ gaussLegendreInfMesh(N, scale) };
-		std::vector<double> k{ k_and_w.v1 };
-		std::vector<double> w{ k_and_w.v2 };
+	for (int i = 3; i <= 100; i++) {
+		for (int j = 1; j <= 1750; j++) {
+			N = i;
+			Tlab = 1.0 * j;
+			TwoVectors k_and_w{ gaussLegendreInfMesh(N, scale) };
+			std::vector<double> k{ k_and_w.v1 };
+			std::vector<double> w{ k_and_w.v2 };
 
 
-		LapackMat V_matrix = potential(channel, k, Tlab);
+			LapackMat V_matrix = potential(channel, k, Tlab);
 
-		double k0 = get_k0(channel, Tlab);
+			double k0 = get_k0(channel, Tlab);
 
-		LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
-		//T.print();
+			LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
+			//T.print();
 
-		std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
+			std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
 
-		double realPart = phase[0].real();
-		myfile << std::fixed << std::setprecision(20) << std::endl;
-		myfile << realPart;
-		myfile << ",";
-		myfile << N;
-		myfile << "\n";
+			double realPart = phase[0].real();
+			myfile << std::fixed << std::setprecision(20) << std::endl;
+			myfile << realPart;
+			myfile << ",";
+			myfile << N;
+		}
 	}
 	myfile.close();
 	return 0;
