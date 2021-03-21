@@ -2,17 +2,17 @@
 #include "potential.h"
 
 
-double get_k0(std::vector<QuantumState> channel, double Tlab){
-    int tz_channel = channel[0].state["tz"];
-    double k0_squared = 0;
-	if (tz_channel == -1)	  // Proton-proton scattering
-		k0_squared = 2*constants::proton_mass*Tlab;
-	else if (tz_channel == 0) // Proton-neutron scattering
-		k0_squared = pow(constants::neutron_mass,2)*Tlab*(Tlab+2*constants::proton_mass)/((pow(constants::proton_mass+constants::neutron_mass,2)+2*Tlab*constants::neutron_mass));
-	else if (tz_channel == 1) // Neutron-neutron scattering
-		k0_squared = 2*constants::neutron_mass*Tlab;
+double getk0(std::vector<QuantumState> channel, double Tlab){
+    int tzChannel = channel[0].state["tz"];
+    double k0Squared = 0;
+	if (tzChannel == -1)	  // Proton-proton scattering
+		k0Squared = 2*constants::protonMass*Tlab;
+	else if (tzChannel == 0) // Proton-neutron scattering
+		k0Squared = pow(constants::neutronMass,2)*Tlab*(Tlab+2*constants::protonMass)/((pow(constants::protonMass+constants::neutronMass,2)+2*Tlab*constants::neutronMass));
+	else if (tzChannel == 1) // Neutron-neutron scattering
+		k0Squared = 2*constants::neutronMass*Tlab;
     
-    return sqrt(k0_squared); // Does not handle case where tz is NOT -1, 0 or 1.
+    return sqrt(k0Squared); // Does not handle case where tz is NOT -1, 0 or 1.
 }
 
  LapackMat potential(std::vector<QuantumState> channel, std::vector<double> k, double Tlab) {
@@ -20,22 +20,21 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
     
 
     /* Declare a NULL pointer of the potential-class type */
-    chiral_LO* potential_class_ptr = NULL;
+    chiral_LO* potentialClassPtr = nullptr;
     
     /* Set the pointer to a new instance of the class */
-    potential_class_ptr = new chiral_LO();
+    potentialClassPtr = new chiral_LO();
 
-    double* V_array = new double [6];
+    double* VArray = new double [6];
     bool coupled = false;
 
-    double k_0 = get_k0(channel,Tlab);
+    double k0 = getk0(channel,Tlab);
 
-    LapackMat V_matrix = LapackMat(k.size()+1, k.size()+1);
+    LapackMat VMatrix = LapackMat(k.size()+1, k.size()+1);
 
-    k.push_back(k_0);
+    k.push_back(k0);
 
     for (QuantumState state : channel){
-
         int L = state.state["l"];
         int S = state.state["s"];
         int J = state.state["j"];
@@ -78,12 +77,12 @@ double get_k0(std::vector<QuantumState> channel, double Tlab){
 
     
 
-    for (int k_in = 0; k_in < k.size(); k_in++) {
-        for (int k_out = 0; k_out < k.size(); k_out++) {
-            potential_class_ptr->V(k[k_in], k[k_out], coupled, S, J, T, Tz, V_array);
-            V_matrix.setElement(k_in,k_out,constants::pi/2.0*V_array[0]);
+    for (int kIn = 0; kIn < k.size(); kIn++) {
+        for (int kOut = 0; kOut < k.size(); kOut++) {
+            potentialClassPtr->V(k[kIn], k[kOut], coupled, S, J, T, Tz, VArray);
+            VMatrix.setElement(kIn, kOut, constants::pi / 2.0 * VArray[0]);
         }
     }
   }
-    return V_matrix;
+    return VMatrix;
 }

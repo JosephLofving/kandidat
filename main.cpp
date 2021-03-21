@@ -13,12 +13,12 @@ int main() {
 	myfile << "N";
 	myfile << "\n";
 
-	std::vector<QuantumState> base = setupBase(0,2,0,2);
+	std::vector<QuantumState> base = setupBase(0, 2, 0, 2);
     std::map<std::string, std::vector<QuantumState> > channels = setupNNChannels(base);
 	printChannels(channels);
 
-	int N{ 100 };
-	double scale{ 100 };
+	int N = 100;
+	double scale = 100;
 
 
 	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
@@ -42,12 +42,12 @@ int main() {
 
 			LapackMat V_matrix = potential(channel, k, Tlab);
 
-			double k0 = get_k0(channel, Tlab);
+			double k0 = getk0(channel, Tlab);
 
 			LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
 			//T.print();
 
-			std::vector<std::complex<double>> phase = compute_phase_shifts(channel, key, k0, T);
+			std::vector<std::complex<double>> phase = computePhaseShifts(channel, key, k0, T);
 
 			double realPart = phase[0].real();
 			myfile << std::fixed << std::setprecision(20) << std::endl;
