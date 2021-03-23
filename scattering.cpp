@@ -99,12 +99,13 @@ LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, Lapa
 	@return			T matrix
 */
 LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)  {
-	//std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
+	std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
 
 	LapackMat VG = setupVGKernel(channel, key, V, k, w, k0);
 	LapackMat identity = LapackMat(VG.width);
-	LapackMat F = identity + VG; // Definition in equation (2.25)
+	LapackMat F = identity + VG;
 
+	// Solves the equation FT = V.
 	LapackMat T = solveMatrixEq(F, V);
 
 	return T;
