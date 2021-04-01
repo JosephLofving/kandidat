@@ -32,10 +32,10 @@ private:
 	void init(int x, int y, int z); // Function called by all constructors. Avoids duplicate code
 };
 
-struct TwoVectors { // Struct for storing two related vectors
-	std::vector<double> v1;
-	std::vector<double> v2;
-};
+//struct TwoVectors { // Struct for storing two related vectors
+//	std::vector<double> v1;
+//	std::vector<double> v2;
+//};
 
 // Tensor solveMatrixEq(Tensor A, Tensor B); // Matrix solver. Solves AX=B and returns X
 // std::vector<double> eigenValues(Tensor A); // Finds the eigenvalues of a symmetric real matrix
