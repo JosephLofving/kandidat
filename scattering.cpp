@@ -39,20 +39,20 @@ bool isCoupled(std::vector<QuantumState> channel) {
 */
 std::vector<std::complex<double>> setupG0Vector(std::vector<QuantumState> channel, std::vector<double> k, std::vector<double> w, double k0) {
 	int N = k.size();
-	std::vector<std::complex<double>> D(N + 1);
+	std::vector<std::complex<double>> G(N + 1);
 
 	double mu = getReducedMass(channel);
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
 	double sum = 0; 
 	for (int i = 0; i < N; i++) {
-		D[i] = - twoOverPi * twoMu * pow(k[i], 2) * w[i] / (pow(k0, 2) - pow(k[i], 2)); // Define D[0,N-1] with vectors k and w
-		sum += w[i] / (pow(k0, 2) - pow(k[i], 2));										// Used in D[N]
+		G[i] = twoOverPi * twoMu * pow(k[i], 2) * w[i] / (pow(k0, 2) - pow(k[i], 2));   // Define G[0,N-1] with vectors k and w
+		sum += w[i] / (pow(k0, 2) - pow(k[i], 2));										// Used in G[N]
 	}
 
-	D[N] = twoOverPi * twoMu * pow(k0, 2) * sum + twoMu * I * k0;						// In the theory, this element is placed at index 0
+	G[N] = -twoOverPi * twoMu * pow(k0, 2) * sum - twoMu * I * k0;						// In the theory, this element is placed at index 0
 
-	return D;
+	return G;
 }
 
 /**
@@ -103,7 +103,7 @@ LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, Lap
 
 	LapackMat VG = setupVGKernel(channel, key, V, k, w, k0);
 	LapackMat identity = LapackMat(VG.width);
-	LapackMat F = identity + VG;
+	LapackMat F = identity - VG;
 
 	// Solves the equation FT = V.
 	LapackMat T = solveMatrixEq(F, V);

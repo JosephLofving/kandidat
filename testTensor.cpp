@@ -6,10 +6,10 @@
 int main() {
 	
 	std::vector<QuantumState> base = setupBase(0,2,0,2);
-    std::map<std::string, std::vector<QuantumState> > channels = setupNNChannels(base);
+	std::map<std::string, std::vector<QuantumState>> channels = setupNNChannels(base);
 	printChannels(channels);
 
-	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
+	std::string key = "j:0 s:0 tz:0 pi:1"; 
 	std::vector<QuantumState> channel = channels[key];
 	if (channel.size()==0) {
 		std::cout << "Invalid key";
@@ -29,11 +29,20 @@ int main() {
     }
 
 
+	// allocate unified memory for VTensor
+	//cudaMallocManaged(&VTensor, N * sizeof(Tensor));
 
+	// initialize VTensor on host
 	Tensor VTensor = potential(channel, k, Tlab);
+
 
     for(int i =0; i<Tlab.size(); i++){
         VTensor.print(i);
     }
+
+
+
+	//cudaFree(VTensor);
+
 	return 0;
 }
