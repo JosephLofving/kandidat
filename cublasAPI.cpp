@@ -55,3 +55,27 @@ void Tensor::print(int matrixNum) {
     	std::cout << std::endl; // Line break for new row.
   	}
 }
+
+void operator*(Tensor A, Tensor B) {
+
+	const std::complex<double> alpha = 1.0; // Scale the A matrix by 1 (in other words, do nothing)
+	const std::complex<double> beta  = 0.0; // Scale the B matrix by 1
+
+	int m = A.width;
+	int n = A.height;
+	int k = A.matrixAmt;
+
+	cublasHandle_t cublasH;
+	cublasCreate(&cublasH);
+
+	cublasDgemmStridedBatched(cublasH,
+							  CUBLAS_OP_N,
+							  CUBLAS_OP_N,
+							  m, n, k,
+							  &alpha,
+							  A, m, m*n,
+							  B, n, n*k,
+							  &beta,
+							  A, m, m*n,
+							  32);
+}
