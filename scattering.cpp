@@ -66,6 +66,7 @@ std::vector<std::complex<double>> setupG0Vector(std::vector<QuantumState> channe
 	@param k0:		The on-shell-point
 	@return			VG kernel
 */
+__global__
 LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) {
 	//std::cout << "Setting up G0(k0) in channel " << key << std::endl;
 	std::vector<std::complex<double>> G0 = setupG0Vector(channel, k, w, k0);
@@ -74,7 +75,9 @@ LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, Lapa
 	if (isCoupled(channel)) {
 		G0.insert(std::end(G0), std::begin(G0), std::end(G0)); // TODO: Risk that this does not work properly, might want to test in uncoupled case
 	}
-
+	//------------------------------------------------------------------
+	//-------------------------- ON GPU --------------------------------
+	//------------------------------------------------------------------
 	/* Create VG by using VG[i,j] = V[i,j] * G[j] */
 	LapackMat VG = LapackMat(G0.size());
 	for (int row = 0; row < G0.size(); row++) {
@@ -82,6 +85,9 @@ LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, Lapa
 			VG.setElement(row, column, V.getElement(row, column) * G0[column]);
 		}
 	}
+	//------------------------------------------------------------------
+	//------------------------------------------------------------------
+	//------------------------------------------------------------------
 
 	return VG;
 }
@@ -98,15 +104,23 @@ LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, Lapa
 	@param k0:		On-shell-point
 	@return			T matrix
 */
+__global__
 LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)  {
 	std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
 
+//------------------------------------------------------------------
+//-------------------------- ON GPU --------------------------------
+//------------------------------------------------------------------
 	LapackMat VG = setupVGKernel(channel, key, V, k, w, k0);
 	LapackMat identity = LapackMat(VG.width);
 	LapackMat F = identity - VG;
 
-	// Solves the equation FT = V.
+	// Solves the equation [F][T] = V
 	LapackMat T = solveMatrixEq(F, V);
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+
 
 	return T;
 }
