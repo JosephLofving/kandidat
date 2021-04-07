@@ -52,13 +52,13 @@ int main() {
 	std::vector<double> k;
 	std::vector<double> w;
 
-	
+
 
 	double k0 = getk0(channel, Tlab);
 
 	// Allocate Unified Memory, i.e. let the following objects be accessible
 	// from both GPU and CPU
-	
+
 
 	// Initialize k, w, V_matrix on CPU
 	TwoVectors k_and_w{ gaussLegendreInfMesh(NKvadratur, scale) };
@@ -67,11 +67,11 @@ int main() {
 
 	int N = k.size();
 
-	double *k_dev;
-	double *w_dev;
-	cuDoubleComplex *V_dev;
-	cuDoubleComplex *G0_dev;
-	cuDoubleComplex *VG_dev;
+	double *k_dev = new double[N];
+	double *w_dev = new double[N];
+	cuDoubleComplex *V_dev = new cuDoubleComplex[N*N];
+	cuDoubleComplex *G0_dev = new cuDoubleComplex[N];
+	cuDoubleComplex *VG_dev = new cuDoubleComplex[N*N];
 
 	for(int kElement = 0; kElement < k.size(); kElement++){
 		k_dev[kElement] = k[kElement];
@@ -83,7 +83,7 @@ int main() {
 
 	LapackMat V_matrix = potential(channel, k, Tlab);
 
-	
+
 
 	for(int VElement = 0; VElement < V_matrix.contents.size(); VElement++){
 		V_dev[VElement] = make_cuDoubleComplex(V_matrix.contents[VElement].real(), V_matrix.contents[VElement].imag());
@@ -91,14 +91,14 @@ int main() {
 
 	std::vector<std::complex<double>> G0 = setupG0Vector(channel, k, w, k0);
 
-	
+
 
 	for(int G0Element = 0; G0Element < G0.size(); G0Element++){
 		G0_dev[G0Element] = make_cuDoubleComplex(G0[G0Element].real(),G0[G0Element].imag());
 	}
 
-	
-	
+
+
 	cudaMallocManaged(&VG_dev,N*N*sizeof(std::complex<double>));
 	cudaMallocManaged(&V_dev,N*N*sizeof(std::complex<double>));
 	cudaMallocManaged(&G0_dev,N*sizeof(std::complex<double>));
@@ -123,7 +123,7 @@ int main() {
 	cudaFree(k_dev);
 	cudaFree(w_dev);
 
-	
-	
+
+
 	return 0;
 }
