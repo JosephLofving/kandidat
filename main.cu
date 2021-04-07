@@ -4,8 +4,10 @@
 #include <fstream>
 #include <iomanip>
 
+#include <cuComplex.h>
+
 __global__
-void setupVG(double *k, double *w, std::complex<double> *V, double k0, std::complex<double> *G0, std::complex<double> *VG, int matrixHeight)
+void setupVG(double *k, double *w, cuDoubleComplex *V, double k0, cuDoubleComplex *G0, cuDoubleComplex *VG, int matrixHeight)
 {
 	for (int row = 0; row < matrixHeight; row++) {
 		for (int column = 0; column < matrixHeight; column++) {
@@ -67,9 +69,9 @@ int main() {
 
 	double *k_dev;
 	double *w_dev;
-	std::complex<double> *V_dev;
-	std::complex<double> *G0_dev;
-	std::complex<double> *VG_dev;
+	cuDoubleComplex *V_dev;
+	cuDoubleComplex *G0_dev;
+	cuDoubleComplex *VG_dev;
 
 	for(int kElement = 0; kElement < k.size(); kElement++){
 		k_dev[kElement] = k[kElement];
