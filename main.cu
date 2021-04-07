@@ -113,7 +113,7 @@ int main() {
 	// Wait for GPU to finish before accessing on host
 	cudaDeviceSynchronize();
 
-
+	std::cout << cuCreal(VG_dev[0]);
 
 
 	// Free memory from Unified Memory
@@ -122,8 +122,6 @@ int main() {
 	cudaFree(G0_dev);
 	cudaFree(k_dev);
 	cudaFree(w_dev);
-
-
 
 	return 0;
 }
