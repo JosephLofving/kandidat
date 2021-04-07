@@ -11,7 +11,7 @@ void setupVG(double *k, double *w, cuDoubleComplex *V, double k0, cuDoubleComple
 {
 	for (int row = 0; row < matrixHeight; row++) {
 		for (int column = 0; column < matrixHeight; column++) {
-			VG[row+column*matrixHeight] = V[row+column*matrixHeight]*G0[column];
+			VG[row+column*matrixHeight] = cuCmul(V[row+column*matrixHeight],G0[column]);
 		}
 	}
 }
