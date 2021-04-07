@@ -86,7 +86,7 @@ int main() {
 	
 
 	for(int VElement = 0; VElement < V_matrix.contents.size(); VElement++){
-		V_dev[VElement] = V_matrix.contents[VElement];
+		V_dev[VElement] = make_cuDoubleComplex(V_matrix.contents[VElement].real, V_matrix.contents[VElement].imag);
 	}
 
 	std::vector<std::complex<double>> G0 = setupG0Vector(channel, k, w, k0);
@@ -94,7 +94,7 @@ int main() {
 	
 
 	for(int G0Element = 0; G0Element < G0.size(); G0Element++){
-		G0_dev[G0Element] = G0[G0Element];
+		G0_dev[G0Element] = make_cuDoubleComplex(G0[G0Element].real,G0[G0Element].imag);
 	}
 
 	
