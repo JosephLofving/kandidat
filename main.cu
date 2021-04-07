@@ -83,8 +83,8 @@ int main() {
 
 	
 
-	for(int VElement = 0; VElement < V_matrix.contents().size(); VElement++){
-		V_dev[VElement] = V_matrix.contents()[VElement];
+	for(int VElement = 0; VElement < V_matrix.contents.size(); VElement++){
+		V_dev[VElement] = V_matrix.contents[VElement];
 	}
 
 	std::vector<std::complex<double>> G0 = setupG0Vector(channel, k, w, k0);
