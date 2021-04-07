@@ -29,7 +29,7 @@ int main() {
     std::map<std::string, std::vector<QuantumState> > channels = setupNNChannels(base);
 	printChannels(channels);
 
-	int N = 100;
+	int NKvadratur = 100;
 	double scale = 100;
 
 
@@ -59,7 +59,7 @@ int main() {
 	
 
 	// Initialize k, w, V_matrix on CPU
-	TwoVectors k_and_w{ gaussLegendreInfMesh(N, scale) };
+	TwoVectors k_and_w{ gaussLegendreInfMesh(NKvadratur, scale) };
 	k = k_and_w.v1;
 	w = k_and_w.v2;
 
