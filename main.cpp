@@ -34,7 +34,7 @@ int main() {
 	double Tlab = 100.0;
 
 //------------------------------------------------------------------
-//-------------------------- FOR GPU --------------------------------
+//-------------------------- FOR GPU -------------------------------
 //------------------------------------------------------------------
 
 	std::vector<double> k;
@@ -44,19 +44,17 @@ int main() {
 	double k0 = getk0(channel, Tlab);
 
 	// Allocate Unified Memory, i.e. let the following objects be accessible
-	// from both GPU and CPU
-	cudaMallocManaged(&V_matrix, sizeof(LapackMat)); // unsure of second argument, size of the object...?
+	// from both GPU and CPU so they can be used in kernels
+	cudaMallocManaged(&V_matrix, sizeof(LapackMat)); // the second argument says how much memory should be allocated
 	cudaMallocManaged(&k, std::vector<double>);
 	cudaMallocManaged(&w, std::vector<double>);
 
 	// Initialize k, w, V_matrix on CPU
-	TwoVectors k_and_w{ gaussLegendreInfMesh(N, scale) };
+	TwoVectors k_and_w = gaussLegendreInfMesh(N, scale);
 	k = k_and_w.v1;
 	w = k_and_w.v2;
-	V_matrix = potential(channel, k, Tlab)
+	V_matrix = potential(channel, k, Tlab);
 
-	// Compute the T matrix for many different potentials
-	LapackMat T = computeTMatrix<<<1,1>>>(channel, key, V_matrix, k, w, k0);
 
 	// Compute the phase shifts for many different T matrices
 	std::vector<std::complex<double>> phase = computePhaseShifts<<<1,1>>>(channel, key, k0, T);

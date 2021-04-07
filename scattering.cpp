@@ -66,7 +66,7 @@ std::vector<std::complex<double>> setupG0Vector(std::vector<QuantumState> channe
 	@param k0:		The on-shell-point
 	@return			VG kernel
 */
-__global__
+__device__ // use __device__ because setup VGKernel is only used in the kernel computeTMatrix, and will therefore only be called from the GPU
 LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) {
 	//std::cout << "Setting up G0(k0) in channel " << key << std::endl;
 	std::vector<std::complex<double>> G0 = setupG0Vector(channel, k, w, k0);
@@ -104,7 +104,7 @@ LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, Lapa
 	@param k0:		On-shell-point
 	@return			T matrix
 */
-__global__
+__global__ // to be called from computePhaseShifts 
 LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)  {
 	std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
 
@@ -148,9 +148,12 @@ std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB
 	@param T:		T matrix
 	@return			Complex phase shifts
 */
-std::vector<std::complex<double>> computePhaseShifts(std::vector<QuantumState> channel, std::string key, double k0, LapackMat T) {
+std::vector<std::complex<double>> computePhaseShifts(std::vector<QuantumState> channel, std::string key, double k0) {
 	std::cout << "Computing phase shifts in channel " << key << std::endl;
 	std::vector<std::complex<double>> phases;
+
+	// get parallellized T matrix
+	LapackMat T = computeTMatrix <<<1, 1 >>> (channel, key, V_matrix, k, w, k0);
 
 	double mu = getReducedMass(channel);
 	double rhoT =  2 * mu * k0; // Equation (2.27) in the theory
