@@ -65,8 +65,11 @@ int main() {
 
 	int N = k.size();
 
-	std::complex<double> *k_dev;
-	std::complex<double> *w_dev;
+	double *k_dev;
+	double *w_dev;
+	std::complex<double> *V_dev;
+	std::complex<double> *G0_dev;
+	std::complex<double> *VG_dev;
 
 	for(int kElement = 0; kElement < k.size(); kElement++){
 		k_dev[kElement] = k[kElement];
@@ -78,21 +81,21 @@ int main() {
 
 	LapackMat V_matrix = potential(channel, k, Tlab);
 
-	std::complex<double> *V_dev;
+	
 
-	for(int VElement = 0; VElement < V_matrix.content().size(); VElement++){
-		V_dev[VElement] = V_matrix.content()[VElement];
+	for(int VElement = 0; VElement < V_matrix.contents().size(); VElement++){
+		V_dev[VElement] = V_matrix.contents()[VElement];
 	}
 
 	std::vector<std::complex<double>> G0 = setupG0Vector(channel, k, w, k0);
 
-	std::complex<double> *G0_dev;
+	
 
 	for(int G0Element = 0; G0Element < G0.size(); G0Element++){
 		G0_dev[G0Element] = G0[G0Element];
 	}
 
-	std::complex<double> *VG_dev;
+	
 	
 	cudaMallocManaged(&VG_dev,N*N*sizeof(std::complex<double>));
 	cudaMallocManaged(&V_dev,N*N*sizeof(std::complex<double>));
