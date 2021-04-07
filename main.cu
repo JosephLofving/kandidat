@@ -115,7 +115,7 @@ int main() {
 
 
 	// Free memory from Unified Memory
-	cudaFree(VG_dev;
+	cudaFree(VG_dev);
 	cudaFree(V_dev);
 	cudaFree(G0_dev);
 	cudaFree(k_dev);
