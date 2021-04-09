@@ -6,6 +6,7 @@
 
 #include <cuComplex.h>
 
+// Borde vara V^T * G0 iställer
 __global__
 void setupVG(double *k, double *w, cuDoubleComplex *V, double k0, cuDoubleComplex *G0, cuDoubleComplex *VG, int matrixHeight)
 {
