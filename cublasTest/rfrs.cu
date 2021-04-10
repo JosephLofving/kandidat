@@ -1,4 +1,5 @@
 // set cuda api_failures stop
+// print *((@global double *)d_B)[0]
 
 
 #include <cblas.h>
@@ -89,8 +90,11 @@ int main(int argc, char*argv[]) {
     cudaStatus = cudaMalloc((void**)&d_A_pArr, matAmt*sizeof(double *));
     cudaStatus = cudaMalloc((void**)&d_B_pArr, matAmt*sizeof(double *));
 
+
     cudaStatus  = cudaMemcpy(d_A_pArr, h_A_pArr, matAmt*sizeof(double *), cudaMemcpyHostToDevice);
+    // cudaStatus  = cudaMemcpy(d_A_pArr[1], h_A_pArr[1], matAmt*sizeof(double *), cudaMemcpyHostToDevice);
     cudaStatus  = cudaMemcpy(d_B_pArr, h_B_pArr, matAmt*sizeof(double *), cudaMemcpyHostToDevice);
+    // cudaStatus  = cudaMemcpy(d_B_pArr[1], h_B_pArr[1], matAmt*sizeof(double *), cudaMemcpyHostToDevice);
 
     // Prepare memory on host
     // A  = (double*)malloc(matAmt*matWidth*matWidth*sizeof(double));
@@ -166,6 +170,8 @@ int main(int argc, char*argv[]) {
 
     // cudaStatus = cudaMemcpy(&info_gpu, d_info, sizeof(int), cudaMemcpyDeviceToHost); // d_info -> info_gpu
     cudaStatus = cudaMemcpy(h_B, d_B, matWidth*sizeof(double), cudaMemcpyDeviceToHost); // d_B -> B
+
+    printMatrix(h_B, 1, matWidth, 2);
 
     // printf("\nX:\n");
     // printMatrix(h_B1, 1, matWidth);
