@@ -57,6 +57,8 @@ int main() {
 
 	double k0 = getk0(channel, Tlab);
 
+
+
 	// Allocate Unified Memory, i.e. let the following objects be accessible
 	// from both GPU and CPU
 
@@ -66,19 +68,15 @@ int main() {
 	k = k_and_w.v1;
 	w = k_and_w.v2;
 
+std::vector<std::complex<double>> G0_std = setupG0Vector(channel, k, w, k0);
+
 	int N = k.size();
 
-	double *k_dev = new double[N];
-	double *w_dev = new double[N];
-	cuDoubleComplex *V_dev = new cuDoubleComplex[N*N];
-	cuDoubleComplex *G0_dev = new cuDoubleComplex[N];
-	cuDoubleComplex *VG_dev = new cuDoubleComplex[N*N];
-
-	cudaMalloc((void**)&k_dev, N*sizeof(double));
-	cudaMalloc((void**)&w_dev, N*sizeof(double));
-	cudaMalloc((void**)&V_dev, N*N*sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&G0_dev, N*sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&VG_dev, N*N*sizeof(cuDoubleComplex));
+	double *k_dev;
+	double *w_dev;
+	cuDoubleComplex *V_dev;
+	cuDoubleComplex *G0_dev;
+	cuDoubleComplex *VG_dev;
 
 	LapackMat V_matrix = potential(channel, k, Tlab);
 	cuDoubleComplex *V = new cuDoubleComplex[N*N];
@@ -87,25 +85,28 @@ int main() {
 		V[i] = make_cuDoubleComplex(V_matrix.contents[i].real(), V_matrix.contents[i].imag());
 	}
 
-	std::vector<std::complex<double>> G0_std = setupG0Vector(channel, k, w, k0);
-	cuDoubleComplex *G0 = new cuDoubleComplex[N];
+	cuDoubleComplex G0[N];
 
 	for(int i = 0; i < G0_std.size(); i++){
 		G0[i] = make_cuDoubleComplex(G0_std[i].real(), G0_std[i].imag());
 	}
+
+	cudaMalloc((void**)&k_dev, N*sizeof(double));
+	cudaMalloc((void**)&w_dev, N*sizeof(double));
+	cudaMalloc((void**)&V_dev, N*N*sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&G0_dev, N*sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&VG_dev, N*N*sizeof(cuDoubleComplex));
 
 	cudaMemcpy(&k_dev, &k, N*sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(&w_dev, &w, N*sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(&V_dev, &V, N*N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 	cudaMemcpy(&G0_dev, &G0, N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
-	cudaMallocManaged(&VG_dev,N*N*sizeof(std::complex<double>));
-	cudaMallocManaged(&V_dev,N*N*sizeof(std::complex<double>));
-	cudaMallocManaged(&G0_dev,N*sizeof(std::complex<double>));
-	cudaMallocManaged(&k_dev,N*sizeof(std::complex<double>));
-	cudaMallocManaged(&w_dev,N*sizeof(std::complex<double>));
-
 	setupVG<<<1, 1>>>(k_dev, w_dev, V_dev, k0, G0_dev, VG_dev, N);
+
+	cuDoubleComplex VG[N*N];
+
+	cudaMemcpy(&VG, &VG_dev, N*N*sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	// Compute the phase shifts for many different T matrices
 	//std::vector<std::complex<double>> phase = computePhaseShifts<<<1,1>>>(channel, key, k0, T);
@@ -113,15 +114,15 @@ int main() {
 	// Wait for GPU to finish before accessing on host
 	cudaDeviceSynchronize();
 
-	std::cout << cuCreal(VG_dev[0]);
+	std::cout << cuCreal(VG[0]);
 
 
 	// Free memory from Unified Memory
-	cudaFree(VG_dev);
-	cudaFree(V_dev);
-	cudaFree(G0_dev);
-	cudaFree(k_dev);
-	cudaFree(w_dev);
+	// cudaFree(VG_dev);
+	// cudaFree(V_dev);
+	// cudaFree(G0_dev);
+	// cudaFree(k_dev);
+	// cudaFree(w_dev);
 
 	return 0;
 }
