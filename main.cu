@@ -74,31 +74,30 @@ int main() {
 	cuDoubleComplex *G0_dev = new cuDoubleComplex[N];
 	cuDoubleComplex *VG_dev = new cuDoubleComplex[N*N];
 
-	for(int kElement = 0; kElement < k.size(); kElement++){
-		k_dev[kElement] = k[kElement];
-	}
-
-	for(int wElement = 0; wElement < w.size(); wElement++){
-		w_dev[wElement] = w[wElement];
-	}
+	cudaMalloc((void**)&k_dev, N*sizeof(double));
+	cudaMalloc((void**)&w_dev, N*sizeof(double));
+	cudaMalloc((void**)&V_dev, N*N*sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&G0_dev, N*sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&VG_dev, N*N*sizeof(cuDoubleComplex));
 
 	LapackMat V_matrix = potential(channel, k, Tlab);
+	cuDoubleComplex *V = new cuDoubleComplex[N*N];
 
-
-
-	for(int VElement = 0; VElement < V_matrix.contents.size(); VElement++){
-		V_dev[VElement] = make_cuDoubleComplex(V_matrix.contents[VElement].real(), V_matrix.contents[VElement].imag());
+	for (int i = 0; i < V_matrix.height*V_matrix.width; i++) {
+		V[i] = make_cuDoubleComplex(V_matrix.contents[i].real(), V_matrix.contents[i].imag());
 	}
 
-	std::vector<std::complex<double>> G0 = setupG0Vector(channel, k, w, k0);
+	std::vector<std::complex<double>> G0_std = setupG0Vector(channel, k, w, k0);
+	cuDoubleComplex *G0 = new cuDoubleComplex[N];
 
-
-
-	for(int G0Element = 0; G0Element < G0.size(); G0Element++){
-		G0_dev[G0Element] = make_cuDoubleComplex(G0[G0Element].real(),G0[G0Element].imag());
+	for(int i = 0; i < G0_std.size(); i++){
+		G0[i] = make_cuDoubleComplex(G0_std[i].real(), G0_std[i].imag());
 	}
 
-
+	cudaMemcpy(&k_dev, &k, N*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(&w_dev, &w, N*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(&V_dev, &V, N*N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(&G0_dev, &G0, N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
 	cudaMallocManaged(&VG_dev,N*N*sizeof(std::complex<double>));
 	cudaMallocManaged(&V_dev,N*N*sizeof(std::complex<double>));
@@ -106,7 +105,7 @@ int main() {
 	cudaMallocManaged(&k_dev,N*sizeof(std::complex<double>));
 	cudaMallocManaged(&w_dev,N*sizeof(std::complex<double>));
 
-	setupVG<<<1, 1>>>(k_dev,w_dev,V_dev,k0,G0_dev,VG_dev,N);
+	setupVG<<<1, 1>>>(k_dev, w_dev, V_dev, k0, G0_dev, VG_dev, N);
 
 	// Compute the phase shifts for many different T matrices
 	//std::vector<std::complex<double>> phase = computePhaseShifts<<<1,1>>>(channel, key, k0, T);
