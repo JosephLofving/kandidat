@@ -3,6 +3,9 @@
 #include "potential.h"
 #include <fstream>
 #include <iomanip>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
 
 #include <cuComplex.h>
 
@@ -71,7 +74,9 @@ std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, 
 	cuDoubleComplex *G0_dev;
 	cuDoubleComplex *VG_dev;
 
-	cudaMalloc((void**)&k_dev, N*sizeof(double));
+    cudaError_t cudaStatus;
+
+	cudaStatus = cudaMalloc((void**)&k_dev, N*sizeof(double));
 	cudaMalloc((void**)&w_dev, N*sizeof(double));
 	cudaMalloc((void**)&V_dev, N*N*sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&G0_dev, N*sizeof(cuDoubleComplex));
