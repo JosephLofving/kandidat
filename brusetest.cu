@@ -10,7 +10,7 @@
 
 __global__
 void setupVG(double* a)
-{	
+{
 	a[0] *= 100;
 }
 
@@ -23,11 +23,12 @@ int main() {
 	double* k = &kVect[0];
 	double* k_dev;
 	cudaMalloc((void**)&k_dev, N * sizeof(double));
-	cudaMemcpy(&k_dev, &k, N * sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(k_dev, k, N * sizeof(double), cudaMemcpyHostToDevice);
+    //cudaMemcpy(dev_a, a, N*sizeof(int), cudaMemcpyHostToDevice);
 
 	std::cout << k[0] << std::endl;
 	setupVG << <1, 1 >> > (k_dev);
-	cudaMemcpy(&k, &k_dev, N * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	cudaMemcpy(k, k_dev, N * sizeof(double), cudaMemcpyDeviceToHost);
 
 	cudaDeviceSynchronize();
 
