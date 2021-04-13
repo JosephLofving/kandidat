@@ -12,7 +12,7 @@
 __global__
 void setupVG(double* a)
 {
-	a *= 100;
+	*a *= 100;
 }
 
 
