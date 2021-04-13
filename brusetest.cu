@@ -8,10 +8,10 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 
-void setupVG(double* k)
-{	
-	//int matrixHeight = 100;
-	k[0] *= 100;
+__global__
+void setupVG(double* a)
+{
+	a[0] *= 100;
 }
 
 
@@ -23,15 +23,17 @@ int main() {
 	double* k = &kVect[0];
 	double* k_dev;
 	cudaMalloc((void**)&k_dev, N * sizeof(double));
-	cudaMemcpy(&k_dev, &k, N * sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(k_dev, k, N * sizeof(double), cudaMemcpyHostToDevice);
 
-	//setupVG << <1, 1 >> > (k_dev);
+	std::cout << k[0] << std::endl;
+	setupVG << <1, 1 >> > (k_dev);
+	cudaMemcpy(k, k_dev, N * sizeof(double), cudaMemcpyDeviceToHost);
 
 	cudaDeviceSynchronize();
 
-	//std::cout << k_dev[0];
+	std::cout << k[0] << std::endl;
 	cudaFree(k_dev);
-	std::cout << "hej";
+	std::cout << "hej" << std::endl;
 
 	return 0;
 }
