@@ -51,7 +51,7 @@ int main() {
 	std::vector<double> wVect = k_and_w.v2;
 	double* w = &wVect[0];
 
-//std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, k0);
+std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, k0);
 
 	int N = kVect.size();
 
@@ -65,9 +65,12 @@ int main() {
 	cuDoubleComplex G0[N];
 
 	for(int i = 0; i < G0_std.size(); i++){
-		//G0[i] = make_cuDoubleComplex(G0_std[i].real(), G0_std[i].imag());
-		G0[i] = make_cuDoubleComplex(1, 1);
+		G0[i] = make_cuDoubleComplex(G0_std[i].real(), G0_std[i].imag());
 	}
+
+	//for (int i = 0; i < 100; ++i) {
+	//	G0[i] = make_cuDoubleComplex(1, 1);
+	//}
 
 	double *k_dev;// = (double*) malloc(N*sizeof(double));
 	double *w_dev;// = (double*) malloc(N*sizeof(double));
@@ -83,10 +86,10 @@ int main() {
 	cudaMalloc((void**)&G0_dev, N*sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&VG_dev, N*N*sizeof(cuDoubleComplex));
 
-	cudaMemcpy(&k_dev, &k, N*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(&w_dev, &w, N*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(&V_dev, &V, N*N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(&G0_dev, &G0, N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(k_dev, k, N*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(w_dev, w, N*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(V_dev, V, N*N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(G0_dev, G0, N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
 	setupVG<<<1, 1>>>(k_dev, w_dev, V_dev, k0, G0_dev, VG_dev, N);
 
