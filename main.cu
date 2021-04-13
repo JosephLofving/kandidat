@@ -51,7 +51,7 @@ int main() {
 	std::vector<double> wVect = k_and_w.v2;
 	double* w = &wVect[0];
 
-std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, k0);
+//std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, k0);
 
 	int N = kVect.size();
 
@@ -65,7 +65,8 @@ std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, 
 	cuDoubleComplex G0[N];
 
 	for(int i = 0; i < G0_std.size(); i++){
-		G0[i] = make_cuDoubleComplex(G0_std[i].real(), G0_std[i].imag());
+		//G0[i] = make_cuDoubleComplex(G0_std[i].real(), G0_std[i].imag());
+		G0[i] = make_cuDoubleComplex(1, 1);
 	}
 
 	double *k_dev;// = (double*) malloc(N*sizeof(double));
