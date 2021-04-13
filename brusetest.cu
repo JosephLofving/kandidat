@@ -10,7 +10,7 @@
 
 void setupVG(double* k)
 {	
-	int matrixHeight = 100;
+	//int matrixHeight = 100;
 	k[0] *= 100;
 }
 
