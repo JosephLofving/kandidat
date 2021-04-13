@@ -17,23 +17,18 @@ void setupVG(double* a)
 
 
 int main() {
-	int N = 100;
-
 	double kVect = 78;
 	double* k = &kVect;
 	double* k_dev;
-	cudaMalloc((void**)&k_dev, N * sizeof(double));
-	cudaMemcpy(k_dev, k, N * sizeof(double), cudaMemcpyHostToDevice);
+	cudaMalloc((void**)&k_dev, sizeof(double));
+	cudaMemcpy(k_dev, k, sizeof(double), cudaMemcpyHostToDevice);
 
 	std::cout << *k << std::endl;
 	setupVG << <1, 1 >> > (k_dev);
-	cudaMemcpy(k, k_dev, N * sizeof(double), cudaMemcpyDeviceToHost);
-
-	cudaDeviceSynchronize();
+	cudaMemcpy(k, k_dev, sizeof(double), cudaMemcpyDeviceToHost);
 
 	std::cout << *k << std::endl;
 	cudaFree(k_dev);
-	std::cout << "hej" << std::endl;
 
 	return 0;
 }
