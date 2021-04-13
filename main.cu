@@ -65,8 +65,8 @@ std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, 
 		G0[i] = make_cuDoubleComplex(G0_std[i].real(), G0_std[i].imag());
 	}
 
-	double k_dev;// = (double*) malloc(N*sizeof(double));
-	double w_dev;// = (double*) malloc(N*sizeof(double));
+	double *k_dev;// = (double*) malloc(N*sizeof(double));
+	double *w_dev;// = (double*) malloc(N*sizeof(double));
 	cuDoubleComplex *V_dev;
 	cuDoubleComplex *G0_dev;
 	cuDoubleComplex *VG_dev;
