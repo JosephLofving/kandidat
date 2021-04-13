@@ -29,7 +29,7 @@ int main() {
 
 	cudaDeviceSynchronize();
 
-	//std::cout << cuCreal(&k_dev[0]);
+	//std::cout << k_dev[0];
 	cudaFree(k_dev);
 	std::cout << "hej";
 
