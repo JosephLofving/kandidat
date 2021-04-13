@@ -25,12 +25,13 @@ int main() {
 	cudaMalloc((void**)&k_dev, N * sizeof(double));
 	cudaMemcpy(&k_dev, &k, N * sizeof(double), cudaMemcpyHostToDevice);
 
-	setupVG << <1, 1 >> > (k_dev);
+	//setupVG << <1, 1 >> > (k_dev);
 
 	cudaDeviceSynchronize();
 
 	//std::cout << cuCreal(&k_dev[0]);
 	cudaFree(k_dev);
+	std::cout << "hej";
 
 	return 0;
 }
