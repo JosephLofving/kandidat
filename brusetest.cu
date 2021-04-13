@@ -11,7 +11,6 @@
 __global__
 void setupVG(double* k)
 {	
-	//int matrixHeight = 100;
 	k[0] *= 100;
 }
 
@@ -28,6 +27,7 @@ int main() {
 
 	std::cout << k_dev[0];
 	setupVG << <1, 1 >> > (k_dev);
+	cudaMemcpy(&k, &k_dev, N * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	cudaDeviceSynchronize();
 
