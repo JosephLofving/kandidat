@@ -9,9 +9,9 @@
 #include <curand_kernel.h>
 
 __global__
-void setupVG(double* k)
+void setupVG(double* a)
 {	
-	k[0] *= 100;
+	a[0] *= 100;
 }
 
 
@@ -25,15 +25,15 @@ int main() {
 	cudaMalloc((void**)&k_dev, N * sizeof(double));
 	cudaMemcpy(&k_dev, &k, N * sizeof(double), cudaMemcpyHostToDevice);
 
-	std::cout << k[0];
+	std::cout << k[0] << std::endl;
 	setupVG << <1, 1 >> > (k_dev);
 	cudaMemcpy(&k, &k_dev, N * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	cudaDeviceSynchronize();
 
-	std::cout << k[0];
+	std::cout << k[0] << std::endl;
 	cudaFree(k_dev);
-	std::cout << "hej";
+	std::cout << "hej" << std::endl;
 
 	return 0;
 }
