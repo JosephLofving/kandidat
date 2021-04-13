@@ -1,18 +1,11 @@
-#include <cmath>
-#include <complex>
 #include <iostream>
-#include <vector>
-#include <fstream>
-#include <iomanip>
-#include <cuComplex.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <curand_kernel.h>
 
 __global__
 void setupVG(double* a)
 {
-	*a *= 100;
+	*a = 100;
 }
 
 
