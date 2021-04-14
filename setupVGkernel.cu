@@ -32,8 +32,8 @@ __global__
 void setupVGNonParallell(cuDoubleComplex *V, cuDoubleComplex *G0, cuDoubleComplex *VG, int matrixHeight)
 {
 	for (int row = 0; row < matrixHeight; row++) {
-		for (int column = 0; column < matrixHeight; column++) {
-			VG[row+column*matrixHeight] = cuCmul(V[row+column*matrixHeight],G0[column]);
+		for (int col = 0; col < matrixHeight; col++) {
+			VG[col+row*matrixHeight] = cuCmul(V[row+column*matrixHeight],G0[column]);
 		}
 	}
 }
@@ -113,7 +113,9 @@ int main() {
 	cudaFree(V_dev);
 	cudaFree(VG_dev);
 
-	for (int i = 0; i < V_matrix.width*V_matrix.height; i += 5) {
+	LapackMat VG_host_Matrix = 
+
+	for (int i = 0; i < V_matrix.width*V_matrix.height; i += 100) {
 		std::cout << cuCreal(VG_host[i]) << std::endl;
 	}
 
