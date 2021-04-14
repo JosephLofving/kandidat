@@ -28,6 +28,16 @@ void setupVG(cuDoubleComplex *V, cuDoubleComplex *G0, cuDoubleComplex *VG, int m
 	}
 }
 
+__global__
+void setupVGNonParallell(cuDoubleComplex *V, cuDoubleComplex *G0, cuDoubleComplex *VG, int matrixHeight)
+{
+	for (int row = 0; row < matrixHeight; row++) {
+		for (int column = 0; column < matrixHeight; column++) {
+			VG[row+column*matrixHeight] = cuCmul(V[row+column*matrixHeight],G0[column]);
+		}
+	}
+}
+
 int main() {
 	const int Nkvadr = 100;
 	double scale = 100.0;
@@ -86,7 +96,8 @@ int main() {
 		blocksPerGrid.y  = ceil(double(N)/double(threadsPerBlock.y));
 	}
 
-	setupVG <<<threadsPerBlock, blocksPerGrid>>> (V_dev, G0_dev, VG_dev, N);
+	//setupVG <<<threadsPerBlock, blocksPerGrid>>> (V_dev, G0_dev, VG_dev, N);
+	setupVGNonParallell <<<1,1>>> (V_dev,G0_dev,VG_dev,N);
 	cudaDeviceSynchronize();
 
 	cuDoubleComplex* VG_host= new cuDoubleComplex[V_matrix.width*V_matrix.height];
