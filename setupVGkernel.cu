@@ -62,7 +62,7 @@ int main() {
 	int N = G0_std.size();
 
 	LapackMat V_matrix = potential(channel, kVect, Tlab);
-	LapackMat VG_CPU = setupVGKernel(channel, key, V_matrix, k, w, k0);
+	LapackMat VG_CPU = setupVGKernel(channel, key, V_matrix, kVect, wVect, k0);
 	
 
 	cuDoubleComplex* V_host = new cuDoubleComplex[V_matrix.width*V_matrix.height];
