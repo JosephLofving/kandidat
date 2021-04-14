@@ -13,6 +13,10 @@ int main() {
 	int N = 100;
 	double scale = 100;
 
+	TwoVectors k_and_w = gaussLegendreInfMesh(N, scale);
+
+	std::vector<double> k = k_and_w.v1;
+	std::vector<double> w = k_and_w.v2;
 
 	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
 	std::vector<QuantumState> channel = channels[key];
@@ -22,7 +26,7 @@ int main() {
 	}
 	printStates(channel);
 
-	double Tlab = 100.0; //Rörelseenergin hos 
+	double Tlab = 100.0; //Rï¿½relseenergin hos 
 
 	LapackMat V_matrix = potential(channel, k, Tlab);
 
