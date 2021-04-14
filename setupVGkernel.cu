@@ -120,7 +120,7 @@ int main() {
 
 
 	for (int i = 0; i < N*N; i += 1) {
-		std::cout << cuCreal(VG_host[i])-VG_CPU.contents[i].real(); << std::endl;
+		std::cout << cuCreal(VG_host[i])-VG_CPU.contents[i].real() << std::endl;
 	}
 
 	return 0;
