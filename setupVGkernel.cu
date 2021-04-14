@@ -87,13 +87,13 @@ int main() {
 	}
 
 	setupVG <<<threadsPerBlock, blocksPerGrid>>> (V_dev, G0_dev, VG_dev, N);
+	cudaDeviceSynchronize();
 
 	cuDoubleComplex* VG_host= new cuDoubleComplex[V_matrix.width*V_matrix.height];
 	VG_host[5]= make_cuDoubleComplex(1,1);
 	cudaMemcpy(VG_host, VG_dev, N*N*sizeof(double), cudaMemcpyDeviceToHost);
 
 	//gpuErrchk( cudaPeekAtLastError() );
-	cudaDeviceSynchronize();
 
 	// std::cout << V_host[0] << std::endl;
 	// std::cout << V_host[100] << std::endl;
