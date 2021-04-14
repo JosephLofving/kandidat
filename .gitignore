@@ -12,6 +12,7 @@ main.exe
 main.obj
 quantumStates.obj
 solveLS.obj
+data.csv
 .vs
 *.dSYM
 *.json
