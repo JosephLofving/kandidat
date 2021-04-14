@@ -88,7 +88,7 @@ int main() {
 
 	cudaMemcpy(V_host, VG_dev, N*N*sizeof(double), cudaMemcpyDeviceToHost);
 
-	gpuErrchk( cudaPeekAtLastError() );
+	//gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
 	// std::cout << V_host[0] << std::endl;
