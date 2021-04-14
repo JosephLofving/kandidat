@@ -61,7 +61,8 @@ int main() {
 	std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, k0);
 	int N = G0_std.size();
 
-	LapackMat V_matrix = potential(channel, kVect, Tlab);
+	LapackMat VG_CPU = setupVGKernel(channel, key, V, k, w, k0);
+
 	cuDoubleComplex* V_host = new cuDoubleComplex[V_matrix.width*V_matrix.height];
 
 	for (int i = 0; i < N*N; i++) {
@@ -113,9 +114,11 @@ int main() {
 	cudaFree(V_dev);
 	cudaFree(VG_dev);
 
+	
 
-	for (int i = 0; i < V_matrix.width*V_matrix.height; i += 100) {
-		std::cout << cuCreal(VG_host[i]) << std::endl;
+
+	for (int i = 0; i < N*N; i += 1) {
+		std::cout << cuCreal(VG_host[i])-VG_CPU.contents[i].real(); << std::endl;
 	}
 
 	return 0;
