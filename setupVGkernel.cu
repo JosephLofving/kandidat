@@ -47,14 +47,14 @@ int main() {
 
 	double* k = &kVect[0];
 	double* w = &wVect[0];
-	int N = kVect.size();
 
 	std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, k0);
+	int N = G0_std.size();
 
 	LapackMat V_matrix = potential(channel, kVect, Tlab);
 	cuDoubleComplex* V_host = new cuDoubleComplex[V_matrix.width*V_matrix.height];
 
-	for (int i = 0; i < V_matrix.height*V_matrix.width; i++) {
+	for (int i = 0; i < N*N; i++) {
 		V_host[i] = make_cuDoubleComplex(V_matrix.contents[i].real(), V_matrix.contents[i].imag());
 	}
 
@@ -88,8 +88,8 @@ int main() {
 
 	cudaMemcpy(V_host, VG_dev, N*N*sizeof(double), cudaMemcpyDeviceToHost);
 
-	gpuErrchk( cudaPeekAtLastError() );
-	gpuErrchk( cudaDeviceSynchronize() );
+	//gpuErrchk( cudaPeekAtLastError() );
+	cudaDeviceSynchronize();
 
 	// std::cout << V_host[0] << std::endl;
 	// std::cout << V_host[100] << std::endl;
