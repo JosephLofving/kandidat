@@ -29,7 +29,7 @@ void setupVG(cuDoubleComplex *V, cuDoubleComplex *G0, cuDoubleComplex *VG, int m
 }
 
 int main() {
-	int Nkvadr = 100;
+	const int Nkvadr = 100;
 	double scale = 100.0;
 	double Tlab = 100.0;
 
@@ -58,7 +58,7 @@ int main() {
 		V_host[i] = make_cuDoubleComplex(V_matrix.contents[i].real(), V_matrix.contents[i].imag());
 	}
 
-	cuDoubleComplex G0[G0_std.size()];
+	cuDoubleComplex G0[(Nkvadr+1)];
 	for(int i = 0; i < G0_std.size(); i++){
 		G0[i] = make_cuDoubleComplex(G0_std[i].real(), G0_std[i].imag());
 	}
