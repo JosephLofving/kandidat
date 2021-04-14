@@ -84,7 +84,7 @@ LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, Lapa
 	}
 
 	for (int i = 0; i < VG.width * VG.height; i += 5) {
-		std::cout << VG[i].real() << std::endl;
+		std::cout << VG.contents(i).real() << std::endl;
 	}
 
 	return VG;
