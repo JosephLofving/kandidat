@@ -61,8 +61,8 @@ int main() {
 	std::vector<std::complex<double>> G0_std = setupG0Vector(channel, kVect, wVect, k0);
 	int N = G0_std.size();
 
-	LapackMat V_matrix = potential(channel, k, Tlab);
-	LapackMat VG_CPU = setupVGKernel(channel, key, V, k, w, k0);
+	LapackMat V_matrix = potential(channel, kVect, Tlab);
+	LapackMat VG_CPU = setupVGKernel(channel, key, V_matrix, k, w, k0);
 	
 
 	cuDoubleComplex* V_host = new cuDoubleComplex[V_matrix.width*V_matrix.height];
