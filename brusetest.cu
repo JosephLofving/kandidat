@@ -26,7 +26,7 @@ int main() {
 	cudaMemcpy(k_dev, k, N * sizeof(double), cudaMemcpyHostToDevice);
 
 	std::cout << k[0] << std::endl;
-	setupVG << <1, 1 >> > (k_dev);
+	setupVG <<<1, 1 >>> (k_dev);
 	cudaMemcpy(k, k_dev, N * sizeof(double), cudaMemcpyDeviceToHost);
 
 	cudaDeviceSynchronize();

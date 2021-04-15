@@ -36,8 +36,18 @@ void setupVG(cuDoubleComplex *V, cuDoubleComplex *G0, cuDoubleComplex *VG, int m
 	}
 }
 
+__global__
+void setupVGNonParallell(cuDoubleComplex *V, cuDoubleComplex *G0, cuDoubleComplex *VG, int matrixHeight)
+{
+	for (int row = 0; row < matrixHeight; row++) {
+		for (int col = 0; col < matrixHeight; col++) {
+			VG[row+col*matrixHeight] = cuCmul(V[row+col*matrixHeight],G0[col]);
+		}
+	}
+}
+
 int main() {
-	int Nkvadr = 100;
+	const int Nkvadr = 100;
 	double scale = 100.0;
 	double Tlab = 100.0;
 
@@ -60,8 +70,8 @@ int main() {
 	int N = G0_std.size();
 
 	LapackMat V_matrix = potential(channel, kVect, Tlab);
-
 	LapackMat VG_CPU = setupVGKernel(channel, key, V_matrix, kVect, wVect, k0);
+
 
 	cuDoubleComplex* V_host = new cuDoubleComplex[V_matrix.width*V_matrix.height];
 
@@ -69,10 +79,12 @@ int main() {
 		V_host[i] = make_cuDoubleComplex(V_matrix.contents[i].real(), V_matrix.contents[i].imag());
 	}
 
-	cuDoubleComplex G0[G0_std.size()];
+
+	cuDoubleComplex G0[(Nkvadr+1)];
 	for(int i = 0; i < G0_std.size(); i++){
 		G0[i] = make_cuDoubleComplex(G0_std[i].real(), G0_std[i].imag());
 	}
+
 
 	cuDoubleComplex* G0_dev;
 	cuDoubleComplex* V_dev;
@@ -104,11 +116,15 @@ int main() {
 	printf("%d, %d", blocksPerGrid.x, threadsPerBlock.x);
 
 	setupVG <<<blocksPerGrid, threadsPerBlock>>> (V_dev, G0_dev, VG_dev, N);
+	//setupVG <<<threadsPerBlock, blocksPerGrid>>> (V_dev, G0_dev, VG_dev, N);
+	setupVGNonParallell <<<1,1>>> (V_dev,G0_dev,VG_dev,N);
+	cudaDeviceSynchronize();
 
-	cudaMemcpy(V_host, VG_dev, N*N*sizeof(double), cudaMemcpyDeviceToHost);
+	cuDoubleComplex* VG_host= new cuDoubleComplex[V_matrix.width*V_matrix.height];
+	VG_host[5]= make_cuDoubleComplex(1,1);
+	cudaMemcpy(VG_host, VG_dev, N*N*sizeof(double), cudaMemcpyDeviceToHost);
 
 	//gpuErrchk( cudaPeekAtLastError() );
-	cudaDeviceSynchronize();
 
 	// std::cout << V_host[0] << std::endl;
 	// std::cout << V_host[100] << std::endl;
@@ -117,12 +133,11 @@ int main() {
 	cudaFree(V_dev);
 	cudaFree(VG_dev);
 
-	// std::ofstream myfile;
-    // myfile.open ("nydata.csv");
 
-	for (int i = 0; i < V_matrix.width*V_matrix.height; i += 100) {
-		// myfile << cuCreal(V_host[i]) << std::endl;
-		std::cout << cuCreal(V_host[i]) << std::endl;
+
+
+	for (int i = 0; i < N*N; i += 1) {
+		std::cout << cuCreal(VG_host[i])-VG_CPU.contents[i].real() << std::endl;
 	}
 
 	return 0;
