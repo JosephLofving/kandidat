@@ -31,7 +31,7 @@ void setupVG(cuDoubleComplex *V, cuDoubleComplex *G0, cuDoubleComplex *VG, int m
 	// }
 
 	if (row < matWidth && col < matWidth) {
-		// printf("Block: %d,%d \tThread: %d,%d\n", blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y);
+		printf("Block: %d,%d \tThread: %d,%d\n", blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y);
 		VG[row + col*matWidth] = cuCmul(V[row + col*matWidth], G0[col]);
 	}
 }
@@ -93,16 +93,16 @@ int main() {
 	cuDoubleComplex* VG_host = new cuDoubleComplex[V_matrix.width*V_matrix.height];
 
 	for (int i = 0; i < N*N; i++) {
-		VG_host[i] = make_cuDoubleComplex(VG_CPU.contents[i].real(), VG_CPU.contents[i].imag());
+		VG_host[i] = make_cuDoubleComplex(1.0, 1.0);//make_cuDoubleComplex(VG_CPU.contents[i].real(), VG_CPU.contents[i].imag());
 	}
 
-	cudaMalloc((void**)&V_dev, N*N*sizeof(double));
-	cudaMalloc((void**)&VG_dev, N*N*sizeof(double));
-	cudaMalloc((void**)&G0_dev, N*sizeof(double));
+	cudaMalloc((void**)&V_dev, N*N*sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&VG_dev, N*N*sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&G0_dev, N*sizeof(cuDoubleComplex));
 
-	cudaMemcpy(G0_dev, G0, N*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(V_dev, V_host, N*N*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(VG_dev, VG_host, N*N*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(G0_dev, G0, N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(V_dev, V_host, N*N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(VG_dev, VG_host, N*N*sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
 	dim3 threadsPerBlock(N, N);
 	dim3 blocksPerGrid(1, 1);
@@ -122,7 +122,7 @@ int main() {
 
 	// cuDoubleComplex* VG_host= new cuDoubleComplex[V_matrix.width*V_matrix.height];
 	// VG_host[5]= make_cuDoubleComplex(1,1);
-	cudaMemcpy(VG_host, VG_dev, N*N*sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(VG_host, VG_dev, N*N*sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	//gpuErrchk( cudaPeekAtLastError() );
 
