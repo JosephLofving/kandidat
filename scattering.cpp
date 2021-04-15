@@ -73,7 +73,9 @@ LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, Lapa
 	/* If coupled, append G0 to itself to facilitate calculations. This means the second half of G0 is a copy of the first. */
 	if (isCoupled(channel)) {
 		G0.insert(std::end(G0), std::begin(G0), std::end(G0)); // TODO: Risk that this does not work properly, might want to test in uncoupled case
+		
 	}
+
 
 	/* Create VG by using VG[i,j] = V[i,j] * G[j] */
 	LapackMat VG = LapackMat(G0.size());
@@ -81,10 +83,6 @@ LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, Lapa
 		for (int column = 0; column < G0.size(); column++) {
 			VG.setElement(row, column, V.getElement(row, column) * G0[column]);
 		}
-	}
-
-	for (int i = 0; i < VG.width * VG.height; i += 100) {
-		std::cout << VG.contents[i].real() << std::endl;
 	}
 
 	return VG;
