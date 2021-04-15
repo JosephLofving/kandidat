@@ -113,15 +113,15 @@ int main() {
 		blocksPerGrid.y  = 4;//ceil(double(N)/double(threadsPerBlock.y));
 	}
 
-	printf("%d, %d", blocksPerGrid.x, threadsPerBlock.x);
+	printf("%d, %d\n", blocksPerGrid.x, threadsPerBlock.x);
 
 	setupVG <<<blocksPerGrid, threadsPerBlock>>> (V_dev, G0_dev, VG_dev, N);
 	//setupVG <<<threadsPerBlock, blocksPerGrid>>> (V_dev, G0_dev, VG_dev, N);
-	setupVGNonParallell <<<1,1>>> (V_dev,G0_dev,VG_dev,N);
+	// setupVGNonParallell <<<1,1>>> (V_dev,G0_dev,VG_dev,N);
 	cudaDeviceSynchronize();
 
-	cuDoubleComplex* VG_host= new cuDoubleComplex[V_matrix.width*V_matrix.height];
-	VG_host[5]= make_cuDoubleComplex(1,1);
+	// cuDoubleComplex* VG_host= new cuDoubleComplex[V_matrix.width*V_matrix.height];
+	// VG_host[5]= make_cuDoubleComplex(1,1);
 	cudaMemcpy(VG_host, VG_dev, N*N*sizeof(double), cudaMemcpyDeviceToHost);
 
 	//gpuErrchk( cudaPeekAtLastError() );
@@ -133,11 +133,12 @@ int main() {
 	cudaFree(V_dev);
 	cudaFree(VG_dev);
 
-
-
-
-	for (int i = 0; i < N*N; i += 1) {
-		std::cout << cuCreal(VG_host[i])-VG_CPU.contents[i].real() << std::endl;
+	for (int i = 0; i < N*N; i++) {
+		// printf("%d\n", i);
+		// if (cuCreal(VG_host[i]) - VG_CPU.contents[i].real() != 0) {
+			// printf("Index: %d \t GPU: %f \t CPU: %f\n", i, cuCreal(VG_host[i]), VG_CPU.contents[i].real());
+		// }
+		printf("GPU: %.2e \t CPU: %.2e\n", cuCreal(VG_host[i]), VG_CPU.contents[i].real());
 	}
 
 	return 0;
