@@ -7,6 +7,7 @@
 #include <cuda_runtime.h>
 #include <cuComplex.h>
 #include <complex>
+#include <fstream>
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
@@ -23,7 +24,14 @@ void setupVG(cuDoubleComplex *V, cuDoubleComplex *G0, cuDoubleComplex *VG, int m
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
 	int col = blockIdx.x * blockDim.x + threadIdx.x;
 
+	// printf("Block: %d,%d \tThread: %d,%d\n", blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y);
+
+	// if (row < matWidth && col < matWidth && cuCreal(VG[row + col*matWidth]) != cuCreal(cuCmul(V[row + col*matWidth], G0[col]))) {
+	// 	printf("Row: %d  \tcol: %d\t\tGPU: %.2e\tCPU: %.2e\n", row, col, cuCreal(cuCmul(V[row + col*matWidth], G0[col])), cuCreal(VG[row + col*matWidth]));
+	// }
+
 	if (row < matWidth && col < matWidth) {
+		// printf("Block: %d,%d \tThread: %d,%d\n", blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y);
 		VG[row + col*matWidth] = cuCmul(V[row + col*matWidth], G0[col]);
 	}
 }
@@ -52,6 +60,9 @@ int main() {
 	int N = G0_std.size();
 
 	LapackMat V_matrix = potential(channel, kVect, Tlab);
+
+	LapackMat VG_CPU = setupVGKernel(channel, key, V_matrix, kVect, wVect, k0);
+
 	cuDoubleComplex* V_host = new cuDoubleComplex[V_matrix.width*V_matrix.height];
 
 	for (int i = 0; i < N*N; i++) {
@@ -67,24 +78,32 @@ int main() {
 	cuDoubleComplex* V_dev;
 	cuDoubleComplex* VG_dev;
 
+	cuDoubleComplex* VG_host = new cuDoubleComplex[V_matrix.width*V_matrix.height];
+
+	for (int i = 0; i < N*N; i++) {
+		VG_host[i] = make_cuDoubleComplex(VG_CPU.contents[i].real(), VG_CPU.contents[i].imag());
+	}
+
 	cudaMalloc((void**)&V_dev, N*N*sizeof(double));
 	cudaMalloc((void**)&VG_dev, N*N*sizeof(double));
 	cudaMalloc((void**)&G0_dev, N*sizeof(double));
 
 	cudaMemcpy(G0_dev, G0, N*sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(V_dev, V_host, N*N*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(VG_dev, V_host, N*N*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(VG_dev, VG_host, N*N*sizeof(double), cudaMemcpyHostToDevice);
 
 	dim3 threadsPerBlock(N, N);
 	dim3 blocksPerGrid(1, 1);
 	if (N*N > 512) {
-		threadsPerBlock.x = 512;
-		threadsPerBlock.y = 512;
-		blocksPerGrid.x  = ceil(double(N)/double(threadsPerBlock.x));
-		blocksPerGrid.y  = ceil(double(N)/double(threadsPerBlock.y));
+		threadsPerBlock.x = 32;//512;
+		threadsPerBlock.y = 32;//512;
+		blocksPerGrid.x  = 4;//ceil(double(N)/double(threadsPerBlock.x));
+		blocksPerGrid.y  = 4;//ceil(double(N)/double(threadsPerBlock.y));
 	}
 
-	setupVG <<<threadsPerBlock, blocksPerGrid>>> (V_dev, G0_dev, VG_dev, N);
+	printf("%d, %d", blocksPerGrid.x, threadsPerBlock.x);
+
+	setupVG <<<blocksPerGrid, threadsPerBlock>>> (V_dev, G0_dev, VG_dev, N);
 
 	cudaMemcpy(V_host, VG_dev, N*N*sizeof(double), cudaMemcpyDeviceToHost);
 
@@ -98,7 +117,11 @@ int main() {
 	cudaFree(V_dev);
 	cudaFree(VG_dev);
 
-	for (int i = 0; i < V_matrix.width*V_matrix.height; i += 5) {
+	// std::ofstream myfile;
+    // myfile.open ("nydata.csv");
+
+	for (int i = 0; i < V_matrix.width*V_matrix.height; i += 100) {
+		// myfile << cuCreal(V_host[i]) << std::endl;
 		std::cout << cuCreal(V_host[i]) << std::endl;
 	}
 
