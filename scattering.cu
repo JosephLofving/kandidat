@@ -70,8 +70,8 @@ cuDoubleComplex* setupG0Vector(double mu, double* k, double* w, double k0, int N
 */
 
 __global__
-void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, std::string key, cuDoubleComplex* V, double* k, double* w, double k0, int Nkvadr, int G0Size) {
-	//std::cout << "Setting up G0(k0) in channel " << key << std::endl;
+void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex* V, double* k, double* w, double k0, int Nkvadr, int G0Size) {
+	
 	cuDoubleComplex* G0 = setupG0Vector(mu, k, w, k0, Nkvadr);
 
 	/* If coupled, append G0 to itself to facilitate calculations. This means the second half of G0 is a copy of the first. */
@@ -114,23 +114,15 @@ void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, std::string key
 	@param k0:		On-shell-point
 	@return			T matrix
 */
-cuDoubleComplex* computeTMatrix(std::vector<QuantumState> channel, std::string key, LapackMat V_matrix, double* k, double* w, double k0, int Nkvadr)  {
-
-	int G0Size = Nkvadr + 1;
-	std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
+cuDoubleComplex* computeTMatrix(LapackMat V_matrix, double* k, double* w, double k0, int Nkvadr, int G0Size, double mu, bool coupled)  {
 
 	cuDoubleComplex* V_host = new cuDoubleComplex[V_matrix.width * V_matrix.height];
 	for (int i = 0; i < Nkvadr * Nkvadr; i++) {
 		V_host[i] = make_cuDoubleComplex(V_matrix.contents[i].real(), V_matrix.contents[i].imag());
 	}
 
-	double mu = getReducedMass(channel);
-	bool coupled = (isCoupled(channel));
-	if (coupled) {
-		G0Size *= 2;
-	}
 	cuDoubleComplex* VG = new cuDoubleComplex[G0Size * G0Size];
-	setupVGKernel(VG, mu, coupled , key, V_host, k, w, k0, Nkvadr, G0Size);
+	setupVGKernel(VG, mu, coupled, V_host, k, w, k0, Nkvadr, G0Size);
 
 	cuDoubleComplex* F = new cuDoubleComplex[G0Size * G0Size];
 	for (int i = 0; i < G0Size; ++i) {
@@ -166,21 +158,20 @@ std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB
 	@param T:		T matrix
 	@return			Complex phase shifts
 */
-std::vector<std::complex<double>> computePhaseShifts(std::vector<QuantumState> channel, std::string key, double k0, LapackMat T) {
-	std::cout << "Computing phase shifts in channel " << key << std::endl;
-	std::vector<std::complex<double>> phases;
 
-	double mu = getReducedMass(channel);
+__global__
+std::vector<std::complex<double>> computePhaseShifts(cuDoubleComplex* phases, double mu, bool coupled, std::string key, double k0, cuDoubleComplex* T, int Nkvadr) {
+	
 	double rhoT =  2 * mu * k0; // Equation (2.27) in the theory
-	int N = T.width;
-	// TODO: Explain theory for the phase shift for the coupled state
-	if (isCoupled(channel)) {
-		N = static_cast<int>( (N - 2) / 2);
-		std::complex<double> T11 = T.getElement(N,N);
-		std::complex<double> T12 = T.getElement(2 * N + 1, N);
-		std::complex<double> T22 = T.getElement(2 * N + 1, 2 * N + 1);
 
-		/* Blatt - Biedenharn(BB) convention */
+	// TODO: Explain theory for the phase shift for the coupled state
+	if (coupled) {
+		/*int N = Nkvadr;
+		cuDoubleComplex T11 = T[(N) + (N * N)]; //row + column * size
+		cuDoubleComplex T12 = T[(2 * N + 1) + (N * N)];
+		cuDoubleComplex T22 = T[(2 * N + 1) + (N * (2 * N + 1))];
+
+		//Blatt - Biedenharn(BB) convention
 		std::complex<double> twoEpsilonJBB{ std::atan(2.0 * T12 / (T11 - T22)) };
 		std::complex<double> deltaPlusBB{ -0.5 * I * std::log(1.0 - I * rhoT * (T11 + T22) + I * rhoT * (2.0 * T12) / std::sin(twoEpsilonJBB)) };
 		std::complex<double> deltaMinusBB{ -0.5 * I * std::log(1.0 - I * rhoT * (T11 + T22) - I * rhoT * (2.0 * T12) / std::sin(twoEpsilonJBB)) };
@@ -189,14 +180,16 @@ std::vector<std::complex<double>> computePhaseShifts(std::vector<QuantumState> c
 
 		phases.push_back(phasesAppend[0]);
 		phases.push_back(phasesAppend[1]);
-		phases.push_back(phasesAppend[2]);
+		phases.push_back(phasesAppend[2]); 
+
+		*/
+		//avkommenterade för de ger error vid icke kopplad kompilering. Avkommentera och fixa.
 	}
 	/* The uncoupled case completely follows equation (2.26). */
 	else {
-		N -= 1;
-		std::complex<double> T0 = T.getElement(N, N);
-		std::complex<double> argument = 1.0 - 2.0 * I * rhoT * T0;
-		std::complex<double> delta = (-0.5 * I) * std::log(argument) * constants::rad2deg;
+		double T0 = cuCreal(T[(Nkvadr) + (Nkvadr * Nkvadr)]); //Farligt, detta element kanske inte är helt reelt. Dock var koden dålig förut isåfall.
+		cuDoubleComplex argument = make_cuDoubleComplex(1, -2.0 * rhoT * T0);
+		cuDoubleComplex delta = (-0.5 * I) * logf(argument) * constants::rad2deg;
 
 		phases.push_back(delta);
 	}
