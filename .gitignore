@@ -25,3 +25,4 @@ test
 *.exp
 *.lib
 std
+*.o
