@@ -3,17 +3,7 @@
 	Use gaussLegendreInfMesh for improper integrals and gaussLegendreLineMesh for integrals on a finite interval.
 */
 
-#include "constants.h"
-#include "lapackAPI.h"
 #include "mesh.h"
-
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <algorithm>
-#include <list>
-#include <numeric> //is needed for std::iota
-#include <random>
 
 
 /*
@@ -271,7 +261,7 @@ LapackMat* legcompanion(int N) {
 
 
 /* Get quadrature points and weights for an interval [a,b]*/
-TwoVectors gaussLegendreLineMesh(int N, int a, int b) {
+kAndWPtrs gaussLegendreLineMesh(int N, int a, int b) {
 	TwoVectors X = leggauss(N);
 	std::vector<double> p = X.v1;
 	std::vector<double> wPrime = X.v2;
@@ -286,14 +276,17 @@ TwoVectors gaussLegendreLineMesh(int N, int a, int b) {
 		w[j] = wPrime[j] * 0.5 * (b - a);
 	}
 
-	TwoVectors kAndW{ k, w };
+	double* kk = &k[0];
+	double* ww = &w[0];
+
+	kAndWPtrs kAndW{ kk, ww };
 
 	return kAndW;
 }
 
 
 /* This follows equation (2.18) and (2.19) with the same notation */
-TwoVectors gaussLegendreInfMesh(int N, double vecScale) {
+kAndWPtrs gaussLegendreInfMesh(int N, double vecScale) {
 	TwoVectors X = leggauss(N);
 	std::vector<double> p = X.v1;
 	std::vector<double> wPrime = X.v2;
@@ -308,8 +301,10 @@ TwoVectors gaussLegendreInfMesh(int N, double vecScale) {
 		k[j] = vecScale * std::tan(constants::pi * (p[j] + 1.0) / 4);
 		w[j] = wPrime[j] * vecScale * (constants::pi / 4) / pow(std::cos(constants::pi * (p[j] + 1.0) / 4), 2);
 	}
+	double* kk = &k[0];
+	double* ww = &w[0];
 
-	TwoVectors kAndW{ k, w };
+	kAndWPtrs kAndW{ kk, ww };
 
 	return kAndW;
 }

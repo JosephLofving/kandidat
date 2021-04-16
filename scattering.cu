@@ -70,7 +70,7 @@ cuDoubleComplex* setupG0Vector(double mu, double* k, double* w, double k0, int N
 */
 
 __global__
-void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex* V, double* k, double* w, double k0, int Nkvadr, int G0Size) {
+void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex** V, double* k, double* w, double k0, int Nkvadr, int G0Size) {
 	
 	cuDoubleComplex* G0 = setupG0Vector(mu, k, w, k0, Nkvadr);
 
@@ -114,15 +114,10 @@ void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex
 	@param k0:		On-shell-point
 	@return			T matrix
 */
-cuDoubleComplex* computeTMatrix(LapackMat V_matrix, double* k, double* w, double k0, int Nkvadr, int G0Size, double mu, bool coupled)  {
-
-	cuDoubleComplex* V_host = new cuDoubleComplex[V_matrix.width * V_matrix.height];
-	for (int i = 0; i < Nkvadr * Nkvadr; i++) {
-		V_host[i] = make_cuDoubleComplex(V_matrix.contents[i].real(), V_matrix.contents[i].imag());
-	}
+cuDoubleComplex* computeTMatrix(cuDoubleComplex** V_matrix, double* k, double* w, double* k0, int Nkvadr, int G0Size, double mu, bool coupled)  {
 
 	cuDoubleComplex* VG = new cuDoubleComplex[G0Size * G0Size];
-	setupVGKernel(VG, mu, coupled, V_host, k, w, k0, Nkvadr, G0Size);
+	setupVGKernel(VG, mu, coupled, V_matrix, k, w, k0, Nkvadr, G0Size);
 
 	cuDoubleComplex* F = new cuDoubleComplex[G0Size * G0Size];
 	for (int i = 0; i < G0Size; ++i) {
@@ -137,8 +132,7 @@ cuDoubleComplex* computeTMatrix(LapackMat V_matrix, double* k, double* w, double
 
 
 /* TODO: Explain theory for this. */
-std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB)
-{
+std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB) {
 	std::complex<double> twoEpsilonJ = std::asin(std::sin(twoEpsilonJBB) * std::sin(deltaMinusBB - deltaPlusBB));
 
 	std::complex<double> deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
@@ -160,7 +154,7 @@ std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB
 */
 
 __global__
-std::vector<std::complex<double>> computePhaseShifts(cuDoubleComplex* phases, double mu, bool coupled, std::string key, double k0, cuDoubleComplex* T, int Nkvadr) {
+void computePhaseShifts(cuDoubleComplex* phases, double mu, bool coupled, double* k0, cuDoubleComplex* T, int Nkvadr) {
 	
 	double rhoT =  2 * mu * k0; // Equation (2.27) in the theory
 
@@ -193,6 +187,4 @@ std::vector<std::complex<double>> computePhaseShifts(cuDoubleComplex* phases, do
 
 		phases.push_back(delta);
 	}
-
-	return phases;
 }

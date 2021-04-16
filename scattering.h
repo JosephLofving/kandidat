@@ -19,11 +19,11 @@ constexpr std::complex<double> I(0.0, 1.0);
 
 double getReducedMass(std::vector<QuantumState> channel);
 bool isCoupled(std::vector<QuantumState> channel);
-std::vector<std::complex<double>> setupG0Vector(std::vector<QuantumState> NN_channe, std::vector<double> k, std::vector<double> w, double k0);
-LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0);
+cuDoubleComplex* setupG0Vector(double mu, double* k, double* w, double k0, int Nkvadr);
+void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex** V, double* k, double* w, double k0, int Nkvadr, int G0Size);
+cuDoubleComplex* computeTMatrix(cuDoubleComplex** V_matrix, double* k, double* w, double* k0, int Nkvadr, int G0Size, double mu, bool coupled);
 std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB);
-LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0);
-std::vector<std::complex<double>> computePhaseShifts(std::vector<QuantumState> channel,std::string key, double k0, LapackMat T);
+void computePhaseShifts(cuDoubleComplex* phases, double mu, bool coupled, double* k0, cuDoubleComplex* T, int Nkvadr);
 
 
 #endif
