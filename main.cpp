@@ -21,7 +21,7 @@ int main() {
 	double scale = 100;
 
 
-	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
+	std::string key = "j:0 s:0 tz:0 pi:1";
 	std::vector<QuantumState> channel = channels[key];
 	if (channel.size()==0) {
 		std::cout << "Invalid key";
@@ -29,7 +29,7 @@ int main() {
 	}
 	printStates(channel);
 
-	double Tlab = 100.0; //Rörelseenergin hos 
+	double Tlab = 100.0;
 
 	for (int j = 1; j <= 1750; j++) {
 		Tlab = 1.0 * j;
@@ -39,13 +39,11 @@ int main() {
 			std::vector<double> k{ k_and_w.v1 };
 			std::vector<double> w{ k_and_w.v2 };
 
+			double k0 = getk0(channel, Tlab); //denna kanske ska vara en kernel med vi fixar inte de nu :)
 
-			LapackMat V_matrix = potential(channel, k, Tlab);
-
-			double k0 = getk0(channel, Tlab);
+			LapackMat V_matrix = potential(channel, k, Tlab, k0);
 
 			LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
-			//T.print();
 
 			std::vector<std::complex<double>> phase = computePhaseShifts(channel, key, k0, T);
 

@@ -15,7 +15,7 @@ double getk0(std::vector<QuantumState> channel, double Tlab){
     return sqrt(k0Squared); // Does not handle case where tz is NOT -1, 0 or 1.
 }
 
- LapackMat potential(std::vector<QuantumState> channel, std::vector<double> k, double Tlab) {
+ LapackMat potential(std::vector<QuantumState> channel, std::vector<double> k, double Tlab, double k0) {
 //std::vector<double> potential(int argc, char* argv[]){
     
 
@@ -27,8 +27,6 @@ double getk0(std::vector<QuantumState> channel, double Tlab){
 
     double* VArray = new double [6];
     bool coupled = false;
-
-    double k0 = getk0(channel,Tlab);
 
     LapackMat VMatrix = LapackMat(k.size()+1, k.size()+1);
 

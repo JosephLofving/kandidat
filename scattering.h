@@ -10,6 +10,10 @@
 #include <iostream>
 #include <vector>
 
+#include <iomanip>
+#include <cuda_runtime.h>
+#include <cuComplex.h>
+
 
 constexpr std::complex<double> I(0.0, 1.0);
 

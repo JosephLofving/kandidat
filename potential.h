@@ -7,6 +7,6 @@
 #include "quantumStates.h"
 
 double getk0(std::vector<QuantumState> channel, double Tlab);
-LapackMat potential(std::vector<QuantumState> channel, std::vector<double> k, double Tlab);
+LapackMat potential(std::vector<QuantumState> channel, std::vector<double> k, double Tlab, double k0);
 
 #endif
