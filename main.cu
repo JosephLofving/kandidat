@@ -11,33 +11,30 @@
 __global__
 void getk0(double* k0, int tzChannel, double* TLab, int TLabLength) {
 	double k0Squared = 0;
-	
-	for (int i = 0; i < TLabLength; ++i) {
-
-		if (tzChannel == -1) {	  // Proton-proton scattering
+	for (int i = 0; i < TLabLength; i++) {
+		/* Proton-proton scattering */
+		if (tzChannel == -1) {
 			k0Squared = constants::protonMass * TLab[i] / 2;
 		}
-		else if (tzChannel == 0) { // Proton-neutron scattering
-			k0Squared = pow(constants::neutronMass, 2) * TLab[i] * (TLab[i] +
-				2 * constants::protonMass) / ((pow(constants::protonMass +
-					constants::neutronMass, 2) + 2 * TLab[i] * constants::neutronMass));
+		/* Proton-neutron scattering */
+		else if (tzChannel == 0) {
+			k0Squared = pow(constants::neutronMass, 2) * TLab[i] * (TLab[i]
+							+ 2 * constants::protonMass) / ((pow(constants::protonMass
+							+ constants::neutronMass, 2) + 2 * TLab[i] * constants::neutronMass));
 		}
-		else if (tzChannel == 1) { // Neutron-neutron scattering
+		/* Neutron-neutron scattering */
+		else if (tzChannel == 1) {
 			k0Squared = constants::neutronMass * TLab[i] / 2;
 		}
 
-		k0[i] = sqrtf(k0Squared); // Does not handle case where tz is NOT -1, 0 or 1.
+		k0[i] = sqrtf(k0Squared); // Does not handle case where tz is NOT -1, 0 or 1 (should be handled earlier?)
 	}
 }
 
 
 int main() {
-
 	std::vector<QuantumState> base = setupBase(0, 2, 0, 2);
-	std::map<std::string, std::vector<QuantumState> > channels = setupNNChannels(base);
-
-	int NKvadratur = 100;
-	double scale = 100;
+	std::map<std::string, std::vector<QuantumState>> channels = setupNNChannels(base);
 
 	std::string key = "j:0 s:0 tz:0 pi:1";
 	std::vector<QuantumState> channel = channels[key];
@@ -46,51 +43,87 @@ int main() {
 		abort();
 	}
 
-	double* TLab;
+	/* Create host array for TLab [MeV] */
 	double TLabMin = 0;
 	double TLabMax = 290;
-	double TLabStep = 0.01;
-	int TLabLength = (int)(TLabMax - TLabMin) / TLabStep;
-	
-	for (int i = 0; i < TLabLength; ++i) {
-			TLab[i] = i * TLabStep;
+	double TLabIncr = 0.01;
+	int TLabLength = (int)(TLabMax - TLabMin) / TLabIncr; // static_cast<int>?
+	double* TLab = new double[TLabLength];
+
+	for (int i = 0; i < TLabLength; i++) {
+		TLab[i] = i * TLabIncr;
 	}
 
-	int tzChannel = channel[0].state["tz"];
-	double* k0 = new double[TLabLength];
-	getk0(k0, tzChannel, TLab, TLabLength);
-
-	kAndWPtrs kAndW = gaussLegendreInfMesh(NKvadratur, scale);
-
+	/* Set up Gauss-Legendre quadrature */
+	int quadratureN = 100;
+	double scale = 100;
+	kAndWPtrs kAndW = gaussLegendreInfMesh(quadratureN, scale);
 	double* k = kAndW.k;
 	double* w = kAndW.w;
 
-	int G0Size = NKvadratur + 1;
-	int phasesSize = 1;
-	bool coupled = (isCoupled(channel));
+	/* Determine matrix and vector sizes for uncoupled cases */
+	int matSize = quadratureN + 1;
+	int phasesSize = 1; // only one phase shift in uncoupled case
+
+	/* Determine matrix and vector sizes for coupled cases */
+	bool coupled = isCoupled(channel);
 	if (coupled) {
-		G0Size *= 2;
-		phasesSize = 3;
+		matSize *= 2;	// a trick to facilitate calculations (see scattering.cu)
+		phasesSize = 3; // two phase shifts and one mixing angle in coupled case
 	}
 
-	cuDoubleComplex** V_matrix = new cuDoubleComplex*[G0Size * G0Size * TLabLength];
-	for (int i = 0; i < TLabLength; ++i) {
-		V_matrix[i] = potential(channel, k, TLab[i], k0[i], NKvadratur);
+	/* Get the k0 host array with parallelization on GPU */
+	double* k0_h = new double[TLabLength];
+	int tzChannel = channel[0].state["tz"];
+	double* k0_d;
+	cudaMalloc((void**)&k0_d, quadratureN * sizeof(double));
+	cudaMemcpy(k0_d, k0_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
+	getk0 <<<1, 1>>> (k0, tzChannel, TLab, TLabLength)
+	cudaMemcpy(k0_h, k0_d, matSize * matSize * sizeof(double), cudaMemcpyDeviceToHost);
+
+	/* Create the potential matrix on the CPU */
+	cuDoubleComplex** VMatrix = new cuDoubleComplex* [matSize * matSize * TLabLength];
+	for (int i = 0; i < TLabLength; i++) {
+		VMatrix[i] = potential(channel, k, TLab[i], k0[i], quadratureN);
 	}
 
 	double mu = getReducedMass(channel);
 
-	cuDoubleComplex* T = computeTMatrix(V_matrix, k, w, k0, NKvadratur, G0Size, mu, coupled);
-
-
+	/* Call (device) kernels from the (host) function computeTMatrix and declare host variable for phase shifts */
+	cuDoubleComplex* T = computeTMatrix(VMatrix, k, w, k0, quadratureN, matSize, mu, coupled); // CPU function that calls kernels, see scattering.cu
 	cuDoubleComplex* phases = new cuDoubleComplex[phasesSize];
-	computePhaseShifts(phases, mu, coupled, k0, T, NKvadratur);
 
+	/* Declare device variables */
+	cuDoubleComplex* T_d;
+	cuDoubleComplex* phases_d;
 
-	cudaMalloc((void**)&V_dev, N * N * sizeof(double));
-	cudaMemcpy(G0_dev, G0, N * sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(V_host, VG_dev, N * N * sizeof(double), cudaMemcpyDeviceToHost);
-	cudaFree(G0_dev);
+	/* Allocate memory on the device */
+	cudaMalloc((void**)&T_d, matSize * matSize * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&phases_d, phasesSize * sizeof(cuDoubleComplex));
+
+	/* Copy host variables to variables allocated on device */
+	cudaMemcpy(T_d, T, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(phases_d, phases, phasesSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+
+	/* Parallellized calculation of phase shifts */
+	computePhaseShifts <<<1,1>>> (phases, mu, coupled, k0, T, quadratureN);
+
+	/* Copy device variables to variables allocated on host */
+	cudaMemcpy(T, T_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	cudaMemcpy(phases, phases_d, phasesSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	
+	//------------------------------------------
+	// perhaps some printing of T or phases here
+	//------------------------------------------
+
+	/* Free all the allocated memory */
+	free(TLab);
+	free(k0);
+	free(VMatrix);
+	free(phases);
+	cudaFree(k0);
+	cudaFree(T_d);
+	cudaFree(phases_d);
 
 	return 0;
 }

@@ -26,3 +26,5 @@ test
 *.lib
 std
 *.o
+kandidat/
+ownTheLibs (1).zip
