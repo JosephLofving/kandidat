@@ -1,23 +1,7 @@
 #include "scattering.h"
 
 
-/**
-	Gets the reduced mass by checking the isospin channel, which determines the type of NN scattering
-	@param channel:	Scattering channel
-	@return			Reduced mass
-*/
-double getReducedMass(std::vector<QuantumState> channel) {
-	double mu = 0;
-	int tzChannel = channel[0].state["tz"];
-	if (tzChannel == -1)	 // Proton-proton scattering
-		mu = constants::protonMass / 2;
-	else if (tzChannel == 0) // Proton-neutron scattering
-		mu = constants::nucleonReducedMass;
-	else if (tzChannel == 1) // Neutron-neutron scattering
-		mu = constants::neutronMass / 2;
 
-	return mu;
-}
 
 
 /** 
@@ -37,29 +21,27 @@ bool isCoupled(std::vector<QuantumState> channel) {
 	@param k0:	On-shell-point
 	@return		G0 vector
 */
-
-// called from setupVGkernel
 __device__
 cuDoubleComplex* setupG0Vector(double mu, double* k, double* w, double k0, int quadratureN) {
-	cuDoubleComplex* D = new cuDoubleComplex[quadratureN + 1];
+	cuDoubleComplex* D = new cuDoubleComplex[quadratureN + 1]; // should this not be deleted somewhere..?
 
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
 	double sum = 0;
 
-
 	for (int i = 0; i < quadratureN; i++) {
-		D[i] = make_cuDoubleComplex(-twoOverPi * twoMu * pow(k[i], 2) * w[i] / (pow(k0, 2) - pow(k[i], 2)), 0); // Define D[0,N-1] with vectors k and w
-		sum += w[i] / (pow(k0, 2) - pow(k[i], 2));																// Used in D[N]
+		D[i] = make_cuDoubleComplex(-twoOverPi * twoMu * pow(k[i], 2) * w[i] / (pow(k0, 2) - pow(k[i], 2)), 0);
+		sum += w[i] / (pow(k0, 2) - pow(k[i], 2));														
 	}
 
-	D[quadratureN] = make_cuDoubleComplex(twoOverPi * twoMu * pow(k0, 2) * sum, twoMu * k0);	// In the theory, this element is placed at index 0
+	D[quadratureN] = make_cuDoubleComplex(twoOverPi * twoMu * pow(k0, 2) * sum, twoMu * k0);
+
 
 	return D;
 }
 
 /**
-	Multiplies the potential matrix with the G0 vector.
+	Multiplies the potential matrix elements with the G0 vector elements.
 
 	@param channel: Scattering channel
     @param key:		Channel name
@@ -69,11 +51,9 @@ cuDoubleComplex* setupG0Vector(double mu, double* k, double* w, double k0, int q
 	@param k0:		The on-shell-point
 	@return			VG kernel
 */
-
 __device__
-void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex** V, double* k, double* w, double k0, int quadratureN, int matSize) {
+cuDoubleComplex* setupVGKernel(double mu, bool coupled, cuDoubleComplex** V, double* k, double* w, double k0, int quadratureN, int matSize) {
 	
-	// __device__ kernel call here, not done yet, how does it work?
 	cuDoubleComplex* G0 = setupG0Vector(mu, k, w, k0, quadratureN);
 
 	/* If coupled, append G0 to itself to facilitate calculations. This means the second half of G0 is a copy of the first. */
@@ -99,8 +79,6 @@ void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex
 	//for (int i = 0; i < matSize * matSize; i += 100) {
 	//	std::cout << VG.contents[i].real() << std::endl;
 	//}
-
-	//funktionen returnar VG
 }
 
 
@@ -115,29 +93,26 @@ void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex
 	@param k0:		On-shell-point
 	@return			T matrix
 */
-
 __global__
-cuDoubleComplex* computeTMatrix(cuDoubleComplex** VMatrix_d, cuDoubleComplex* VG_d, double* k_d, double* w_d, double* k0_d, int quadratureN, int matSize, double mu, bool coupled)  {
+void computeTMatrix(cuDoubleComplex* T, cuDoubleComplex** VMatrix, cuDoubleComplex* VG, double* k, double* w, double* k0, int quadratureN, int matSize, double mu, bool coupled)  {
+	cuDoubleComplex* VG = setupVGKernel(mu, coupled, VMatrix, k, w, k0_d, quadratureN, matSize);
 
-	
-
-	
-	
-
-	setupVGKernel<<<1,1>>>(VG_d, mu, coupled, VMatrix, k, w, k0_d, quadratureN, matSize); // do we need to allocate for G0 here or in setupVG?
-
-	/* Copy device variable back to host varibale */
-	//cudaMemcpy(VG_h, VG_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-
-	cuDoubleComplex* F = new cuDoubleComplex[matSize * matSize];
-	for (int i = 0; i < matSize; ++i) {
-		F[i + i * matSize] = cuCadd(VG_d[i + i * matSize], make_cuDoubleComplex(1, 0));
+	/* F = delta_ij - VG_ij */
+	cuDoubleComplex* F = new cuDoubleComplex* [matSize * matSize]; // need to allocate memory for F somehow... either allocate here or in main
+	for (int i = 0; i < matSize; i++) {
+		// let diagoal elements be 1 - VG_ij
+		F[i + i * matSize] = cuCadd(make_cuDoubleComplex(1, 0), -VG[i + i * matSize]);
+		for (int j = 0; j < matSize; j++) {
+			// let all non-diagonal elements be -VG_ij
+			if (i != j)
+			F[i + j * matSize] = -VG[i + j * matSize];
+		}
 	}
 
 	/* Solve the equation FT = V with cuBLAS */
-	cuDoubleComplex* T = solveMatrixEq(F, VMatrix); // Josephs problem :)
+	T = solveMatrixEq(F, VMatrix); // Josephs problem :)
 
-	return T;
+	delete[] F;
 }
 
 // should be a __device__ kernel called from computePhaseShift

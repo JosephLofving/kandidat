@@ -32,6 +32,25 @@ void getk0(double* k0, int tzChannel, double* TLab, int TLabLength) {
 }
 
 
+/**
+	Gets the reduced mass by checking the isospin channel, which determines the type of NN scattering
+	@param channel:	Scattering channel
+	@return			Reduced mass
+*/
+double getReducedMass(std::vector<QuantumState> channel) {
+	double mu = 0;
+	int tzChannel = channel[0].state["tz"];
+	if (tzChannel == -1)	 // Proton-proton scattering
+		mu = constants::protonMass / 2;
+	else if (tzChannel == 0) // Proton-neutron scattering
+		mu = constants::nucleonReducedMass;
+	else if (tzChannel == 1) // Neutron-neutron scattering
+		mu = constants::neutronMass / 2;
+
+	return mu;
+}
+
+
 int main() {
 	std::vector<QuantumState> base = setupBase(0, 2, 0, 2);
 	std::map<std::string, std::vector<QuantumState>> channels = setupNNChannels(base);
@@ -125,12 +144,12 @@ int main() {
 	// perhaps some printing of T or phases here
 	//------------------------------------------
 
-	/* Free all the allocated memory */
-	free(TLab);
-	free(k0_h);
-	free(VMatrix);
-	free(phases);
-	free(VG_h);
+	/* Free all the allocated memory */ 
+	delete[] TLab;
+	delete[] k0_h;
+	delete[] VMatrix;
+	delete[] phases;
+	delete[] VG_h;
 	cudaFree(k0_d);
 	cudaFree(T_d);
 	cudaFree(phases_d);
