@@ -70,7 +70,7 @@ cuDoubleComplex* setupG0Vector(double mu, double* k, double* w, double k0, int q
 	@return			VG kernel
 */
 
-__global__
+__device__
 void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex** V, double* k, double* w, double k0, int quadratureN, int matSize) {
 	
 	// __device__ kernel call here, not done yet, how does it work?
@@ -115,32 +115,27 @@ void setupVGKernel(cuDoubleComplex* VG, double mu, bool coupled, cuDoubleComplex
 	@param k0:		On-shell-point
 	@return			T matrix
 */
-cuDoubleComplex* computeTMatrix(cuDoubleComplex** VMatrix, double* k, double* w, double* k0, int quadratureN, int matSize, double mu, bool coupled)  {
 
-	/* Allocate host memory and declare device variable */
-	cuDoubleComplex* VG_h = new cuDoubleComplex[matSize * matSize];
-	cuDoubleComplex* VG_d;
+__global__
+cuDoubleComplex* computeTMatrix(cuDoubleComplex** VMatrix_d, cuDoubleComplex* VG_d, double* k_d, double* w_d, double* k0_d, int quadratureN, int matSize, double mu, bool coupled)  {
 
-	/* Allocate device memory and copy host variable to device variable*/
-	cudaMalloc((void**)&VG_d, matSize * matSize * sizeof(cuDoubleComplex));
-	cudaMemcpy(VG_d, VG_h, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	
 
-	setupVGKernel<<<1,1>>>(VG_d, mu, coupled, VMatrix, k, w, k0, quadratureN, matSize); // do we need to allocate for G0 here or in setupVG?
+	
+	
+
+	setupVGKernel<<<1,1>>>(VG_d, mu, coupled, VMatrix, k, w, k0_d, quadratureN, matSize); // do we need to allocate for G0 here or in setupVG?
 
 	/* Copy device variable back to host varibale */
-	cudaMemcpy(VG_h, VG_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	//cudaMemcpy(VG_h, VG_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	cuDoubleComplex* F = new cuDoubleComplex[matSize * matSize];
 	for (int i = 0; i < matSize; ++i) {
-		F[i + i * matSize] = cuCadd(VG_h[i + i * matSize], make_cuDoubleComplex(1, 0));
+		F[i + i * matSize] = cuCadd(VG_d[i + i * matSize], make_cuDoubleComplex(1, 0));
 	}
 
 	/* Solve the equation FT = V with cuBLAS */
 	cuDoubleComplex* T = solveMatrixEq(F, VMatrix); // Josephs problem :)
-
-	/* Free all the allocated memory */
-	free(VG_h);
-	cudaFree(VG_d);
 
 	return T;
 }

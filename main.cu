@@ -76,21 +76,30 @@ int main() {
 	double* k0_h = new double[TLabLength];
 	int tzChannel = channel[0].state["tz"];
 	double* k0_d;
+
 	cudaMalloc((void**)&k0_d, quadratureN * sizeof(double));
 	cudaMemcpy(k0_d, k0_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
-	getk0 <<<1, 1>>> (k0, tzChannel, TLab, TLabLength)
+	getk0 << <1, 1 >> > (k0_d, tzChannel, TLab, TLabLength);
 	cudaMemcpy(k0_h, k0_d, matSize * matSize * sizeof(double), cudaMemcpyDeviceToHost);
 
 	/* Create the potential matrix on the CPU */
 	cuDoubleComplex** VMatrix = new cuDoubleComplex* [matSize * matSize * TLabLength];
 	for (int i = 0; i < TLabLength; i++) {
-		VMatrix[i] = potential(channel, k, TLab[i], k0[i], quadratureN);
+		VMatrix[i] = potential(channel, k, TLab[i], k0_h[i], quadratureN);
 	}
 
 	double mu = getReducedMass(channel);
 
+	/* Allocate host memory and declare device variable */
+	cuDoubleComplex* VG_h = new cuDoubleComplex[matSize * matSize];
+	cuDoubleComplex* VG_d;
+
+	/* Allocate device memory and copy host variable to device variable*/
+	cudaMalloc((void**)&VG_d, matSize * matSize * sizeof(cuDoubleComplex));
+	cudaMemcpy(VG_d, VG_h, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+
 	/* Call (device) kernels from the (host) function computeTMatrix and declare host variable for phase shifts */
-	cuDoubleComplex* T = computeTMatrix(VMatrix, k, w, k0, quadratureN, matSize, mu, coupled); // CPU function that calls kernels, see scattering.cu
+	cuDoubleComplex* T = computeTMatrix(VMatrix, k, w, k0_d, quadratureN, matSize, mu, coupled); // CPU function that calls kernels, see scattering.cu
 	cuDoubleComplex* phases = new cuDoubleComplex[phasesSize];
 
 	/* Declare device variables */
@@ -118,12 +127,14 @@ int main() {
 
 	/* Free all the allocated memory */
 	free(TLab);
-	free(k0);
+	free(k0_h);
 	free(VMatrix);
 	free(phases);
-	cudaFree(k0);
+	free(VG_h);
+	cudaFree(k0_d);
 	cudaFree(T_d);
 	cudaFree(phases_d);
+	cudaFree(VG_d);
 
 	return 0;
 }
