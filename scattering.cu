@@ -1,19 +1,5 @@
 #include "scattering.h"
 
-
-
-
-
-/** 
-	Checks if the state is coupled or not. 
-	@param channel: Scattering channel
-	@return			True if coupled, false if not
-*/
-bool isCoupled(std::vector<QuantumState> channel) {
-	return !(channel.size() == 1); // If there is only one channel the state is uncoupled, otherwise there are four channels and the state is coupled.
-}
-
-
 /** 
 	Sets up a complex vector needed to solve the T matrix equation. 
 	@param k:	Quadrature points
@@ -22,22 +8,33 @@ bool isCoupled(std::vector<QuantumState> channel) {
 	@return		G0 vector
 */
 __device__
-cuDoubleComplex* setupG0Vector(double mu, double* k, double* w, double k0, int quadratureN) {
-	cuDoubleComplex* D = new cuDoubleComplex[quadratureN + 1]; // should this not be deleted somewhere..?
+void setupG0Vector(cuDoubleComplex* D, 
+				   double* k, 
+				   double* w, 
+				   double* k0, 
+				   int quadratureN, 
+				   double mu, 
+				   bool coupled) {
 
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
 	double sum = 0;
-
 	for (int i = 0; i < quadratureN; i++) {
-		D[i] = make_cuDoubleComplex(-twoOverPi * twoMu * pow(k[i], 2) * w[i] / (pow(k0, 2) - pow(k[i], 2)), 0);
-		sum += w[i] / (pow(k0, 2) - pow(k[i], 2));														
+		D[i] = make_cuDoubleComplex(-twoOverPi * twoMu * k[i] * k[i] * w[i] / (k0 * k0 - k[i] * k[i]), 0);
+		sum += w[i] / (k0 * k0 - k[i] * k[i]);
+
+		/* If coupled, append G0 to itself to facilitate calculations. 
+		 * This means the second half of G0 is a copy of the first. */
+		if (coupled) {
+			D[quadratureN + 1 + i] = D[i];
+		}
 	}
 
-	D[quadratureN] = make_cuDoubleComplex(twoOverPi * twoMu * pow(k0, 2) * sum, twoMu * k0);
-
-
-	return D;
+	/* Assign the last element of D */
+	D[quadratureN] = make_cuDoubleComplex(twoOverPi * twoMu * k0 * k0 * sum, twoMu * k0);
+	if (coupled) {
+		D[2*(quadratureN + 1) - 1] = D[quadratureN];
+	}
 }
 
 /**
@@ -52,33 +49,32 @@ cuDoubleComplex* setupG0Vector(double mu, double* k, double* w, double k0, int q
 	@return			VG kernel
 */
 __device__
-cuDoubleComplex* setupVGKernel(double mu, bool coupled, cuDoubleComplex** V, double* k, double* w, double k0, int quadratureN, int matSize) {
-	
-	cuDoubleComplex* G0 = setupG0Vector(mu, k, w, k0, quadratureN);
+void setupVGKernel(cuDoubleComplex* VG,
+				   cuDoubleComplex* V,
+				   cuDoubleComplex* G0, 
+				   cuDoubleComplex* F, 
+				   double* k, 
+				   double* w, 
+				   double* k0, 
+				   int quadratureN,
+				   int matSize,
+				   double mu, 
+				   bool coupled) {
 
-	/* If coupled, append G0 to itself to facilitate calculations. This means the second half of G0 is a copy of the first. */
-	if (coupled) {
-		cuDoubleComplex* G0Coupled = new cuDoubleComplex[2*(quadratureN + 1)];
-		for (int i = 0; i < quadratureN + 1; ++i) {
-			G0Coupled[i] = G0[i];
-			G0Coupled[quadratureN + 1 + i] = G0[i];
-		}
-		cuDoubleComplex* G0 = G0Coupled;
-	}
+	setupG0Vector(G0, k, w, k0, quadratureN, mu, coupled);
 
-	/* Create VG by using VG[i,j] = V[i,j] * G[j] */
-	cuDoubleComplex* VElement = new cuDoubleComplex[1];
 	for (int row = 0; row < matSize; row++) {
 		for (int column = 0; column < matSize; column++) {
-			//VG[row + column * matSize] = make_cuDoubleComplex(cuCreal(cuCmul(V[row + column * matSize], G0[column])),
-			//												 cuCimag(cuCmul(V[row + column * matSize], G0[column])));
+			/* Create VG by using VG[i,j] = V[i,j] * G[j] */
 			VG[row + column * matSize] = cuCmul(V[row + column * matSize], G0[column]);
+
+			/* At the same time, create F = delta_ij - VG_ij for computeTMatrix*/
+			F[row + row * matSize] = cuCadd(make_cuDoubleComplex(1, 0), -VG[row + row * matSize]);
+			if (row != column) {
+				F[row + column * matSize] = -VG[row + column * matSize];
+			}
 		}
 	}
-
-	//for (int i = 0; i < matSize * matSize; i += 100) {
-	//	std::cout << VG.contents[i].real() << std::endl;
-	//}
 }
 
 
@@ -94,29 +90,31 @@ cuDoubleComplex* setupVGKernel(double mu, bool coupled, cuDoubleComplex** V, dou
 	@return			T matrix
 */
 __global__
-void computeTMatrix(cuDoubleComplex* T, cuDoubleComplex** VMatrix, cuDoubleComplex* VG, double* k, double* w, double* k0, int quadratureN, int matSize, double mu, bool coupled)  {
-	cuDoubleComplex* VG = setupVGKernel(mu, coupled, VMatrix, k, w, k0_d, quadratureN, matSize);
+void computeTMatrix(cuDoubleComplex* T,
+					cuDoubleComplex* V,
+					cuDoubleComplex* G0,
+					cuDoubleComplex* VG,
+					cuDoubleComplex* F,
+					double* k, 
+					double* w, 
+					double* k0,
+					int quadratureN, 
+					int matSize, 
+					double mu, 
+					bool coupled) {
 
-	/* F = delta_ij - VG_ij */
-	cuDoubleComplex* F = new cuDoubleComplex* [matSize * matSize]; // need to allocate memory for F somehow... either allocate here or in main
-	for (int i = 0; i < matSize; i++) {
-		// let diagoal elements be 1 - VG_ij
-		F[i + i * matSize] = cuCadd(make_cuDoubleComplex(1, 0), -VG[i + i * matSize]);
-		for (int j = 0; j < matSize; j++) {
-			// let all non-diagonal elements be -VG_ij
-			if (i != j)
-			F[i + j * matSize] = -VG[i + j * matSize];
-		}
-	}
+	/* Setup the VG kernel and, at the same time, the F matrix*/
+	setupVGKernel(VG, V, G0, F, k, w, k0, quadratureN, matSize, mu, coupled);
 
 	/* Solve the equation FT = V with cuBLAS */
-	T = solveMatrixEq(F, VMatrix); // Josephs problem :)
+	//T = solveMatrixEq(F, V); // old lapack function
+	// cuBLAS function here, hopefully takes in a parameter cuDoubleComplex pointer T and changes it
 
-	delete[] F;
 }
 
-// should be a __device__ kernel called from computePhaseShift
+
 /* TODO: Explain theory for this. */
+__device__
 std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB) {
 	std::complex<double> twoEpsilonJ = std::asin(std::sin(twoEpsilonJBB) * std::sin(deltaMinusBB - deltaPlusBB));
 
@@ -137,9 +135,13 @@ std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB
 	@param T:		T matrix
 	@return			Complex phase shifts
 */
-
 __global__
-void computePhaseShifts(cuDoubleComplex* phases, double mu, bool coupled, double* k0, cuDoubleComplex* T, int quadratureN) {
+void computePhaseShifts(cuDoubleComplex* phases, 
+					    cuDoubleComplex* T, 
+						double* k0, 
+						int quadratureN, 
+						double mu, 
+						bool coupled) {
 	
 	double rhoT =  2 * mu * k0; // Equation (2.27) in the theory
 
@@ -166,7 +168,7 @@ void computePhaseShifts(cuDoubleComplex* phases, double mu, bool coupled, double
 	}
 	/* The uncoupled case completely follows equation (2.26). */
 	else {
-		double T0 = cuCreal(T[(quadratureN) + (quadratureN * quadratureN)]); //Farligt, detta element kanske inte är helt reelt. Dock var koden dålig förut isåfall.
+		double T0 = cuCreal(T[(quadratureN) + (quadratureN * quadratureN)]); //Farligt, detta element kanske inte är helt reellt. Dock var koden dålig förut isåfall.
 		cuDoubleComplex argument = make_cuDoubleComplex(1, -2.0 * rhoT * T0);
 		cuDoubleComplex delta = (-0.5 * I) * logf(argument) * constants::rad2deg;
 
