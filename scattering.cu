@@ -230,6 +230,7 @@ void computeTMatrix(cuDoubleComplex** T,
 	cuDoubleComplex** G0,
 	cuDoubleComplex** VG,
 	cuDoubleComplex** F,
+	cuDoubleComplex** phases,
 	double* k,
 	double* w,
 	double* k0,
@@ -242,10 +243,14 @@ void computeTMatrix(cuDoubleComplex** T,
 	/* Setup the VG kernel and, at the same time, the F matrix */
 	for (int i = 0; i < TLabLength; i++) {
 		setupVGKernel(VG[i], V[i], G0[i], F[i], k, w, k0[i], quadratureN, matSize, mu, coupled);
+
+		/* Solve the equation FT = V with cuBLAS */
+		computeTMatrixCUBLAS(T[i], F[i], V[i], quadratureN, matSize);
+
+		/* Computes the phase shifts for the given T-matrix*/
+		computePhaseShifts(phases[i], T[i], k0[i], quadratureN, mu, coupled);
 	}
 
-	/* Solve the equation FT = V with cuBLAS */
-	computeTMatrixCUBLAS(T, F, V, quadratureN, matSize, 1);
 }
 
 
@@ -270,15 +275,15 @@ void blattToStapp(cuDoubleComplex* phases, cuDoubleComplex deltaMinusBB, cuDoubl
 	@param T:		T matrix
 	@return			Complex phase shifts
 */
-__global__
+__device__
 void computePhaseShifts(cuDoubleComplex* phases,
 					    cuDoubleComplex* T,
-						double* k0,
+						double k0,
 						int quadratureN,
 						double mu,
 						bool coupled) {
 
-	double rhoT =  2 * mu * k0[0]; // Equation (2.27) in the theory
+	double rhoT =  2 * mu * k0; // Equation (2.27) in the theory
 
 	// TODO: Explain theory for the phase shift for the coupled state
 	if (coupled) {

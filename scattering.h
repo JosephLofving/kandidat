@@ -48,6 +48,7 @@ void computeTMatrix(cuDoubleComplex** T,
 	cuDoubleComplex** G0,
 	cuDoubleComplex** VG,
 	cuDoubleComplex** F,
+	cuDoubleComplex** phases,
 	double* k,
 	double* w,
 	double* k0,
@@ -57,11 +58,13 @@ void computeTMatrix(cuDoubleComplex** T,
 	double mu,
 	bool coupled);
 
-
+__device__
 void blattToStapp(cuDoubleComplex* phases, cuDoubleComplex deltaMinusBB, cuDoubleComplex deltaPlusBB, cuDoubleComplex twoEpsilonJBB);
+
+__device__
 void computePhaseShifts(cuDoubleComplex* phases,
 	cuDoubleComplex* T,
-	double* k0,
+	double k0,
 	int quadratureN,
 	double mu,
 	bool coupled);

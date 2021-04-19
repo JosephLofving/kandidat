@@ -128,7 +128,7 @@ int main() {
 	cuDoubleComplex* G0_h = new cuDoubleComplex[matSize];
 	cuDoubleComplex** VG_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
 	cuDoubleComplex** F_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
-	cuDoubleComplex* phases_h = new cuDoubleComplex[phasesSize];
+	cuDoubleComplex** phases_h = new cuDoubleComplex*[phasesSize];
 	
 	/* Generate different experimental kinetic energies [MeV]*/
 	for (int i = 0; i < TLabLength; i++) {
@@ -204,8 +204,9 @@ int main() {
 
 	/* Call kernels on GPU */
 
-	computeTMatrix <<<threadsPerBlock, blocksPerGrid>>> (T_d, V_d, G0_d, VG_d, F_d, k_d, w_d, k0_d, quadratureN, matSize, TLabLength, mu, coupled);
-	computePhaseShifts <<<threadsPerBlock, blocksPerGrid>>> (phases_h, T_d, k0_d, quadratureN, mu, coupled);
+	computeTMatrix <<<threadsPerBlock, blocksPerGrid>>> (T_d, V_d, G0_d, VG_d, F_d, phases_d, k_d, w_d, k0_d, quadratureN, matSize, TLabLength, mu, coupled);
+	//computePhaseShifts <<<threadsPerBlock, blocksPerGrid>>> (phases_h, T_d, k0_d, quadratureN, mu, coupled);
+	//avkommentera inte, computeTmatrix löser allt.
 	
 	cudaDeviceSynchronize();
 
@@ -218,10 +219,13 @@ int main() {
 	cudaMemcpy(V_h, V_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(F_h, F_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(VG_h, VG_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-
-	for (int i = 0; i < phasesSize; ++i) {
-		printf("\nReal(phases[%i]) = %.10e", i, cuCreal(phases_h[i]));
-		printf("\nImag(phases[%i]) = %.10e", i, cuCimag(phases_h[i]));
+	for (int i = 0; i < TLabLength; i++) {
+		cuDoubleComplex* phases_h_i = new cuDoubleComplex[phasesSize];
+		phases_h_i = phases_h[i];
+		for (int j = 0; j < phasesSize; ++j) {
+			printf("\nReal(phases[%i]) = %.10e", j, cuCreal(phases_h_i[j]));
+			printf("\nImag(phases[%i]) = %.10e", j, cuCimag(phases_h_i[j]));
+		}
 	}
 
 	/* Free all the allocated memory */ 
