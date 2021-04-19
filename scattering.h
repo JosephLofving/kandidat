@@ -15,7 +15,7 @@
 #include <cuComplex.h>
 
 
-// constexpr std::complex<double> I(0.0, 1.0);
+cuDoubleComplex I = make_cuDoubleComplex(0.0, 1.0);
 
 
 __device__

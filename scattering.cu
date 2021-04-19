@@ -8,6 +8,89 @@
 	@param k0:	On-shell-point
 	@return		G0 vector
 */
+
+cuDoubleComplex operator+(cuDoubleComplex A, cuDoubleComplex B) {
+	cuDoubleComplex result = make_cuDoubleComplex(cuCreal(A)+cuCreal(B), cuCimag(A)+cuCimag(B));
+	return result;
+}
+
+cuDoubleComplex operator-(cuDoubleComplex A, cuDoubleComplex B) {
+	cuDoubleComplex result = make_cuDoubleComplex(cuCreal(A) - cuCreal(B), cuCimag(A) - cuCimag(B));
+	return result;
+}
+
+cuDoubleComplex operator-(double a, cuDoubleComplex A) {
+	cuDoubleComplex result = cuCsub(make_cuDoubleComplex(a, 0), A);
+	return result;
+}
+
+cuDoubleComplex operator-(cuDoubleComplex A, double a) {
+	cuDoubleComplex result = cuCsub(A, make_cuDoubleComplex(a, 0));
+	return result;
+}
+
+cuDoubleComplex operator*(double scalar, cuDoubleComplex A) {
+	cuDoubleComplex result = make_cuDoubleComplex(scalar * cuCreal(A), scalar * cuCimag(A));
+	return result;
+}
+
+cuDoubleComplex operator*(cuDoubleComplex A, double scalar) {
+	return scalar * A;
+}
+
+cuDoubleComplex operator*(cuDoubleComplex A, cuDoubleComplex B) {
+	cuDoubleComplex realProd = cuCreal(A) * B;
+	cuDoubleComplex imagProd = cuCimag(A) * B;
+	cuDoubleComplex result = cuCadd(realProd, imagProd);
+	return result;
+}
+
+cuDoubleComplex operator/(cuDoubleComplex A, cuDoubleComplex B) {
+	return cuCdiv(A, B);
+}
+
+cuDoubleComplex operator/(cuDoubleComplex A, double a) {
+	return cuCdiv(A, make_cuDoubleComplex(a, 0));
+}
+
+cuDoubleComplex operator/(double a, cuDoubleComplex A) {
+	return cuCdiv(make_cuDoubleComplex(a, 0), A);
+}
+
+__device__
+cuDoubleComplex logCudaComplex(cuDoubleComplex argument) {
+	double x = cuCreal(argument);
+	double y = cuCimag(argument);
+	double real = logf(sqrtf(x * x + y * y));
+	double imag = atan2f(y, x);
+	cuDoubleComplex result = make_cuDoubleComplex(real, imag);
+	return result;
+}
+
+__device__
+cuDoubleComplex atanCudaComplex(cuDoubleComplex argument) {
+	cuDoubleComplex numerator = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(0, 1), argument));
+	cuDoubleComplex denominator = cuCsub(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(0, 1), argument));
+	cuDoubleComplex logOfStuff = logCudaComplex(cuCdiv(numerator, denominator));
+	cuDoubleComplex result = cuCmul(make_cuDoubleComplex(0, -0.5), logOfStuff);
+	return result;
+}
+
+__device__
+cuDoubleComplex sinCudaComplex(cuDoubleComplex argument) {
+	return (expCudaComplex(I * argument) - expCudaComplex(-1.0 * I * argument)) / 2;
+}
+
+__device__
+cuDoubleComplex expCudaComplex(cuDoubleComplex argument) {
+	double x = cuCreal(argument);
+	double y = cuCimag(argument);
+	cuDoubleComplex trig = make_cuDoubleComplex(cosf(y), sinf(y));
+	cuDoubleComplex result = make_cuDoubleComplex(expf(x), 0) * trig;
+	return result;
+}
+
+
 __device__
 void setupG0Vector(cuDoubleComplex* G0,
 	double* k,
@@ -138,64 +221,60 @@ void computeTMatrix(cuDoubleComplex* T,
 
 
 /* TODO: Explain theory for this. */
-//__device__
-//std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB) {
-//	std::complex<double> twoEpsilonJ = std::asin(std::sin(twoEpsilonJBB) * std::sin(deltaMinusBB - deltaPlusBB));
-//
-//	std::complex<double> deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
-//	std::complex<double> deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
-//	std::complex<double> epsilon = 0.5 * twoEpsilonJ * constants::rad2deg;
-//
-//	return { deltaMinus, deltaPlus, epsilon };
-//}
-//
-//
-///**
-//	Computes the phase shift for a given channel and T matrix.
-//
-//	@param channel: Scattering channel
-//	@param key:		Channel name
-//	@param k0:		On-shell-point
-//	@param T:		T matrix
-//	@return			Complex phase shifts
-//*/
-//__global__
-//void computePhaseShifts(cuDoubleComplex* phases, 
-//					    cuDoubleComplex* T, 
-//						double* k0, 
-//						int quadratureN, 
-//						double mu, 
-//						bool coupled) {
-//	
-//	double rhoT =  2 * mu * k0[0]; // Equation (2.27) in the theory
-//
-//	// TODO: Explain theory for the phase shift for the coupled state
-//	if (coupled) {
-//		/*int N = quadratureN;
-//		cuDoubleComplex T11 = T[(N) + (N * N)]; //row + column * size
-//		cuDoubleComplex T12 = T[(2 * N + 1) + (N * N)];
-//		cuDoubleComplex T22 = T[(2 * N + 1) + (N * (2 * N + 1))];
-//
-//		//Blatt - Biedenharn(BB) convention
-//		std::complex<double> twoEpsilonJBB{ std::atan(2.0 * T12 / (T11 - T22)) };
-//		std::complex<double> deltaPlusBB{ -0.5 * I * std::log(1.0 - I * rhoT * (T11 + T22) + I * rhoT * (2.0 * T12) / std::sin(twoEpsilonJBB)) };
-//		std::complex<double> deltaMinusBB{ -0.5 * I * std::log(1.0 - I * rhoT * (T11 + T22) - I * rhoT * (2.0 * T12) / std::sin(twoEpsilonJBB)) };
-//
-//		std::vector<std::complex<double>> phasesAppend{ blattToStapp(deltaMinusBB, deltaPlusBB, twoEpsilonJBB) };
-//
-//		phases.push_back(phasesAppend[0]);
-//		phases.push_back(phasesAppend[1]);
-//		phases.push_back(phasesAppend[2]); 
-//
-//		*/
-//		//avkommenterade för de ger error vid icke kopplad kompilering. Avkommentera och fixa.
-//	}
-//	/* The uncoupled case completely follows equation (2.26). */
-//	else {
-//		double T0 = cuCreal(T[(quadratureN) + (quadratureN * quadratureN)]); //Farligt, detta element kanske inte är helt reellt. Dock var koden dålig förut isåfall.
-//		cuDoubleComplex argument = make_cuDoubleComplex(1, -2.0 * rhoT * T0);
-//		cuDoubleComplex delta = (-0.5 * I) * logf(argument) * constants::rad2deg;
-//
-//		phases.push_back(delta);
-//	}
-//}
+__device__
+std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB) {
+	std::complex<double> twoEpsilonJ = std::asin(std::sin(twoEpsilonJBB) * std::sin(deltaMinusBB - deltaPlusBB));
+
+	std::complex<double> deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
+	std::complex<double> deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
+	std::complex<double> epsilon = 0.5 * twoEpsilonJ * constants::rad2deg;
+
+	return { deltaMinus, deltaPlus, epsilon };
+}
+
+
+/**
+	Computes the phase shift for a given channel and T matrix.
+
+	@param channel: Scattering channel
+	@param key:		Channel name
+	@param k0:		On-shell-point
+	@param T:		T matrix
+	@return			Complex phase shifts
+*/
+__global__
+void computePhaseShifts(cuDoubleComplex* phases, 
+					    cuDoubleComplex* T, 
+						double* k0, 
+						int quadratureN, 
+						double mu, 
+						bool coupled) {
+	
+	double rhoT =  2 * mu * k0[0]; // Equation (2.27) in the theory
+
+	// TODO: Explain theory for the phase shift for the coupled state
+	if (coupled) {
+		int N = quadratureN;
+		cuDoubleComplex T11 = T[(N) + (N * N)]; //row + column * size
+		cuDoubleComplex T12 = T[(2 * N + 1) + (N * N)];
+		cuDoubleComplex T22 = T[(2 * N + 1) + (N * (2 * N + 1))];
+
+		//Blatt - Biedenharn(BB) convention
+		cuDoubleComplex twoEpsilonJBB = atanCudaComplex(cuCdiv(cuCmul(make_cuDoubleComplex(2.0, 0), T12), cuCsub(T11, T22)));
+		cuDoubleComplex deltaPlusBB{ -0.5 * I * logCudaComplex(1.0 - I * rhoT * (T11 + T22) + I * rhoT * (2.0 * T12) / sinCudaComplex(twoEpsilonJBB)) };
+		cuDoubleComplex deltaMinusBB{ -0.5 * I * logCudaComplex(1.0 - I * rhoT * (T11 + T22) - I * rhoT * (2.0 * T12) / sinCudaComplex(twoEpsilonJBB)) };
+
+		phases[0] = deltaMinusBB;
+		phases[1] = deltaPlusBB;
+		phases[2] = twoEpsilonJBB;
+
+	}
+	/* The uncoupled case completely follows equation (2.26). */
+	else {
+		double T0 = cuCreal(T[(quadratureN) + (quadratureN * quadratureN)]); //Farligt, detta element kanske inte är helt reellt. Dock var koden dålig förut isåfall.
+		cuDoubleComplex argument = make_cuDoubleComplex(1, -2.0 * rhoT * T0);
+		cuDoubleComplex swappedLog = make_cuDoubleComplex(cuCimag(logCudaComplex(argument)), cuCreal(logCudaComplex(argument)));
+		cuDoubleComplex delta = cuCmul(make_cuDoubleComplex(-0.5 * constants::rad2deg, 0), swappedLog);
+		phases[0] = delta;
+	}
+}
