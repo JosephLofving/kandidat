@@ -78,15 +78,7 @@ void setupVGKernel(cuDoubleComplex* VG,
 
 	}
 
-	__global__
-		void setupVG(cuDoubleComplex * V, cuDoubleComplex * G0, cuDoubleComplex * VG, int matWidth) {
-		int row = blockIdx.y * blockDim.y + threadIdx.y;
-		int col = blockIdx.x * blockDim.x + threadIdx.x;
-
-		if (row < matWidth && col < matWidth) {
-			VG[row + col * matWidth] = cuCmul(V[row + col * matWidth], G0[col]);
-		}
-	}
+}
 
 
 
