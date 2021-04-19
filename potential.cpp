@@ -34,7 +34,7 @@ int getArrayIndex(QuantumState state){
 }
 
 
-cuDoubleComplex* potential(std::vector<QuantumState> channel, double* k, double Tlab, double* k0, int NKvadratur) {
+cuDoubleComplex* potential(std::vector<QuantumState> channel, double k, double Tlab, double* k0, int NKvadratur) {
 //std::vector<double> potential(int argc, char* argv[]){
     
 
@@ -100,7 +100,7 @@ cuDoubleComplex* potential(std::vector<QuantumState> channel, double* k, double 
         for (int kIn = 0; kIn < NKvadratur + 1; kIn++) {
             for (int kOut = 0; kOut < NKvadratur + 1; kOut++) {
                 potentialClassPtr->V(kNew[kIn], kNew[kOut], coupled, S, J, T, Tz, VArray);
-                VMatrix[(kIn+rowIndex*(NKvadratur + 1))+(kOut+colIndex*(NKvadratur + 1)) * (NKvadratur + 1)] = make_cuDoubleComplex(constants::pi / 2.0 * VArray[0], 0);
+                VMatrix[(kIn+rowIndex*(NKvadratur + 1))+(kOut+colIndex*(NKvadratur + 1)) * (NKvadratur + 1)] = make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0);
             }
         }
     }
