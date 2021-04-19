@@ -117,61 +117,61 @@ LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, Lap
 
 
 /* TODO: Explain theory for this. */
-std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB)
-{
-	std::complex<double> twoEpsilonJ = std::asin(std::sin(twoEpsilonJBB) * std::sin(deltaMinusBB - deltaPlusBB));
-
-	std::complex<double> deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
-	std::complex<double> deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
-	std::complex<double> epsilon = 0.5 * twoEpsilonJ * constants::rad2deg;
-
-	return { deltaMinus, deltaPlus, epsilon };
-}
-
-
-/**
-	Computes the phase shift for a given channel and T matrix.
-
-	@param channel: Scattering channel
-	@param key:		Channel name
-	@param k0:		On-shell-point
-	@param T:		T matrix
-	@return			Complex phase shifts
-*/
-std::vector<std::complex<double>> computePhaseShifts(std::vector<QuantumState> channel, std::string key, double k0, LapackMat T) {
-	std::cout << "Computing phase shifts in channel " << key << std::endl;
-	std::vector<std::complex<double>> phases;
-
-	double mu = getReducedMass(channel);
-	double rhoT =  2 * mu * k0; // Equation (2.27) in the theory
-	int N = T.width;
-	// TODO: Explain theory for the phase shift for the coupled state
-	if (isCoupled(channel)) {
-		N = static_cast<int>( (N - 2) / 2);
-		std::complex<double> T11 = T.getElement(N,N);
-		std::complex<double> T12 = T.getElement(2 * N + 1, N);
-		std::complex<double> T22 = T.getElement(2 * N + 1, 2 * N + 1);
-
-		/* Blatt - Biedenharn(BB) convention */
-		std::complex<double> twoEpsilonJBB{ std::atan(2.0 * T12 / (T11 - T22)) };
-		std::complex<double> deltaPlusBB{ -0.5 * I * std::log(1.0 - I * rhoT * (T11 + T22) + I * rhoT * (2.0 * T12) / std::sin(twoEpsilonJBB)) };
-		std::complex<double> deltaMinusBB{ -0.5 * I * std::log(1.0 - I * rhoT * (T11 + T22) - I * rhoT * (2.0 * T12) / std::sin(twoEpsilonJBB)) };
-
-		std::vector<std::complex<double>> phasesAppend{ blattToStapp(deltaMinusBB, deltaPlusBB, twoEpsilonJBB) };
-
-		phases.push_back(phasesAppend[0]);
-		phases.push_back(phasesAppend[1]);
-		phases.push_back(phasesAppend[2]);
-	}
-	/* The uncoupled case completely follows equation (2.26). */
-	else {
-		N -= 1;
-		std::complex<double> T0 = T.getElement(N, N);
-		std::complex<double> argument = 1.0 - 2.0 * I * rhoT * T0;
-		std::complex<double> delta = (-0.5 * I) * std::log(argument) * constants::rad2deg;
-
-		phases.push_back(delta);
-	}
-
-	return phases;
-}
+//std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB)
+//{
+//	std::complex<double> twoEpsilonJ = std::asin(std::sin(twoEpsilonJBB) * std::sin(deltaMinusBB - deltaPlusBB));
+//
+//	std::complex<double> deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
+//	std::complex<double> deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
+//	std::complex<double> epsilon = 0.5 * twoEpsilonJ * constants::rad2deg;
+//
+//	return { deltaMinus, deltaPlus, epsilon };
+//}
+//
+//
+///**
+//	Computes the phase shift for a given channel and T matrix.
+//
+//	@param channel: Scattering channel
+//	@param key:		Channel name
+//	@param k0:		On-shell-point
+//	@param T:		T matrix
+//	@return			Complex phase shifts
+//*/
+//std::vector<std::complex<double>> computePhaseShifts(std::vector<QuantumState> channel, std::string key, double k0, LapackMat T) {
+//	std::cout << "Computing phase shifts in channel " << key << std::endl;
+//	std::vector<std::complex<double>> phases;
+//
+//	double mu = getReducedMass(channel);
+//	double rhoT =  2 * mu * k0; // Equation (2.27) in the theory
+//	int N = T.width;
+//	// TODO: Explain theory for the phase shift for the coupled state
+//	if (isCoupled(channel)) {
+//		N = static_cast<int>( (N - 2) / 2);
+//		std::complex<double> T11 = T.getElement(N,N);
+//		std::complex<double> T12 = T.getElement(2 * N + 1, N);
+//		std::complex<double> T22 = T.getElement(2 * N + 1, 2 * N + 1);
+//
+//		/* Blatt - Biedenharn(BB) convention */
+//		std::complex<double> twoEpsilonJBB{ std::atan(2.0 * T12 / (T11 - T22)) };
+//		std::complex<double> deltaPlusBB{ -0.5 * I * std::log(1.0 - I * rhoT * (T11 + T22) + I * rhoT * (2.0 * T12) / std::sin(twoEpsilonJBB)) };
+//		std::complex<double> deltaMinusBB{ -0.5 * I * std::log(1.0 - I * rhoT * (T11 + T22) - I * rhoT * (2.0 * T12) / std::sin(twoEpsilonJBB)) };
+//
+//		std::vector<std::complex<double>> phasesAppend{ blattToStapp(deltaMinusBB, deltaPlusBB, twoEpsilonJBB) };
+//
+//		phases.push_back(phasesAppend[0]);
+//		phases.push_back(phasesAppend[1]);
+//		phases.push_back(phasesAppend[2]);
+//	}
+//	/* The uncoupled case completely follows equation (2.26). */
+//	else {
+//		N -= 1;
+//		std::complex<double> T0 = T.getElement(N, N);
+//		std::complex<double> argument = 1.0 - 2.0 * I * rhoT * T0;
+//		std::complex<double> delta = (-0.5 * I) * std::log(argument) * constants::rad2deg;
+//
+//		phases.push_back(delta);
+//	}
+//
+//	return phases;
+//}
