@@ -245,8 +245,7 @@ void computeTMatrix(cuDoubleComplex** T,
 	}
 
 	/* Solve the equation FT = V with cuBLAS */
-	//T = solveMatrixEq(F, V); // old lapack function
-	// cuBLAS function here, hopefully takes in a parameter cuDoubleComplex pointer T and changes it
+	computeTMatrixCUBLAS(T, F, V, quadratureN, matSize, 1);
 }
 
 
@@ -272,13 +271,13 @@ void blattToStapp(cuDoubleComplex* phases, cuDoubleComplex deltaMinusBB, cuDoubl
 	@return			Complex phase shifts
 */
 __global__
-void computePhaseShifts(cuDoubleComplex* phases, 
-					    cuDoubleComplex* T, 
-						double* k0, 
-						int quadratureN, 
-						double mu, 
+void computePhaseShifts(cuDoubleComplex* phases,
+					    cuDoubleComplex* T,
+						double* k0,
+						int quadratureN,
+						double mu,
 						bool coupled) {
-	
+
 	double rhoT =  2 * mu * k0[0]; // Equation (2.27) in the theory
 
 	// TODO: Explain theory for the phase shift for the coupled state
@@ -297,7 +296,7 @@ void computePhaseShifts(cuDoubleComplex* phases,
 	}
 	/* The uncoupled case completely follows equation (2.26). */
 	else {
-		double T0 = cuCreal(T[(quadratureN) + (quadratureN * quadratureN)]); //Farligt, detta element kanske inte är helt reellt. Dock var koden dålig förut isåfall.
+		double T0 = cuCreal(T[(quadratureN) + (quadratureN * quadratureN)]); //Farligt, detta element kanske inte ï¿½r helt reellt. Dock var koden dï¿½lig fï¿½rut isï¿½fall.
 		cuDoubleComplex argument = make_cuDoubleComplex(1, -2.0 * rhoT * T0);
 		cuDoubleComplex swappedLog = make_cuDoubleComplex(cuCimag(logCudaComplex(argument)), cuCreal(logCudaComplex(argument)));
 		cuDoubleComplex delta = cuCmul(make_cuDoubleComplex(-0.5 * constants::rad2deg, 0), swappedLog);
