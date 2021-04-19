@@ -108,16 +108,12 @@ cuDoubleComplex* potential(std::vector<QuantumState> channel, double* k, double 
 	//printf("\n MAIN_2 V_h[4] = %.10e", cuCreal(V_h[4]));
 	//printf("\n MAIN_2 V_h[5] = %.10e", cuCreal(V_h[5]));
 
-        printf("\nPOTENTIAL k0 = %.10e", k0);
-        printf("\nPOTENTIAL rowIndex= %.10e", rowIndex);
-        printf("\nPOTENTIAL colIndex = %.10e", colIndex);
         for (int kIn = 0; kIn < NKvadratur + 1; kIn++) {
             for (int kOut = 0; kOut < NKvadratur + 1; kOut++) {
                 potentialClassPtr->V(kNew[kIn], kNew[kOut], coupled, S, J, T, Tz, VArray);
                 VMatrix[(kIn+rowIndex*(NKvadratur + 1))+(kOut+colIndex*(NKvadratur + 1)) * (NKvadratur + 1)] = make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0);
             }
         }
-        printf("\nPOTENTIAL k0 = %.10e", k0);
     }
     return VMatrix;
  }

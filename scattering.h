@@ -3,7 +3,7 @@
 
 #include "constants.h"
 #include "lapackAPI.h"
-#include "computeTMatrix.h"
+//#include "computeTMatrix.h"
 #include "quantumStates.h"
 
 #include <cmath>
@@ -14,9 +14,18 @@
 #include <iomanip>
 #include <cuda_runtime.h>
 #include <cuComplex.h>
+#include <cuComplex.h>
 
+template <typename T>
+void check(T result, char const* const func, const char* const file, int const line);
 
-cuDoubleComplex I = make_cuDoubleComplex(0.0, 1.0);
+// #define checkCudaErrors(val) check((val), #val, __FILE__, __LINE__)
+static const char* _cudaGetErrorEnum(cudaError_t error);
+
+__device__
+void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray, cuDoubleComplex* h_Farray, cuDoubleComplex* h_Varray, int N, int batchSize);
+
+//#endif
 
 
 __device__

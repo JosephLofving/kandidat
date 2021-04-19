@@ -59,6 +59,7 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 //     printf("\n");
 // }
 
+__device__
 void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
          			cuDoubleComplex* h_Farray,
 		 			cuDoubleComplex* h_Varray,
