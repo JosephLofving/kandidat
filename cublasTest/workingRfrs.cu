@@ -1,4 +1,5 @@
 // p ((@global double*)h_Aptr_array[0])[0]
+// p ((@global double*)A)[1]
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,7 +50,7 @@ cublasStatus_t cublasXgetrfBatched(cublasHandle_t handle, int n,
 cublasStatus_t cublasXgetrsBatched(cublasHandle_t handle,
                                    cublasOperation_t trans, int n,
                                    int nrhs, DATA_TYPE* const A[],
-                                   int lda, int* P, DATA_TYPE* B[],
+                                   int lda, const int* P, DATA_TYPE* B[],
                                    int ldb, int* info, int batchSize) {
 #ifdef DOUBLE_PRECISION
   return cublasDgetrsBatched(handle, trans, n, nrhs, A, lda, P, B, ldb,
@@ -72,21 +73,6 @@ void* xmalloc(size_t size) {
   memset(ptr, 0, size);
   return ptr;
 }
-
-// fill random value in column-major matrix
-// void initRandomMatrix(DATA_TYPE* mat) {
-//   for (int i = 0; i < N; i++) {
-//     for (int j = 0; j < N; j++) {
-//       mat[(j * N) + i] =
-//           (DATA_TYPE)1.0 + ((DATA_TYPE)rand() / (DATA_TYPE)RAND_MAX);
-//     }
-//   }
-
-//   // diagonal dominant matrix to insure it is invertible matrix
-//   for (int i = 0; i < N; i++) {
-//     mat[(i * N) + i] += (DATA_TYPE)N;
-//   }
-// }
 
 void initSetAMatrix(DATA_TYPE* mat, DATA_TYPE factor) {
   DATA_TYPE toSet[N*N] = {2, -1, 1, 1, 1, 2, 1, -1, 3}; // A matrix that has a solution for the given B
@@ -138,7 +124,7 @@ int main(int argc, char** argv) {
 
   int* d_pivotArray;
   int* d_AinfoArray;
-  int* d_BinfoArray;
+  int d_Binfo;
 
   // seed the rand() function with time
   // srand(12345);
@@ -175,7 +161,7 @@ int main(int argc, char** argv) {
   checkCudaErrors(
       cudaMalloc((void**)&d_pivotArray, N * BATCH_SIZE * sizeof(int)));
   checkCudaErrors(cudaMalloc((void**)&d_AinfoArray, BATCH_SIZE * sizeof(int)));
-  checkCudaErrors(cudaMalloc((void**)&d_BinfoArray, BATCH_SIZE * sizeof(int)));
+  checkCudaErrors(cudaMalloc((void**)&d_Binfo, sizeof(int)));
   checkCudaErrors(
       cudaMalloc((void**)&d_Aptr_array, BATCH_SIZE * sizeof(DATA_TYPE*)));
   checkCudaErrors(
@@ -226,7 +212,7 @@ int main(int argc, char** argv) {
   printf("> Calculating X matrix...\n");
 
   status = cublasXgetrsBatched(handle, CUBLAS_OP_N, N, 1, d_Aptr_array, N,
-                               d_pivotArray, d_Bptr_array, N, d_BinfoArray,
+                               d_pivotArray, d_Bptr_array, N, &d_Binfo,
                                BATCH_SIZE);
 
   // copy data to host from device
@@ -241,7 +227,7 @@ int main(int argc, char** argv) {
   checkCudaErrors(cudaFree(d_Aptr_array));
   checkCudaErrors(cudaFree(d_Bptr_array));
   checkCudaErrors(cudaFree(d_AinfoArray));
-  checkCudaErrors(cudaFree(d_BinfoArray));
+  checkCudaErrors(cudaFree(&d_Binfo));
   checkCudaErrors(cudaFree(d_pivotArray));
   checkCudaErrors(cudaFree(d_Aarray));
   checkCudaErrors(cudaFree(d_Barray));
