@@ -11,7 +11,7 @@ __device__
 void setupG0Vector(cuDoubleComplex* D, 
 				   double* k, 
 				   double* w, 
-				   double* k0, 
+				   double k0, 
 				   int quadratureN, 
 				   double mu, 
 				   bool coupled) {
@@ -55,7 +55,7 @@ void setupVGKernel(cuDoubleComplex* VG,
 				   cuDoubleComplex* F, 
 				   double* k, 
 				   double* w, 
-				   double* k0, 
+				   double k0, 
 				   int quadratureN,
 				   int matSize,
 				   double mu, 
@@ -63,18 +63,33 @@ void setupVGKernel(cuDoubleComplex* VG,
 
 	setupG0Vector(G0, k, w, k0, quadratureN, mu, coupled);
 
-	for (int row = 0; row < matSize; row++) {
-		for (int column = 0; column < matSize; column++) {
-			/* Create VG by using VG[i,j] = V[i,j] * G[j] */
-			VG[row + column * matSize] = cuCmul(V[row + column * matSize], G0[column]);
+	int row = blockIdx.y * blockDim.y + threadIdx.y;
+	int column = blockIdx.x * blockDim.x + threadIdx.x;
 
-			/* At the same time, create F = delta_ij - VG_ij for computeTMatrix*/
-			F[row + row * matSize] = cuCadd(make_cuDoubleComplex(1, 0), -VG[row + row * matSize]);
-			if (row != column) {
-				F[row + column * matSize] = -VG[row + column * matSize];
-			}
+	if (row < matSize && column < matSize) {
+		VG[row + column * matSize] = cuCmul(V[row + column * matSize], G0[column]);
+		if (row == column) {
+			F[row + row * matSize] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VG[row + row * matSize])); // Diagonal element
 		}
+		else {
+			F[row + column * matSize] = cuCmul(make_cuDoubleComplex(-1, 0), VG[row + column * matSize]);
+		}
+		
 	}
+
+
+	//for (int row = 0; row < matSize; row++) {
+	//	for (int column = 0; column < matSize; column++) {
+	//		/* Create VG by using VG[i,j] = V[i,j] * G[j] */
+	//		VG[row + column * matSize] = cuCmul(V[row + column * matSize], G0[column]);
+
+	//		/* At the same time, create F = delta_ij - VG_ij for computeTMatrix*/
+	//		if (row != column) {
+	//			F[row + column * matSize] = cuCmul(make_cuDoubleComplex(-1, 0), VG[row + column * matSize]);
+	//		}
+	//	}
+	//	F[row + row * matSize] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VG[row + row * matSize])); // Diagonal element
+	//}
 }
 
 
@@ -103,8 +118,8 @@ void computeTMatrix(cuDoubleComplex* T,
 					double mu, 
 					bool coupled) {
 
-	/* Setup the VG kernel and, at the same time, the F matrix*/
-	setupVGKernel(VG, V, G0, F, k, w, k0, quadratureN, matSize, mu, coupled);
+	/* Setup the VG kernel and, at the same time, the F matrix */
+	setupVGKernel(VG, V, G0, F, k, w, k0[0], quadratureN, matSize, mu, coupled);
 
 	/* Solve the equation FT = V with cuBLAS */
 	//T = solveMatrixEq(F, V); // old lapack function

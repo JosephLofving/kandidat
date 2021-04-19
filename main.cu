@@ -116,35 +116,21 @@ int main() {
 	}
 
 	/* Prepare generation of TLab [Mev] */
-	double TLabMin = 0;
-	double TLabMax = 290;
-	double TLabIncr = 0.01;
-	int TLabLength = static_cast<int>( (TLabMax - TLabMin) / TLabIncr );
+	double TLabMin = 100;
+	double TLabMax = 100;
+	double TLabIncr = 1;
+	int TLabLength = static_cast<int>( (TLabMax - TLabMin) / TLabIncr + 1);
 
 
 	/* Allocate host memory */
 	double* TLab_h = new double[TLabLength];
 	double* k0_h = new double[TLabLength];
-	double* k_h = new double[quadratureN];
-	double* w_h = new double[quadratureN];
 	cuDoubleComplex* V_h = new cuDoubleComplex[matSize * matSize * TLabLength];
+	cuDoubleComplex* T_h = new cuDoubleComplex[matSize * matSize];
 	cuDoubleComplex* G0_h = new cuDoubleComplex[matSize];
 	cuDoubleComplex* VG_h = new cuDoubleComplex[matSize * matSize];
 	cuDoubleComplex* F_h = new cuDoubleComplex[matSize * matSize];
-	cuDoubleComplex* T_h = new cuDoubleComplex[matSize * matSize];
 	cuDoubleComplex* phases_h = new cuDoubleComplex[phasesSize];
-
-
-	/* Generate different experimental kinetic energies [MeV]*/
-	for (int i = 0; i < TLabLength; i++) {
-		TLab_h[i] = i * TLabIncr;
-	}
-
-
-	/* Create the potential matrix on the CPU */
-	for (int i = 0; i < TLabLength; i++) {
-		V_h[i] = potential(channel, k_h, TLab_h[i], k0_h[i], quadratureN)[i];
-	}
 	
 
 	/* Allocate device memory */
@@ -170,7 +156,7 @@ int main() {
 
 
 	/* Copy host variables to device variables */
-	cudaMemcpy(TLab_h,TLab_d, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(TLab_d, TLab_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(k0_d, k0_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(k_d, k_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(w_d, w_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
@@ -181,13 +167,34 @@ int main() {
 	cudaMemcpy(phases_d, phases_h, phasesSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
 
+	/* Generate different experimental kinetic energies [MeV]*/
+	for (int i = 0; i < TLabLength; i++) {
+		TLab_h[i] = i * TLabIncr;
+	}
+
 	getk0<<<1, 1 >>>(k0_d, TLab_d, TLabLength, tzChannel);
+
+	cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
+
+	/* Create the potential matrix on the CPU */
+	for (int i = 0; i < TLabLength; i++) {
+		V_h[i] = potential(channel, k_h, TLab_h[i], k0_h[i], quadratureN)[i];
+	}
 
 	double mu = getReducedMass(channel);
 
+	dim3 threadsPerBlock(matSize, matSize);
+	dim3 blocksPerGrid(1, 1);
+	if (matSize * matSize > 512) {
+		threadsPerBlock.x = 512;
+		threadsPerBlock.y = 512;
+		blocksPerGrid.x = ceil(double(matSize) / double(threadsPerBlock.x));
+		blocksPerGrid.y = ceil(double(matSize) / double(threadsPerBlock.y));
+	}
+
 	/* Call kernels on GPU */
-	computeTMatrix<<<1, 1>>>(T_d, V_d, G0_d, VG_d, F_d, k_d, w_d, k0_d, quadratureN, matSize, mu, coupled);
-	computePhaseShifts<<<1, 1>>>(phases, mu, coupled, k0_d, T_d, quadratureN);
+	computeTMatrix <<<threadsPerBlock, blocksPerGrid>>> (T_d, V_d, G0_d, VG_d, F_d, k_d, w_d, k0_d, quadratureN, matSize, mu, coupled);
+	//computePhaseShifts <<<threadsPerBlock, blocksPerGrid>>> (phases_h, mu, coupled, k0_d, T_d, quadratureN);
 
 	/* Copy (relevant) device variables to host variables */
 	cudaMemcpy(T_h, T_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);

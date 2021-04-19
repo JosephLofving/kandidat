@@ -10,7 +10,6 @@
 #include <curand_kernel.h>
 #include <cuComplex.h>
 
-void getk0(double* k0, int tzChannel, double* TLab, int TLabLength);
 cuDoubleComplex* potential(std::vector<QuantumState> channel, double* k, double Tlab, double k0, int NKvadratur);
 
 #endif

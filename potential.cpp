@@ -34,7 +34,7 @@ int getArrayIndex(QuantumState state){
 }
 
 
-cuDoubleComplex* potential(std::vector<QuantumState> channel, double k, double Tlab, double* k0, int NKvadratur) {
+cuDoubleComplex* potential(std::vector<QuantumState> channel, double* k, double Tlab, double k0, int NKvadratur) {
 //std::vector<double> potential(int argc, char* argv[]){
     
 
