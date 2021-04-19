@@ -53,6 +53,7 @@ bool isCoupled(std::vector<QuantumState> channel) {
 
 __global__
 void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
+	printf("%s \n", "hej getk0");
 	double k0Squared = 0;
 	for (int i = 0; i < TLabLength; i++) {
 		/* Proton-proton scattering */
@@ -80,6 +81,7 @@ void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
 
 
 int main() {
+	std::cout << "hej :)" << std::endl;
 	std::vector<QuantumState> base = setupBase(0, 2, 0, 2);
 	std::map<std::string, std::vector<QuantumState>> channels = setupNNChannels(base);
 
@@ -117,6 +119,8 @@ int main() {
 	double TLabMax = 100;
 	double TLabIncr = 1;
 	int TLabLength = static_cast<int>( (TLabMax - TLabMin) / TLabIncr + 1);
+	std::cout << "Tlablength: ";
+	std::cout << TLabLength << std::endl;
 
 
 	/* Allocate host memory */
@@ -145,8 +149,8 @@ int main() {
 	cudaMalloc((void**)&k0_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&k_d, quadratureN * sizeof(double));
 	cudaMalloc((void**)&w_d, quadratureN * sizeof(double));
+	cudaMalloc((void**)&G0_d, matSize * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&V_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&G0_d, matSize * matSize * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&VG_d, matSize * matSize * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&F_d, matSize * matSize * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&T_d, matSize * matSize * sizeof(cuDoubleComplex));
@@ -159,6 +163,7 @@ int main() {
 	cudaMemcpy(k_d, k_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(w_d, w_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(G0_d, G0_h, matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(V_d, V_h, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 	cudaMemcpy(VG_d, VG_h, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 	cudaMemcpy(F_d, F_h, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 	cudaMemcpy(T_d, T_h, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
@@ -169,7 +174,8 @@ int main() {
 	for (int i = 0; i < TLabLength; i++) {
 		TLab_h[i] = i * TLabIncr;
 	}
-
+	printf("%s \n", "hej 1");
+	std::cout << "hej cout" << std::endl;
 	getk0<<<1, 1 >>>(k0_d, TLab_d, TLabLength, tzChannel);
 
 	cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
@@ -203,7 +209,7 @@ int main() {
 	cudaMemcpy(VG_h, VG_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	for (int i = 0; i < matSize * matSize; i += 5) {
-		std::cout << cuCreal(VG_h[i]) << std::endl;
+		//std::cout << cuCreal(VG_h[i]) << std::endl;
 	}
 	//-------------------------------------------
 	// perhaps some printing of T or phases here

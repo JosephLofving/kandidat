@@ -69,6 +69,11 @@ void setupVGKernel(cuDoubleComplex* VG,
 
 	if (row < matSize && column < matSize) {
 		VG[row + column * matSize] = cuCmul(V[row + column * matSize], G0[column]);
+		//cuDoubleComplex test = cuCmul(V[row + column * matSize], G0[column]);
+		cuDoubleComplex testG0 = G0[column];
+		cuDoubleComplex testV = V[row + column * matSize];
+		printf("\nV = %f, %f", cuCreal(testV), cuCimag(testV));
+		printf("\nG0 = %f, %f", cuCreal(testG0), cuCimag(testG0));
 		if (row == column) {
 			F[row + row * matSize] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VG[row + row * matSize])); // Diagonal element
 		}
@@ -94,7 +99,7 @@ void setupVGKernel(cuDoubleComplex* VG,
 	//	}
 	//	F[row + row * matSize] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VG[row + row * matSize])); // Diagonal element
 	//}
-}
+//}
 
 
 
@@ -130,7 +135,6 @@ void computeTMatrix(cuDoubleComplex* T,
 	/* Solve the equation FT = V with cuBLAS */
 	//T = solveMatrixEq(F, V); // old lapack function
 	// cuBLAS function here, hopefully takes in a parameter cuDoubleComplex pointer T and changes it
-
 }
 
 
