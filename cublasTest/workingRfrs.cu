@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
   checkCudaErrors(
       cudaMalloc((void**)&d_pivotArray, N * BATCH_SIZE * sizeof(int)));
   checkCudaErrors(cudaMalloc((void**)&d_AinfoArray, BATCH_SIZE * sizeof(int)));
-  checkCudaErrors(cudaMalloc((void**)&d_Binfo, sizeof(int)));
+  // checkCudaErrors(cudaMalloc((void**)&d_Binfo, sizeof(int)));
   checkCudaErrors(
       cudaMalloc((void**)&d_Aptr_array, BATCH_SIZE * sizeof(DATA_TYPE*)));
   checkCudaErrors(
@@ -227,15 +227,15 @@ int main(int argc, char** argv) {
   checkCudaErrors(cudaFree(d_Aptr_array));
   checkCudaErrors(cudaFree(d_Bptr_array));
   checkCudaErrors(cudaFree(d_AinfoArray));
-  checkCudaErrors(cudaFree(&d_Binfo));
+  // checkCudaErrors(cudaFree(&d_Binfo));
   checkCudaErrors(cudaFree(d_pivotArray));
   checkCudaErrors(cudaFree(d_Aarray));
   checkCudaErrors(cudaFree(d_Barray));
 
   // free host variables
-  if (h_BarrayOutput) free(h_BarrayOutput);
   if (h_AarrayInput) free(h_AarrayInput);
-  if (h_BarrayInput) free(h_AarrayInput);
+  if (h_BarrayInput) free(h_BarrayInput);
+  if (h_BarrayOutput) free(h_BarrayOutput);
 
   // destroy cuBLAS handle
   status = cublasDestroy(handle);
