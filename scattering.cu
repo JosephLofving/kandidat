@@ -9,7 +9,7 @@
 	@return		G0 vector
 */
 __device__
-void setupG0Vector(cuDoubleComplex* D,
+void setupG0Vector(cuDoubleComplex* G0,
 	double* k,
 	double* w,
 	double k0,
@@ -21,20 +21,20 @@ void setupG0Vector(cuDoubleComplex* D,
 	double twoOverPi = (2.0 / constants::pi);
 	double sum = 0;
 	for (int i = 0; i < quadratureN; i++) {
-		D[i] = make_cuDoubleComplex(-twoOverPi * twoMu * k[i] * k[i] * w[i] / (k0 * k0 - k[i] * k[i]), 0);
+		G0[i] = make_cuDoubleComplex(twoOverPi * twoMu * k[i] * k[i] * w[i] / (k0 * k0 - k[i] * k[i]), 0);
 		sum += w[i] / (k0 * k0 - k[i] * k[i]);
 
 		/* If coupled, append G0 to itself to facilitate calculations.
 		 * This means the second half of G0 is a copy of the first. */
 		if (coupled) {
-			D[quadratureN + 1 + i] = D[i];
+			G0[quadratureN + 1 + i] = G0[i];
 		}
 	}
 
 	/* Assign the last element of D */
-	D[quadratureN] = make_cuDoubleComplex(twoOverPi * twoMu * k0 * k0 * sum, twoMu * k0);
+	G0[quadratureN] = make_cuDoubleComplex(-twoOverPi * twoMu * k0 * k0 * sum, -twoMu * k0);
 	if (coupled) {
-		D[2 * (quadratureN + 1) - 1] = D[quadratureN];
+		G0[2 * (quadratureN + 1) - 1] = G0[quadratureN];
 	}
 }
 
@@ -63,7 +63,6 @@ void setupVGKernel(cuDoubleComplex* VG,
 	bool coupled) {
 
 	setupG0Vector(G0, k, w, k0, quadratureN, mu, coupled);
-
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
 	int column = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -72,8 +71,7 @@ void setupVGKernel(cuDoubleComplex* VG,
 		//cuDoubleComplex test = cuCmul(V[row + column * matSize], G0[column]);
 		cuDoubleComplex testG0 = G0[column];
 		cuDoubleComplex testV = V[row + column * matSize];
-		printf("\nV = %f, %f", cuCreal(testV), cuCimag(testV));
-		printf("\nG0 = %f, %f", cuCreal(testG0), cuCimag(testG0));
+		//printf("\nV = %f, %f", cuCreal(testV), cuCimag(testV));
 		if (row == column) {
 			F[row + row * matSize] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VG[row + row * matSize])); // Diagonal element
 		}
