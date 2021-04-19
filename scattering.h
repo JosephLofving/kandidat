@@ -56,8 +56,13 @@ void computeTMatrix(cuDoubleComplex* T,
 	bool coupled);
 
 
-//std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB);
-//void computePhaseShifts(cuDoubleComplex* phases, double mu, bool coupled, double* k0, cuDoubleComplex* T, int Nkvadr);
+void blattToStapp(cuDoubleComplex* phases, cuDoubleComplex deltaMinusBB, cuDoubleComplex deltaPlusBB, cuDoubleComplex twoEpsilonJBB);
+void computePhaseShifts(cuDoubleComplex* phases,
+	cuDoubleComplex* T,
+	double* k0,
+	int quadratureN,
+	double mu,
+	bool coupled);
 
 
 #endif

@@ -68,6 +68,22 @@ cuDoubleComplex logCudaComplex(cuDoubleComplex argument) {
 }
 
 __device__
+double signCuda(double argument) {
+	if (argument > 0) return 1;
+	else if (argument == 0) return 0;
+	else return -1;
+}
+
+__device__
+cuDoubleComplex sqrtCudaComplex(cuDoubleComplex argument) {
+	double x = cuCreal(argument);
+	double y = cuCimag(argument);
+	double real = sqrtf((sqrtf(x * x + y * y) + x) / 2);
+	double imag = signCuda(y) * sqrtf((sqrtf(x * x + y * y) - x) / 2);
+	return make_cuDoubleComplex(real, imag);
+}
+
+__device__
 cuDoubleComplex atanCudaComplex(cuDoubleComplex argument) {
 	cuDoubleComplex numerator = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(0, 1), argument));
 	cuDoubleComplex denominator = cuCsub(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(0, 1), argument));
@@ -77,8 +93,20 @@ cuDoubleComplex atanCudaComplex(cuDoubleComplex argument) {
 }
 
 __device__
+cuDoubleComplex asinCudaComplex(cuDoubleComplex argument) {
+	return I * logCudaComplex(sqrtCudaComplex(1 - argument * argument) - I * argument);
+}
+
+__device__
 cuDoubleComplex sinCudaComplex(cuDoubleComplex argument) {
 	return (expCudaComplex(I * argument) - expCudaComplex(-1.0 * I * argument)) / 2;
+}
+
+__device__
+cuDoubleComplex tanCudaComplex(cuDoubleComplex argument) {
+	cuDoubleComplex numerator = I * (expCudaComplex(-1.0 * I * argument) - expCudaComplex(I * argument));
+	cuDoubleComplex denominator = expCudaComplex(-1.0 * I * argument) + expCudaComplex(I * argument);
+	return numerator / denominator;
 }
 
 __device__
@@ -222,14 +250,12 @@ void computeTMatrix(cuDoubleComplex* T,
 
 /* TODO: Explain theory for this. */
 __device__
-std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB) {
-	std::complex<double> twoEpsilonJ = std::asin(std::sin(twoEpsilonJBB) * std::sin(deltaMinusBB - deltaPlusBB));
+void blattToStapp(cuDoubleComplex* phases, cuDoubleComplex deltaMinusBB, cuDoubleComplex deltaPlusBB, cuDoubleComplex twoEpsilonJBB) {
+	cuDoubleComplex twoEpsilonJ = asinCudaComplex(sinCudaComplex(twoEpsilonJBB) * sinCudaComplex(deltaMinusBB - deltaPlusBB));
 
-	std::complex<double> deltaMinus = 0.5 * (deltaPlusBB + deltaMinusBB + std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
-	std::complex<double> deltaPlus = 0.5 * (deltaPlusBB + deltaMinusBB - std::asin(tan(twoEpsilonJ) / std::tan(twoEpsilonJBB))) * constants::rad2deg;
-	std::complex<double> epsilon = 0.5 * twoEpsilonJ * constants::rad2deg;
-
-	return { deltaMinus, deltaPlus, epsilon };
+	phases[0] = 0.5 * (deltaPlusBB + deltaMinusBB + asinCudaComplex(tanCudaComplex(twoEpsilonJ) / tanCudaComplex(twoEpsilonJBB))) * constants::rad2deg;
+	phases[1] = 0.5 * (deltaPlusBB + deltaMinusBB - asinCudaComplex(tanCudaComplex(twoEpsilonJ) / tanCudaComplex(twoEpsilonJBB))) * constants::rad2deg;
+	phases[2] = 0.5 * twoEpsilonJ * constants::rad2deg;
 }
 
 
@@ -263,10 +289,7 @@ void computePhaseShifts(cuDoubleComplex* phases,
 		cuDoubleComplex twoEpsilonJBB = atanCudaComplex(cuCdiv(cuCmul(make_cuDoubleComplex(2.0, 0), T12), cuCsub(T11, T22)));
 		cuDoubleComplex deltaPlusBB{ -0.5 * I * logCudaComplex(1.0 - I * rhoT * (T11 + T22) + I * rhoT * (2.0 * T12) / sinCudaComplex(twoEpsilonJBB)) };
 		cuDoubleComplex deltaMinusBB{ -0.5 * I * logCudaComplex(1.0 - I * rhoT * (T11 + T22) - I * rhoT * (2.0 * T12) / sinCudaComplex(twoEpsilonJBB)) };
-
-		phases[0] = deltaMinusBB;
-		phases[1] = deltaPlusBB;
-		phases[2] = twoEpsilonJBB;
+		blattToStapp(phases, deltaMinusBB, deltaPlusBB, twoEpsilonJBB);
 
 	}
 	/* The uncoupled case completely follows equation (2.26). */
