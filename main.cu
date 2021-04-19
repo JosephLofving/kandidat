@@ -21,13 +21,6 @@
 
 
 
-
-
-
-
-
-
-
 /**
 	Gets the reduced mass by checking the isospin channel, which determines the type of NN scattering
 	@param channel:	Scattering channel
@@ -80,6 +73,10 @@ void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
 		k0[i] = sqrtf(k0Squared); // Does not handle case where tz is NOT -1, 0 or 1 (should be handled earlier?)
 	}
 }
+
+
+
+
 
 
 int main() {
@@ -144,6 +141,7 @@ int main() {
 	cuDoubleComplex* VG_d;
 	cuDoubleComplex* F_d;
 	cuDoubleComplex* phases_d;
+	cudaMalloc((void**)&TLab_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&k0_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&k_d, quadratureN * sizeof(double));
 	cudaMalloc((void**)&w_d, quadratureN * sizeof(double));
@@ -195,11 +193,18 @@ int main() {
 	/* Call kernels on GPU */
 	computeTMatrix <<<threadsPerBlock, blocksPerGrid>>> (T_d, V_d, G0_d, VG_d, F_d, k_d, w_d, k0_d, quadratureN, matSize, mu, coupled);
 	//computePhaseShifts <<<threadsPerBlock, blocksPerGrid>>> (phases_h, mu, coupled, k0_d, T_d, quadratureN);
+	
+	cudaDeviceSynchronize();
 
 	/* Copy (relevant) device variables to host variables */
 	cudaMemcpy(T_h, T_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(phases_h, phases_d, phasesSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	
+
+	cudaMemcpy(VG_h, VG_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+
+	for (int i = 0; i < matSize * matSize; i += 5) {
+		std::cout << cuCreal(VG_h[i]) << std::endl;
+	}
 	//-------------------------------------------
 	// perhaps some printing of T or phases here
 	//-------------------------------------------

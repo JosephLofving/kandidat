@@ -15,10 +15,10 @@
 #include <cuComplex.h>
 
 
-constexpr std::complex<double> I(0.0, 1.0);
+// constexpr std::complex<double> I(0.0, 1.0);
 
-double getReducedMass(std::vector<QuantumState> channel);
-bool isCoupled(std::vector<QuantumState> channel);
+
+__device__
 void setupG0Vector(cuDoubleComplex* D,
 	double* k,
 	double* w,
@@ -26,7 +26,22 @@ void setupG0Vector(cuDoubleComplex* D,
 	int quadratureN,
 	double mu,
 	bool coupled);
-void setupVG(cuDoubleComplex* V, cuDoubleComplex* G0, cuDoubleComplex* VG, int matWidth);
+
+__device__
+void setupVGKernel(cuDoubleComplex* VG,
+	cuDoubleComplex* V,
+	cuDoubleComplex* G0,
+	cuDoubleComplex* F,
+	double* k,
+	double* w,
+	double k0,
+	int quadratureN,
+	int matSize,
+	double mu,
+	bool coupled);
+
+
+__global__
 void computeTMatrix(cuDoubleComplex* T,
 	cuDoubleComplex* V,
 	cuDoubleComplex* G0,
@@ -39,8 +54,10 @@ void computeTMatrix(cuDoubleComplex* T,
 	int matSize,
 	double mu,
 	bool coupled);
-std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB);
-void computePhaseShifts(cuDoubleComplex* phases, double mu, bool coupled, double* k0, cuDoubleComplex* T, int Nkvadr);
+
+
+//std::vector<std::complex<double>> blattToStapp(std::complex<double> deltaMinusBB, std::complex<double> deltaPlusBB, std::complex<double> twoEpsilonJBB);
+//void computePhaseShifts(cuDoubleComplex* phases, double mu, bool coupled, double* k0, cuDoubleComplex* T, int Nkvadr);
 
 
 #endif
