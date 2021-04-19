@@ -111,8 +111,8 @@ int main() {
 	}
 
 	/* Prepare generation of TLab [Mev] */
-	const double TLabMin = 100;
-	const double TLabMax = 100;
+	const double TLabMin = 1;
+	const double TLabMax = 200;
 	const double TLabIncr = 1;
 	const int TLabLength = static_cast<int>( (TLabMax - TLabMin) / TLabIncr + 1);
 	std::cout << "Tlablength: ";
@@ -123,11 +123,11 @@ int main() {
 	double* k0_h = new double[TLabLength];
 	double* k_h = new double[quadratureN];
 	double* w_h = new double[quadratureN];
-	cuDoubleComplex* V_h = new cuDoubleComplex[matSize * matSize * TLabLength];
-	cuDoubleComplex* T_h = new cuDoubleComplex[matSize * matSize];
+	cuDoubleComplex** V_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
+	cuDoubleComplex** T_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
 	cuDoubleComplex* G0_h = new cuDoubleComplex[matSize];
-	cuDoubleComplex* VG_h = new cuDoubleComplex[matSize * matSize];
-	cuDoubleComplex* F_h = new cuDoubleComplex[matSize * matSize];
+	cuDoubleComplex** VG_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
+	cuDoubleComplex** F_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
 	cuDoubleComplex* phases_h = new cuDoubleComplex[phasesSize];
 	
 	/* Generate different experimental kinetic energies [MeV]*/
@@ -140,12 +140,12 @@ int main() {
 	double* k0_d;
 	double* k_d;
 	double* w_d;
-	cuDoubleComplex* V_d;
-	cuDoubleComplex* T_d;
-	cuDoubleComplex* G0_d;
-	cuDoubleComplex* VG_d;
-	cuDoubleComplex* F_d;
-	cuDoubleComplex* phases_d;
+	cuDoubleComplex** V_d;
+	cuDoubleComplex** T_d;
+	cuDoubleComplex** G0_d;
+	cuDoubleComplex** VG_d;
+	cuDoubleComplex** F_d;
+	cuDoubleComplex** phases_d;
 
 
 
@@ -153,12 +153,12 @@ int main() {
 	cudaMalloc((void**)&k0_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&k_d, quadratureN * sizeof(double));
 	cudaMalloc((void**)&w_d, quadratureN * sizeof(double));
-	cudaMalloc((void**)&G0_d, matSize * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&G0_d, matSize * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&V_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&VG_d, matSize * matSize * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&F_d, matSize * matSize * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&T_d, matSize * matSize * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&phases_d, phasesSize * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&VG_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&F_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&T_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&phases_d, phasesSize * TLabLength * sizeof(cuDoubleComplex));
 
 	kAndWPtrs kAndW = gaussLegendreInfMesh(quadratureN, scale);
 	k_h = kAndW.k;
@@ -169,11 +169,11 @@ int main() {
 	cudaMemcpy(k0_d, k0_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(k_d, k_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(w_d, w_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(G0_d, G0_h, matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(VG_d, VG_h, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(F_d, F_h, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(T_d, T_h, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(phases_d, phases_h, phasesSize * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(G0_d, G0_h, matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(VG_d, VG_h, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(F_d, F_h, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(T_d, T_h, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(phases_d, phases_h, phasesSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
 	getk0<<<1, 1 >>>(k0_d, TLab_d, TLabLength, tzChannel);
 	//detta överrensstämmer med CPU-kod :)
@@ -181,10 +181,10 @@ int main() {
 	cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
 
 
-	//for (int i = 0; i < TLabLength; i++) {
-	V_h = potential(channel, k_h, TLab_h[0], k0_h[0], quadratureN);
-	//}
-	//V[(row) + (column * matSize) + (energy * matSize * matSize)];
+	for (int i = 0; i < TLabLength; i++) {
+		V_h[i] = potential(channel, k_h, TLab_h[i], k0_h[i], quadratureN);
+	}
+	//V[(row) + (column * matSize) + (i * matSize * matSize)]; /ta inte bort denna rad i vårstädningen ty
 
 	/* Create the potential matrix on the CPU */
 
@@ -204,8 +204,8 @@ int main() {
 
 	/* Call kernels on GPU */
 
-	computeTMatrix <<<threadsPerBlock, blocksPerGrid>>> (T_d, V_d, G0_d, VG_d, F_d, k_d, w_d, k0_d, quadratureN, matSize, mu, coupled);
-	//computePhaseShifts <<<threadsPerBlock, blocksPerGrid>>> (phases_h, mu, coupled, k0_d, T_d, quadratureN);
+	computeTMatrix <<<threadsPerBlock, blocksPerGrid>>> (T_d, V_d, G0_d, VG_d, F_d, k_d, w_d, k0_d, quadratureN, matSize, TLabLength, mu, coupled);
+	computePhaseShifts <<<threadsPerBlock, blocksPerGrid>>> (phases_h, T_d, k0_d, quadratureN, mu, coupled);
 	
 	cudaDeviceSynchronize();
 
@@ -219,19 +219,11 @@ int main() {
 	cudaMemcpy(F_h, F_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(VG_h, VG_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
-	for (int i = 0; i < matSize * matSize; i += 5) {
-		//std::cout << cuCreal(VG_h[i]) << std::endl;
+	for (int i = 0; i < phasesSize; ++i) {
+		printf("\nReal(phases[%i]) = %.10e", i, cuCreal(phases_h[i]));
+		printf("\nImag(phases[%i]) = %.10e", i, cuCimag(phases_h[i]));
 	}
-	//-------------------------------------------
-	// perhaps some printing of T or phases here
-	//-------------------------------------------
 
-	printf("\n MAIN_2 F_h[0] = %.10e", cuCreal(F_h[0]));
-	printf("\n MAIN_2 F_h[1] = %.10e", cuCreal(F_h[1]));
-	printf("\n MAIN_2 F_h[2] = %.10e", cuCreal(F_h[2]));
-	printf("\n MAIN_2 F_h[3] = %.10e", cuCreal(F_h[3]));
-	printf("\n MAIN_2 F_h[4] = %.10e", cuCreal(F_h[4]));
-	printf("\n MAIN_2 F_h[5] = %.10e", cuCreal(F_h[5]));
 	/* Free all the allocated memory */ 
 	delete[] TLab_h;
 	delete[] k0_h;

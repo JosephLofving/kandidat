@@ -42,16 +42,17 @@ void setupVGKernel(cuDoubleComplex* VG,
 
 
 __global__
-void computeTMatrix(cuDoubleComplex* T,
-	cuDoubleComplex* V,
-	cuDoubleComplex* G0,
-	cuDoubleComplex* VG,
-	cuDoubleComplex* F,
+void computeTMatrix(cuDoubleComplex** T,
+	cuDoubleComplex** V,
+	cuDoubleComplex** G0,
+	cuDoubleComplex** VG,
+	cuDoubleComplex** F,
 	double* k,
 	double* w,
 	double* k0,
 	int quadratureN,
 	int matSize,
+	int TLabLength,
 	double mu,
 	bool coupled);
 

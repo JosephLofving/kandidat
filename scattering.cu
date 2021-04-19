@@ -225,21 +225,24 @@ void setupVGKernel(cuDoubleComplex* VG,
 	@return			T matrix
 */
 __global__
-void computeTMatrix(cuDoubleComplex* T,
-	cuDoubleComplex* V,
-	cuDoubleComplex* G0,
-	cuDoubleComplex* VG,
-	cuDoubleComplex* F,
+void computeTMatrix(cuDoubleComplex** T,
+	cuDoubleComplex** V,
+	cuDoubleComplex** G0,
+	cuDoubleComplex** VG,
+	cuDoubleComplex** F,
 	double* k,
 	double* w,
 	double* k0,
 	int quadratureN,
 	int matSize,
+	int TLabLength,
 	double mu,
 	bool coupled) {
 
 	/* Setup the VG kernel and, at the same time, the F matrix */
-	setupVGKernel(VG, V, G0, F, k, w, k0[0], quadratureN, matSize, mu, coupled);
+	for (int i = 0; i < TLabLength; i++) {
+		setupVGKernel(VG[i], V[i], G0[i], F[i], k, w, k0[i], quadratureN, matSize, mu, coupled);
+	}
 
 	/* Solve the equation FT = V with cuBLAS */
 	//T = solveMatrixEq(F, V); // old lapack function
