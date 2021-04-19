@@ -54,14 +54,12 @@ cuDoubleComplex* potential(std::vector<QuantumState> channel, double* k, double 
     }
     kNew[NKvadratur] = k0;
 
+    coupled = false;
+    cuDoubleComplex* VMatrix = new cuDoubleComplex[(NKvadratur + 1) * (NKvadratur + 1)];
+
     if(channel.size()>1){
         coupled = true;
-        cuDoubleComplex* VMatrix = new cuDoubleComplex[(NKvadratur + 1)*2 * (NKvadratur + 1)*2];
-    }
-
-    else{
-        coupled = false;
-        cuDoubleComplex* VMatrix = new cuDoubleComplex[(NKvadratur + 1) * (NKvadratur + 1)];
+        VMatrix = new cuDoubleComplex[(NKvadratur + 1)*2 * (NKvadratur + 1)*2];
     }
     
 
