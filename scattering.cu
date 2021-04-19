@@ -32,14 +32,19 @@ __device__
 void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
 	cuDoubleComplex* h_Farray,
 	cuDoubleComplex* h_Varray,
-	int N, int batchSize) {
+	int N, int mSize) {
+
+	const int batchSize{1};
+	if (true) {
+		const int batchSize = mSize;
+	}
 
 	// cuBLAS variables
 	cublasStatus_t status;
 	cublasHandle_t handle;
 
 	// Host variables
-	size_t matSize = N * N * sizeof(cuDoubleComplex);
+	size_t matSize = N * N * sizeof(cuDoubleComplex); //denna ska la dock vara mSize * mSize, ty matriserna som löses har den storleken.
 
 	// cuDoubleComplex* h_Farray;
 	cuDoubleComplex* h_Fptr_array[batchSize];
@@ -62,7 +67,7 @@ void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
 	status = cublasCreate(&handle);
 	if (status != CUBLAS_STATUS_SUCCESS) {
 		printf("> ERROR: cuBLAS initialization failed\n");
-		return (EXIT_FAILURE);
+		//return (EXIT_FAILURE); /return type är void, inte exit_failure
 	}
 
 	// Allocate memory for host variables
@@ -70,6 +75,7 @@ void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
 	// h_Varray = (cuDoubleComplex*)xmalloc(batchSize * matSize);
 
 	// Allocate memory for device variables
+
 	checkCudaErrors(cudaMalloc((void**)&d_Farray, batchSize * matSize));
 	checkCudaErrors(cudaMalloc((void**)&d_Varray, batchSize * matSize));
 	checkCudaErrors(

@@ -63,14 +63,19 @@ __device__
 void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
          			cuDoubleComplex* h_Farray,
 		 			cuDoubleComplex* h_Varray,
-		 			int N, int batchSize) {
+		 			int N, int mSize) {
+
+    const int batchSize{ 1 };
+    if (true) {
+        const int batchSize = mSize;
+    }
 
 	// cuBLAS variables
     cublasStatus_t status;
     cublasHandle_t handle;
 
     // Host variables
-    size_t matSize = N * N * sizeof(cuDoubleComplex);
+    
 
     // cuDoubleComplex* h_Farray;
     cuDoubleComplex* h_Fptr_array[batchSize];
