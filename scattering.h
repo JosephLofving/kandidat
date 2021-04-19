@@ -3,6 +3,7 @@
 
 #include "constants.h"
 #include "lapackAPI.h"
+#include "computeTMatrix.h"
 #include "quantumStates.h"
 
 #include <cmath>
