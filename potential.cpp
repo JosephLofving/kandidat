@@ -6,11 +6,11 @@ double getk0(std::vector<QuantumState> channel, double Tlab){
     int tzChannel = channel[0].state["tz"];
     double k0Squared = 0;
 	if (tzChannel == -1)	  // Proton-proton scattering
-		k0Squared = constants::protonMass*Tlab*2;
+		k0Squared = constants::protonMass*Tlab/2;
 	else if (tzChannel == 0) // Proton-neutron scattering
 		k0Squared = pow(constants::neutronMass,2)*Tlab*(Tlab+2*constants::protonMass)/((pow(constants::protonMass+constants::neutronMass,2)+2*Tlab*constants::neutronMass));
 	else if (tzChannel == 1) // Neutron-neutron scattering
-		k0Squared = constants::protonMass*Tlab*2;
+		k0Squared = constants::neutronMass*Tlab/2;
     
     return sqrt(k0Squared); // Does not handle case where tz is NOT -1, 0 or 1.
 }

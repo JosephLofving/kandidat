@@ -82,7 +82,7 @@ void LapackMat::print() {
 	for (int currentRow = 0; currentRow < height; currentRow++) {
 		for (int currentCol = 0; currentCol < width; currentCol++) {
 			std::complex<double> element = getElement(currentRow, currentCol);
-			std::cout << element.real() << " + " << element.imag() << "i \t"; // Prints the real and imaginary part and aligns to terminal tabs
+			std::cout << element.real() <<"i \t"; // Prints the real and imaginary part and aligns to terminal tabs
     	}
     	std::cout << std::endl; // Line break for new row.
   	}

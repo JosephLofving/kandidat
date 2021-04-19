@@ -32,7 +32,7 @@ int main() {
 
 	LapackMat V_matrix = potential(channel, k, Tlab);
 
-	V_matrix.print();
+	//V_matrix.print();
 
 	double k0 = getk0(channel, Tlab);
 
@@ -40,7 +40,7 @@ int main() {
 	std::vector<std::complex<double>> phase = computePhaseShifts(channel, key, k0, T);
 
 	for(std::complex<double> phaseShift:phase){
-		std::cout <<phaseShift;
+		std::cout << phaseShift;
 	}
 
 
