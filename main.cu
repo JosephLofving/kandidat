@@ -1,24 +1,13 @@
 #include "mesh.h"
 #include "scattering.h"
 #include "potential.h"
+#include "computeTMatrix.h"
 #include <fstream>
 #include <iomanip>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 #include <cuComplex.h>
-
-
-
-/* Kvar att göra som jag kan komma på just nu (innan vi är redo att testa t.ex. setupVGKernel)
- * - Fixa block/threads osv i scatteringfilerna samt i kernel calls (glöm inte getk0)
- * - Fixa computePhaseShifts och BlattToStapp så att de går att köra parallellt (de är typ orörda nu)
- */
-
-
-
-
-
 
 
 /**
@@ -113,10 +102,8 @@ int main() {
 	/* Prepare generation of TLab [Mev] */
 	const double TLabMin = 1;
 	const double TLabMax = 200;
-	const double TLabIncr = 1;
-	const int TLabLength = static_cast<int>( (TLabMax - TLabMin) / TLabIncr + 1);
-	std::cout << "Tlablength: ";
-	std::cout << TLabLength << std::endl;
+	constexpr int TLabLength = 200;
+	const double TLabIncr = (TLabMax - TLabMin) / TLabLength - 1;
 
 	/* Allocate host memory */
 	double* TLab_h = new double[TLabLength];
@@ -175,6 +162,16 @@ int main() {
 	cudaMemcpy(T_d, T_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 	cudaMemcpy(phases_d, phases_h, phasesSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
+
+	dim3 threadsPerBlock(matLength, matLength);
+	dim3 blocksPerGrid(1, 1);
+	if (matLength * matLength > 512) {
+		threadsPerBlock.x = 512;
+		threadsPerBlock.y = 512;
+		blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
+		blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
+	}
+
 	getk0 <<<threadsPerBlock, blocksPerGrid >>>(k0_d, TLab_d, TLabLength, tzChannel);
 	//detta överrensstämmer med CPU-kod :)
 
@@ -190,15 +187,6 @@ int main() {
 
 
 	double mu = getReducedMass(channel);
-
-	dim3 threadsPerBlock(matLength, matLength);
-	dim3 blocksPerGrid(1, 1);
-	if (matLength * matLength > 512) {
-		threadsPerBlock.x = 512;
-		threadsPerBlock.y = 512;
-		blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
-		blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
-	}
 
 	/* Call kernels on GPU */
 
@@ -235,7 +223,7 @@ int main() {
 	
 	for (int i = 0; i < TLabLength; i++) {
 		for (int j = 0; j < phasesSize; ++j) {
-			printf("\nTLab = %d", TLab_h[i]);
+			printf("\nTLab = %f", TLab_h[i]);
 			printf("\nReal(phases[%i]) = %.10e", j, cuCreal(phases_h[j + i * phasesSize]));
 			printf("\nImag(phases[%i]) = %.10e", j, cuCimag(phases_h[j + i * phasesSize]));
 			printf("\n");
