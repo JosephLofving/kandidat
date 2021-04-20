@@ -408,7 +408,7 @@ void computeTMatrix(cuDoubleComplex** T,
 		setupVGKernel(VG[i], V[i], G0[i], F[i], k, w, k0[i], quadratureN, matSize, mu, coupled);
 
 		/* Solve the equation FT = V with cuBLAS */
-		computeTMatrixCUBLAS(T[i], F[i], V[i], quadratureN, matSize);
+		computeTMatrixCUBLAS(T[i], F[i], V[i], matSize, 1);
 
 		/* Computes the phase shifts for the given T-matrix*/
 		computePhaseShifts(phases[i], T[i], k0[i], quadratureN, mu, coupled);
