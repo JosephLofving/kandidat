@@ -105,14 +105,14 @@ void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
     // Allocate memory for device variables
 
     checkCudaErrors(cudaMalloc((void**)&d_Farray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex)));
-    checkCudaErrors(cudaMalloc((void**)&d_Varray, batchSize *matLength*matLength* sizeof(cuDoubleComplex)));
+    checkCudaErrors(cudaMalloc((void**)&d_Varray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex)));
     checkCudaErrors(
-            cudaMalloc((void**)&d_pivotArray,matLength* batchSize * sizeof(int)));
-    checkCudaErrors(cudaMalloc((void**)&d_trfInfo, batchSize * sizeof(int)));
+            cudaMalloc((void**)&d_pivotArray,matLength* TLabLength * sizeof(int)));
+    checkCudaErrors(cudaMalloc((void**)&d_trfInfo, TLabLength * sizeof(int)));
     checkCudaErrors(
-            cudaMalloc((void**)&d_Fptr_array, batchSize * sizeof(cuDoubleComplex*)));
+            cudaMalloc((void**)&d_Fptr_array, TLabLength * sizeof(cuDoubleComplex*)));
     checkCudaErrors(
-            cudaMalloc((void**)&d_Vptr_array, batchSize * sizeof(cuDoubleComplex*)));
+            cudaMalloc((void**)&d_Vptr_array, TLabLength * sizeof(cuDoubleComplex*)));
 
     // for (int i = 0; i < batchSize; i++) {
     //     initSetAMatrix(h_Farray + (i * N*N), (double)(i+1)); // Create matrices scaled by factors 1, 2, ...
@@ -127,21 +127,21 @@ void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
     // printMatrix(h_Varray, N, N);
 
     // Copy data to device from host
-    checkCudaErrors(cudaMemcpy(d_Farray, h_Farray, batchSize *matLength*matLength* sizeof(cuDoubleComplex),
+    checkCudaErrors(cudaMemcpy(d_Farray, h_Farray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex),
                                cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(d_Varray, h_Varray, batchSize *matLength*matLength* sizeof(cuDoubleComplex),
+    checkCudaErrors(cudaMemcpy(d_Varray, h_Varray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex),
                                cudaMemcpyHostToDevice));
 
     // Create pointer array for matrices
-    for (int i = 0; i < batchSize; i++) h_Fptr_array[i] = d_Farray + (i * matLength * matLength);
-    for (int i = 0; i < batchSize; i++) h_Vptr_array[i] = d_Varray + (i * matLength * matLength);
+    for (int i = 0; i < TLabLength; i++) h_Fptr_array[i] = d_Farray + (i * matLength * matLength);
+    for (int i = 0; i < TLabLength; i++) h_Vptr_array[i] = d_Varray + (i * matLength * matLength);
 
     // Copy pointer array to device memory
     checkCudaErrors(cudaMemcpy(d_Fptr_array, h_Fptr_array,
-                               batchSize * sizeof(cuDoubleComplex*),
+                               TLabLength * sizeof(cuDoubleComplex*),
 							   cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(d_Vptr_array, h_Vptr_array,
-							   batchSize * sizeof(cuDoubleComplex*),
+							   TLabLength * sizeof(cuDoubleComplex*),
 							   cudaMemcpyHostToDevice));
 
     // Perform LU decomposition
