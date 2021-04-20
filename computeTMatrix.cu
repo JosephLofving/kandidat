@@ -66,7 +66,7 @@ void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
 		 			int matLength, const int TLabLength) {
 
     //const int batchSize{ 1 };
-    constexpr int batchSize = 200;
+    constexpr int batchSize = 200;//=TLabLength
 	// cuBLAS variables
     cublasStatus_t status;
     cublasHandle_t handle;
@@ -103,7 +103,8 @@ void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
     // h_Varray = (cuDoubleComplex*)xmalloc(batchSize *matLength*matLength* sizeof(cuDoubleComplex));
 
     // Allocate memory for device variables
-    checkCudaErrors(cudaMalloc((void**)&d_Farray, batchSize *matLength*matLength* sizeof(cuDoubleComplex)));
+
+    checkCudaErrors(cudaMalloc((void**)&d_Farray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex)));
     checkCudaErrors(cudaMalloc((void**)&d_Varray, batchSize *matLength*matLength* sizeof(cuDoubleComplex)));
     checkCudaErrors(
             cudaMalloc((void**)&d_pivotArray,matLength* batchSize * sizeof(int)));
