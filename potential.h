@@ -10,6 +10,6 @@
 #include <curand_kernel.h>
 #include <cuComplex.h>
 
-void potential(cuDoubleComplex* V_h, std::vector<QuantumState> channel, double* k, double* Tlab, double* k0, int quadratureN, int TLabLength);
+void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, double* k, double* Tlab, double* k0, int quadratureN, int TLabLength, bool coupled, int matLength);
 
 #endif

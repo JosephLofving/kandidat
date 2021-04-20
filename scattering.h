@@ -16,67 +16,48 @@
 #include <cuComplex.h>
 #include <cublas_v2.h>
 
-template <typename T>
-void check(T result, char const* const func, const char* const file, int const line);
 
-// #define checkCudaErrors(val) check((val), #val, __FILE__, __LINE__)
-static const char* _cudaGetErrorEnum(cudaError_t error);
-
-__device__
-void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray, cuDoubleComplex* h_Farray, cuDoubleComplex* h_Varray, int N, int batchSize);
-
-//#endif
-
-
-__device__
-void setupG0Vector(cuDoubleComplex* D,
+__global__
+void setupG0Vector(cuDoubleComplex* G0,
 	double* k,
 	double* w,
-	double k0,
+	double* k0,
 	int quadratureN,
+	int matLength,
+	int TLabLength,
 	double mu,
 	bool coupled);
 
-__device__
+__global__
 void setupVGKernel(cuDoubleComplex* VG,
 	cuDoubleComplex* V,
 	cuDoubleComplex* G0,
 	cuDoubleComplex* F,
 	double* k,
 	double* w,
-	double k0,
-	int quadratureN,
-	int matSize,
-	double mu,
-	bool coupled);
-
-
-__global__
-void computeTMatrix(cuDoubleComplex** T,
-	cuDoubleComplex** V,
-	cuDoubleComplex** G0,
-	cuDoubleComplex** VG,
-	cuDoubleComplex** F,
-	cuDoubleComplex** phases,
-	double* k,
-	double* w,
 	double* k0,
 	int quadratureN,
-	int matSize,
+	int matLength,
 	int TLabLength,
 	double mu,
 	bool coupled);
 
 __device__
-void blattToStapp(cuDoubleComplex* phases, cuDoubleComplex deltaMinusBB, cuDoubleComplex deltaPlusBB, cuDoubleComplex twoEpsilonJBB);
+void blattToStapp(cuDoubleComplex* phases,
+	cuDoubleComplex* deltaMinusBB,
+	cuDoubleComplex* deltaPlusBB,
+	cuDoubleComplex* twoEpsilonJBB,
+	int TLabLength);
 
-__device__
+__global__
 void computePhaseShifts(cuDoubleComplex* phases,
 	cuDoubleComplex* T,
-	double k0,
+	double* k0,
 	int quadratureN,
 	double mu,
-	bool coupled);
+	bool coupled,
+	int TLabLength,
+	int matLength);
 
 
 #endif

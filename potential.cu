@@ -48,15 +48,6 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
 
     double* VArray = new double [6];
     
-
-    double* kNew = new double[quadratureN + 1];
-    for (int i = 0; i < quadratureN; ++i) {
-        kNew[i] = k[i];
-    }
-    kNew[quadratureN] = k0;
-    
-
-
     int arrayIndex;
     int rowIndex=0;
     int colIndex=0;
@@ -111,17 +102,20 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
                         make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0);
             }
         }
+        for (int i = 0; i < matLength * matLength; ++i) {
+            for (int energy_index = 0; energy_index < TLabLength; ++energy_index) {
+                VMatrix[i + (energy_index * matLength * matLength)] = VMat2[i];
+            }
+        }
+
+        for (int kIn = 0; kIn < TLabLength; ++kIn) {
+            for (int kOut = 0; kOut < TLabLength; ++kOut) {
+                potentialClassPtr->V(k0[kIn], k0[kOut], coupled, S, J, T, Tz, VArray);
+                VMatrix[(kIn * (quadratureN + 1) + rowIndex * (quadratureN + 1)) + (kOut * (quadratureN + 1) + colIndex * (quadratureN + 1)) * (quadratureN + 1)] =
+                    make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0);
+            }
+        }
     }
-
-    alla row, col, i = (tlab)
-        VMatrix[(row)+(column * matLength) + (i * matLength * matLength)] = VMat2[row + column * matLength];
-
-    for (int i = 0; i < TLabLength; i++) {
-
-    }
-
-
-    return VMatrix;
  }
 
     /* Define the 1S0 partial-wave quantum numbers 

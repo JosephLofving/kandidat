@@ -202,9 +202,23 @@ int main() {
 
 	/* Call kernels on GPU */
 
-	computeTMatrix <<<threadsPerBlock, blocksPerGrid>>> (T_d, V_d, G0_d, VG_d, F_d, phases_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
-	//computePhaseShifts <<<threadsPerBlock, blocksPerGrid>>> (phases_h, T_d, k0_d, quadratureN, mu, coupled);
-	//avkommentera inte, computeTmatrix löser allt.
+	setupG0Vector <<<threadsPerBlock, blocksPerGrid >>> (G0_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
+	/* Setup the VG kernel and, at the same time, the F matrix */
+	setupVGKernel <<<threadsPerBlock, blocksPerGrid >>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
+
+	/* Copying the matricies back to the CPU for CuBLAS */
+	cudaDeviceSynchronize();
+	cudaMemcpy(T_h, T_d, matLength* matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	cudaMemcpy(F_h, F_d, matLength* matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	cudaMemcpy(V_h, V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+
+	/* Solve the equation FT = V with cuBLAS */
+	computeTMatrixCUBLAS(T_h, F_h, V_h, matLength, TLabLength);
+
+	cudaMemcpy(T_d, T_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+
+	/* Computes the phase shifts for the given T-matrix*/
+	computePhaseShifts <<<threadsPerBlock, blocksPerGrid >>> (phases_d, T_d, k0_d, quadratureN, mu, coupled, TLabLength, matLength);
 	
 	cudaDeviceSynchronize();
 
@@ -217,12 +231,14 @@ int main() {
 	cudaMemcpy(V_h, V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(F_h, F_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(VG_h, VG_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+
+	
 	for (int i = 0; i < TLabLength; i++) {
-		cuDoubleComplex* phases_h_i = new cuDoubleComplex[phasesSize];
-		phases_h_i = phases_h[i];
 		for (int j = 0; j < phasesSize; ++j) {
-			printf("\nReal(phases[%i]) = %.10e", j, cuCreal(phases_h_i[j]));
-			printf("\nImag(phases[%i]) = %.10e", j, cuCimag(phases_h_i[j]));
+			printf("\nTLab = %d", TLab_h[i]);
+			printf("\nReal(phases[%i]) = %.10e", j, cuCreal(phases_h[j + i * phasesSize]));
+			printf("\nImag(phases[%i]) = %.10e", j, cuCimag(phases_h[j + i * phasesSize]));
+			printf("\n");
 		}
 	}
 
