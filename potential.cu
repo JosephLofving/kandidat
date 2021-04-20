@@ -38,10 +38,7 @@ int getArrayIndex(QuantumState state){
 }
 
 
-cuDoubleComplex* potential(std::vector<QuantumState> channel, double* k, double Tlab, double k0, int NKvadratur) {
-//std::vector<double> potential(int argc, char* argv[]){
-    printf("\nPOTENTIAL SKA INTE VARA 0 k0 = %.10e", k0);
-    
+void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, double* k, double* Tlab, double* k0, int quadratureN, int TLabLength, bool coupled, int matLength) {
 
     /* Declare a NULL pointer of the potential-class type */
     chiral_LO* potentialClassPtr = nullptr;
@@ -50,22 +47,13 @@ cuDoubleComplex* potential(std::vector<QuantumState> channel, double* k, double 
     potentialClassPtr = new chiral_LO();
 
     double* VArray = new double [6];
-    bool coupled;
     
 
-    double* kNew = new double[NKvadratur + 1];
-    for (int i = 0; i < NKvadratur; ++i) {
+    double* kNew = new double[quadratureN + 1];
+    for (int i = 0; i < quadratureN; ++i) {
         kNew[i] = k[i];
     }
-    kNew[NKvadratur] = k0;
-
-    coupled = false;
-    cuDoubleComplex* VMatrix = new cuDoubleComplex[(NKvadratur + 1) * (NKvadratur + 1)];
-
-    if(channel.size()>1){
-        coupled = true;
-        VMatrix = new cuDoubleComplex[(NKvadratur + 1)*2 * (NKvadratur + 1)*2];
-    }
+    kNew[quadratureN] = k0;
     
 
 
@@ -108,13 +96,31 @@ cuDoubleComplex* potential(std::vector<QuantumState> channel, double* k, double 
 	//printf("\n MAIN_2 V_h[4] = %.10e", cuCreal(V_h[4]));
 	//printf("\n MAIN_2 V_h[5] = %.10e", cuCreal(V_h[5]));
 
-        for (int kIn = 0; kIn < NKvadratur + 1; kIn++) {
-            for (int kOut = 0; kOut < NKvadratur + 1; kOut++) {
+        /*
+        for (int kIn = 0; kIn < quadratureN + 1; kIn++) {
+            for (int kOut = 0; kOut < quadratureN + 1; kOut++) {
                 potentialClassPtr->V(kNew[kIn], kNew[kOut], coupled, S, J, T, Tz, VArray);
-                VMatrix[(kIn+rowIndex*(NKvadratur + 1))+(kOut+colIndex*(NKvadratur + 1)) * (NKvadratur + 1)] = make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0);
+                VMatrix[(kIn+rowIndex*(quadratureN + 1))+(kOut+colIndex*(quadratureN + 1)) * (quadratureN + 1)] = make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0);
+            }
+        }*/
+        cuDoubleComplex* VMat2 = new cuDoubleComplex[matLength * matLength];
+        for (int kIn = 0; kIn < quadratureN; kIn++) {
+            for (int kOut = 0; kOut < quadratureN; kOut++) {
+                potentialClassPtr->V(k[kIn], k[kOut], coupled, S, J, T, Tz, VArray);
+                VMat2[(kIn + rowIndex * (quadratureN + 1)) + (kOut + colIndex * (quadratureN + 1)) * (quadratureN + 1)] =
+                        make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0);
             }
         }
     }
+
+    alla row, col, i = (tlab)
+        VMatrix[(row)+(column * matLength) + (i * matLength * matLength)] = VMat2[row + column * matLength];
+
+    for (int i = 0; i < TLabLength; i++) {
+
+    }
+
+
     return VMatrix;
  }
 

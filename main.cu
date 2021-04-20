@@ -98,15 +98,15 @@ int main() {
 
 
 	/* Determine matrix and vector sizes */
-	int matSize;
+	int matLength;
 	int phasesSize;
 	bool coupled = isCoupled(channel);
 	if (coupled) {
-		matSize = 2 * (quadratureN + 1);	// a trick to facilitate calculations (see scattering.cu)
+		matLength = 2 * (quadratureN + 1);	// a trick to facilitate calculations (see scattering.cu)
 		phasesSize = 3; // two phase shifts and one mixing angle in coupled case
 	}
 	else {
-		matSize = quadratureN + 1;
+		matLength = quadratureN + 1;
 		phasesSize = 1; // only one phase shift in uncoupled case
 	}
 
@@ -123,12 +123,12 @@ int main() {
 	double* k0_h = new double[TLabLength];
 	double* k_h = new double[quadratureN];
 	double* w_h = new double[quadratureN];
-	cuDoubleComplex** V_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
-	cuDoubleComplex** T_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
-	cuDoubleComplex* G0_h = new cuDoubleComplex[matSize];
-	cuDoubleComplex** VG_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
-	cuDoubleComplex** F_h = new cuDoubleComplex*[matSize * matSize * TLabLength];
-	cuDoubleComplex** phases_h = new cuDoubleComplex*[phasesSize];
+	cuDoubleComplex* V_h = new cuDoubleComplex[matLength * matLength * TLabLength];
+	cuDoubleComplex* T_h = new cuDoubleComplex[matLength * matLength * TLabLength];
+	cuDoubleComplex* G0_h = new cuDoubleComplex[matLength * TLabLength];
+	cuDoubleComplex* VG_h = new cuDoubleComplex[matLength * matLength * TLabLength];
+	cuDoubleComplex* F_h = new cuDoubleComplex[matLength * matLength * TLabLength];
+	cuDoubleComplex* phases_h = new cuDoubleComplex[phasesSize * TLabLength];
 	
 	/* Generate different experimental kinetic energies [MeV]*/
 	for (int i = 0; i < TLabLength; i++) {
@@ -140,12 +140,12 @@ int main() {
 	double* k0_d;
 	double* k_d;
 	double* w_d;
-	cuDoubleComplex** V_d;
-	cuDoubleComplex** T_d;
-	cuDoubleComplex** G0_d;
-	cuDoubleComplex** VG_d;
-	cuDoubleComplex** F_d;
-	cuDoubleComplex** phases_d;
+	cuDoubleComplex* V_d;
+	cuDoubleComplex* T_d;
+	cuDoubleComplex* G0_d;
+	cuDoubleComplex* VG_d;
+	cuDoubleComplex* F_d;
+	cuDoubleComplex* phases_d;
 
 
 
@@ -153,11 +153,11 @@ int main() {
 	cudaMalloc((void**)&k0_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&k_d, quadratureN * sizeof(double));
 	cudaMalloc((void**)&w_d, quadratureN * sizeof(double));
-	cudaMalloc((void**)&G0_d, matSize * TLabLength * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&V_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&VG_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&F_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&T_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&G0_d, matLength * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&VG_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&F_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&T_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&phases_d, phasesSize * TLabLength * sizeof(cuDoubleComplex));
 
 	kAndWPtrs kAndW = gaussLegendreInfMesh(quadratureN, scale);
@@ -169,56 +169,54 @@ int main() {
 	cudaMemcpy(k0_d, k0_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(k_d, k_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(w_d, w_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(G0_d, G0_h, matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(VG_d, VG_h, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(F_d, F_h, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(T_d, T_h, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(G0_d, G0_h, matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(VG_d, VG_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(F_d, F_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(T_d, T_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 	cudaMemcpy(phases_d, phases_h, phasesSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
-	getk0<<<1, 1 >>>(k0_d, TLab_d, TLabLength, tzChannel);
+	getk0 <<<threadsPerBlock, blocksPerGrid >>>(k0_d, TLab_d, TLabLength, tzChannel);
 	//detta överrensstämmer med CPU-kod :)
 
 	cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
 
+	potential(V_h, channel, k_h, TLab_h, k0_h, quadratureN, TLabLength, coupled, matLength);
 
-	for (int i = 0; i < TLabLength; i++) {
-		V_h[i] = potential(channel, k_h, TLab_h[i], k0_h[i], quadratureN);
-	}
-	//V[(row) + (column * matSize) + (i * matSize * matSize)]; /ta inte bort denna rad i vårstädningen ty
+	//V[(row) + (column * matLength) + (i * matLength * matLength)]; /ta inte bort denna rad i vårstädningen ty
 
 	/* Create the potential matrix on the CPU */
 
-	cudaMemcpy(V_d, V_h, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	cudaMemcpy(V_d, V_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
 
 	double mu = getReducedMass(channel);
 
-	dim3 threadsPerBlock(matSize, matSize);
+	dim3 threadsPerBlock(matLength, matLength);
 	dim3 blocksPerGrid(1, 1);
-	if (matSize * matSize > 512) {
+	if (matLength * matLength > 512) {
 		threadsPerBlock.x = 512;
 		threadsPerBlock.y = 512;
-		blocksPerGrid.x = ceil(double(matSize) / double(threadsPerBlock.x));
-		blocksPerGrid.y = ceil(double(matSize) / double(threadsPerBlock.y));
+		blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
+		blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
 	}
 
 	/* Call kernels on GPU */
 
-	computeTMatrix <<<threadsPerBlock, blocksPerGrid>>> (T_d, V_d, G0_d, VG_d, F_d, phases_d, k_d, w_d, k0_d, quadratureN, matSize, TLabLength, mu, coupled);
+	computeTMatrix <<<threadsPerBlock, blocksPerGrid>>> (T_d, V_d, G0_d, VG_d, F_d, phases_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
 	//computePhaseShifts <<<threadsPerBlock, blocksPerGrid>>> (phases_h, T_d, k0_d, quadratureN, mu, coupled);
 	//avkommentera inte, computeTmatrix löser allt.
 	
 	cudaDeviceSynchronize();
 
 	/* Copy (relevant) device variables to host variables */
-	cudaMemcpy(T_h, T_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	cudaMemcpy(T_h, T_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(phases_h, phases_d, phasesSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(k_h, k_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
 	cudaMemcpy(w_h, w_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
 	cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(V_h, V_d, matSize * matSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	cudaMemcpy(F_h, F_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	cudaMemcpy(VG_h, VG_d, matSize * matSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	cudaMemcpy(V_h, V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	cudaMemcpy(F_h, F_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	cudaMemcpy(VG_h, VG_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	for (int i = 0; i < TLabLength; i++) {
 		cuDoubleComplex* phases_h_i = new cuDoubleComplex[phasesSize];
 		phases_h_i = phases_h[i];
