@@ -149,26 +149,26 @@ void setupG0Vector(cuDoubleComplex* G0,
 	bool coupled) {
 
 	int column = blockIdx.x * blockDim.x + threadIdx.x;
-	int width = blockIdx.z * blockDim.z + threadIdx.z;
+	int slice = blockIdx.z * blockDim.z + threadIdx.z;
 
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
 	double sum = 0;
 
-	if (column < quadratureN && width < TLabLength) {
-		G0[column + width * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[width] * k0[width] - k[column] * k[column]), 0);
-		sum += w[column] / (k0[width] * k0[width] - k[column] * k[column]);
+	if (column < quadratureN && slice < TLabLength) {
+		G0[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
+		sum += w[column] / (k0[slice] * k0[slice] - k[column] * k[column]);
 
 		/* If coupled, append G0 to itself to facilitate calculations.
 		 * This means the second half of G0 is a copy of the first. */
 		if (coupled) {
-			G0[quadratureN + 1 + column + width * matLength] = G0[column + width * matLength];
+			G0[quadratureN + 1 + column + slice * matLength] = G0[column + slice * matLength];
 		}
 
 		/* Assign the last element of D */
-		G0[quadratureN + width * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[width] * k0[width] * sum, -twoMu * k0[width]);
+		G0[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum, -twoMu * k0[slice]);
 		if (coupled) {
-			G0[2 * (quadratureN + 1) - 1 + width * matLength] = G0[quadratureN + width * matLength];
+			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
 		}
 	}
 }
@@ -200,16 +200,16 @@ void setupVGKernel(cuDoubleComplex* VG,
 
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
 	int column = blockIdx.x * blockDim.x + threadIdx.x;
-	int width = blockIdx.z * blockDim.z + threadIdx.z;
+	int slice = blockIdx.z * blockDim.z + threadIdx.z;
 
-	if (row < matLength && column < matLength && width < TLabLength) {
-		VG[row + column * matLength + width * matLength * matLength] = cuCmul(V[row + column * matLength + width * matLength * matLength], G0[column + width * matLength]);
+	if (row < matLength && column < matLength && slice < TLabLength) {
+		VG[row + column * matLength + slice * matLength * matLength] = cuCmul(V[row + column * matLength + slice * matLength * matLength], G0[column + slice * matLength]);
 
 		if (row == column) {
-			F[row + row * matLength + width * matLength * matLength] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VG[row + row * matLength + width * matLength * matLength])); // Diagonal element
+			F[row + row * matLength + slice * matLength * matLength] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VG[row + row * matLength + slice * matLength * matLength])); // Diagonal element
 		}
 		else {
-			F[row + column * matLength + width * matLength * matLength] = cuCmul(make_cuDoubleComplex(-1, 0), VG[row + column * matLength + width * matLength * matLength]);
+			F[row + column * matLength + slice * matLength * matLength] = cuCmul(make_cuDoubleComplex(-1, 0), VG[row + column * matLength + slice * matLength * matLength]);
 		}
 
 	}
@@ -250,20 +250,20 @@ void setupVGKernel(cuDoubleComplex* VG,
 
 /* TODO: Explain theory for this. */
 __device__
-void blattToStapp(cuDoubleComplex* phases, 
+void blattToStapp(cuDoubleComplex* phases,
 				  cuDoubleComplex* deltaMinusBB,
 				  cuDoubleComplex* deltaPlusBB,
 				  cuDoubleComplex* twoEpsilonJBB,
 				  int TLabLength) {
 
-	int width = blockIdx.z * blockDim.z + threadIdx.z;
+	int slice = blockIdx.z * blockDim.z + threadIdx.z;
 	cuDoubleComplex* twoEpsilonJ = new cuDoubleComplex[TLabLength];
-	if (width < TLabLength) {
-		twoEpsilonJ[width] = asinCudaComplex(sinCudaComplex(twoEpsilonJBB[width]) * sinCudaComplex(deltaMinusBB[width] - deltaPlusBB[width]));
+	if (slice < TLabLength) {
+		twoEpsilonJ[slice] = asinCudaComplex(sinCudaComplex(twoEpsilonJBB[slice]) * sinCudaComplex(deltaMinusBB[slice] - deltaPlusBB[slice]));
 
-		phases[0 + width*3] = 0.5 * (deltaPlusBB[width] + deltaMinusBB[width] + asinCudaComplex(tanCudaComplex(twoEpsilonJ[width]) / tanCudaComplex(twoEpsilonJBB[width]))) * constants::rad2deg;
-		phases[1 + width*3] = 0.5 * (deltaPlusBB[width] + deltaMinusBB[width] - asinCudaComplex(tanCudaComplex(twoEpsilonJ[width]) / tanCudaComplex(twoEpsilonJBB[width]))) * constants::rad2deg;
-		phases[2 + width*3] = 0.5 * twoEpsilonJ[width] * constants::rad2deg;
+		phases[0 + slice*3] = 0.5 * (deltaPlusBB[slice] + deltaMinusBB[slice] + asinCudaComplex(tanCudaComplex(twoEpsilonJ[slice]) / tanCudaComplex(twoEpsilonJBB[slice]))) * constants::rad2deg;
+		phases[1 + slice*3] = 0.5 * (deltaPlusBB[slice] + deltaMinusBB[slice] - asinCudaComplex(tanCudaComplex(twoEpsilonJ[slice]) / tanCudaComplex(twoEpsilonJBB[slice]))) * constants::rad2deg;
+		phases[2 + slice*3] = 0.5 * twoEpsilonJ[slice] * constants::rad2deg;
 	}
 }
 
@@ -287,7 +287,7 @@ void computePhaseShifts(cuDoubleComplex* phases,
 	int TLabLength,
 	int matLength) {
 
-	int width = blockIdx.z * blockDim.z + threadIdx.z;
+	int slice = blockIdx.z * blockDim.z + threadIdx.z;
 
 	double* rhoT = new double[TLabLength];
 	cuDoubleComplex* T11 = new cuDoubleComplex[TLabLength];
@@ -297,27 +297,27 @@ void computePhaseShifts(cuDoubleComplex* phases,
 	cuDoubleComplex* deltaPlusBB = new cuDoubleComplex[TLabLength];
 	cuDoubleComplex* deltaMinusBB = new cuDoubleComplex[TLabLength];
 
-	if (width < TLabLength) {
+	if (slice < TLabLength) {
 
-		rhoT[width] = 2 * mu * k0[width]; // Equation (2.27) in the theory
+		rhoT[slice] = 2 * mu * k0[slice]; // Equation (2.27) in the theory
 		const cuDoubleComplex I = make_cuDoubleComplex(0.0, 1.0);
 
 		// TODO: Explain theory for the phase shift for the coupled state
 		if (coupled) {
-			T11[width] = T[(quadratureN)+(quadratureN * quadratureN) + width * matLength * matLength]; //row + column * size
-			T12[width] = T[(2 * quadratureN + 1) + (quadratureN * quadratureN) + width * matLength * matLength];
-			T22[width] = T[(2 * quadratureN + 1) + (quadratureN * (2 * quadratureN + 1)) + width * matLength * matLength];
+			T11[slice] = T[(quadratureN)+(quadratureN * quadratureN) + slice * matLength * matLength]; //row + column * size
+			T12[slice] = T[(2 * quadratureN + 1) + (quadratureN * quadratureN) + slice * matLength * matLength];
+			T22[slice] = T[(2 * quadratureN + 1) + (quadratureN * (2 * quadratureN + 1)) + slice * matLength * matLength];
 
 			//Blatt - Biedenharn(BB) convention
-			twoEpsilonJBB[width] = atanCudaComplex(cuCdiv(cuCmul(make_cuDoubleComplex(2.0, 0), T12[width]), cuCsub(T11[width], T22[width])));
-			deltaPlusBB[width] = -0.5 * I * logCudaComplex(1.0 - I * rhoT[width] * (T11[width] + T22[width]) + I * rhoT[width] * (2.0 * T12[width]) / sinCudaComplex(twoEpsilonJBB[width]));
-			deltaMinusBB[width] = -0.5 * I * logCudaComplex(1.0 - I * rhoT[width] * (T11[width] + T22[width]) - I * rhoT[width] * (2.0 * T12[width]) / sinCudaComplex(twoEpsilonJBB[width]));
+			twoEpsilonJBB[slice] = atanCudaComplex(cuCdiv(cuCmul(make_cuDoubleComplex(2.0, 0), T12[slice]), cuCsub(T11[slice], T22[slice])));
+			deltaPlusBB[slice] = -0.5 * I * logCudaComplex(1.0 - I * rhoT[slice] * (T11[slice] + T22[slice]) + I * rhoT[slice] * (2.0 * T12[slice]) / sinCudaComplex(twoEpsilonJBB[slice]));
+			deltaMinusBB[slice] = -0.5 * I * logCudaComplex(1.0 - I * rhoT[slice] * (T11[slice] + T22[slice]) - I * rhoT[slice] * (2.0 * T12[slice]) / sinCudaComplex(twoEpsilonJBB[slice]));
 
 		}
 		/* The uncoupled case completely follows equation (2.26). */
 		else {
-			double T0 = cuCreal(T[(quadratureN)+(quadratureN * quadratureN) + width * matLength ]); //Farligt, detta element kanske inte �r helt reellt. Dock var koden d�lig f�rut is�fall.
-			cuDoubleComplex argument = make_cuDoubleComplex(1, -2.0 * rhoT[width] * T0);
+			double T0 = cuCreal(T[(quadratureN)+(quadratureN * quadratureN) + slice * matLength ]); //Farligt, detta element kanske inte �r helt reellt. Dock var koden d�lig f�rut is�fall.
+			cuDoubleComplex argument = make_cuDoubleComplex(1, -2.0 * rhoT[slice] * T0);
 			cuDoubleComplex swappedLog = make_cuDoubleComplex(cuCimag(logCudaComplex(argument)), cuCreal(logCudaComplex(argument)));
 			cuDoubleComplex delta = cuCmul(make_cuDoubleComplex(-0.5 * constants::rad2deg, 0), swappedLog);
 			phases[0] = delta;
