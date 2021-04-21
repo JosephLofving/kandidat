@@ -25,15 +25,15 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 // Wrapper around malloc
 // Clears the allocated memory to 0
 // Terminates the program if malloc fails
-// void* xmalloc(size_t size) {
-//     void* ptr = malloc(size);
-//     if (ptr == NULL) {
-//         printf("> ERROR: malloc for size %zu failed..\n", size);
-//         exit(EXIT_FAILURE);
-//     }
-//     memset(ptr, 0, size);
-//     return ptr;
-// }
+void* xmalloc(size_t size) {
+    void* ptr = malloc(size);
+    if (ptr == NULL) {
+        printf("> ERROR: malloc for size %zu failed..\n", size);
+        exit(EXIT_FAILURE);
+    }
+    memset(ptr, 0, size);
+    return ptr;
+}
 
 // void initSetAMatrix(cuDoubleComplex* mat, double factor) {
 // 	double toSet[N*N] = {4, 3, 9, 3, 7, 7, 0, 5, 8, 6, 1, 8, 9, 4, 2, 9};
@@ -63,22 +63,25 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
          			cuDoubleComplex* h_Farray,
 		 			cuDoubleComplex* h_Varray,
-		 			int matLength, const int TLabLength) {
+		 			int matLength, int TLabLength) {
 
     //const int batchSize{ 1 };
-    constexpr int batchSize = 200;//=TLabLength
+    int batchSize = TLabLength;
 	// cuBLAS variables
     cublasStatus_t status;
     cublasHandle_t handle;
 
     // Host variables
-    
+
 
     // cuDoubleComplex* h_Farray;
-    cuDoubleComplex* h_Fptr_array[batchSize];
+    cuDoubleComplex** h_Fptr_array;
 
     // cuDoubleComplex* h_Varray;
-    cuDoubleComplex* h_Vptr_array[batchSize];
+    cuDoubleComplex** h_Vptr_array;
+
+    h_Fptr_array = (cuDoubleComplex**)xmalloc(batchSize * sizeof(cuDoubleComplex*));
+    h_Vptr_array = (cuDoubleComplex**)xmalloc(batchSize * sizeof(cuDoubleComplex*));
 
     // Device variables
     cuDoubleComplex* d_Farray;
