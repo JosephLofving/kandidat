@@ -105,6 +105,7 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
         for (int i = 0; i < matLength * matLength; ++i) {
             for (int energyIndex = 0; energyIndex < TLabLength; ++energyIndex) {
                 VMatrix[i + (energyIndex * matLength * matLength)] = VMat2[i];
+                //printf("V2[%i]= %.4e\n",i,VMat2[i]);
             }
         }
 

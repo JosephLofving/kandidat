@@ -100,7 +100,7 @@ int main() {
 	}
 
 	/* Prepare generation of TLab [Mev] */
-	const double TLabMin = 1;
+	const double TLabMin = 100;
 	const double TLabMax = 200;
 	constexpr int TLabLength = 1;
 	const double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
@@ -148,11 +148,11 @@ int main() {
 	printf("kk[3] = %.4e\n", k_h[3]);
 	printf("kk[4] = %.4e\n", k_h[4]);
 
-	//printf("ww[0] = %.4e\n", w_h[0]);
-	//printf("ww[1] = %.4e\n", w_h[1]);
-	//printf("ww[2] = %.4e\n", w_h[2]);
-	//printf("ww[3] = %.4e\n", w_h[3]);
-	//printf("ww[4] = %.4e\n", w_h[4]);
+	printf("ww[0] = %.4e\n", w_h[0]);
+	printf("ww[1] = %.4e\n", w_h[1]);
+	printf("ww[2] = %.4e\n", w_h[2]);
+	printf("ww[3] = %.4e\n", w_h[3]);
+	printf("ww[4] = %.4e\n", w_h[4]);
 
 
 
@@ -196,6 +196,11 @@ int main() {
 	cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
 
 	potential(V_h, channel, k_h, TLab_h, k0_h, quadratureN, TLabLength, coupled, matLength);
+
+	for(int i =0; i<matLength*matLength; i++ ){
+		printf("V_h[%i] = %.4e\n",i,cuCreal(V_h[i]));
+		//printf("V_hImag[%i] = %.4e\n",i,cuCimag(V_h[i]));
+	}
 
 	//V[(row) + (column * matLength) + (i * matLength * matLength)]; /ta inte bort denna rad i v�rst�dningen ty
 
