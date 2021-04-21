@@ -16,8 +16,8 @@
 #include <cuComplex.h>
 
 struct kAndWPtrs {
-	double* k;
-	double* w;
+	std::vector<double> k;
+	std::vector<double> w;
 };
 
 std::vector<double> elementwiseMult(std::vector<double> v1, std::vector<double> v2);

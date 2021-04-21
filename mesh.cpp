@@ -192,7 +192,7 @@ TwoVectors leggauss(int N) {
 std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 	int ND = c.size();
 	int nd = ND*1.0; // Double kanske är onödigt
-	
+
 	std::vector<double> c0(x.size());
 	std::vector<double> c1(x.size());
 	std::vector<double> identityVector(x.size(), 1.0);
@@ -203,7 +203,7 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c) {
 	for (int i = 3; i < ND + 1; ++i) {
 		std::vector<double> tmp = c0;
 		nd -= 1;
-	
+
 		/* c0 = c[-i] - c1*(nd - 1) / nd
 		 * c1 = tmp + c1*x*(2*nd - 1) / nd */
 		if (i == 3) { // c0 and c1 are effectively scalars for the first iteration
@@ -234,7 +234,7 @@ std::vector<double> legder(std::vector<double> c) {
 		c[j - 2] += c[j];
 	}
 
-	der[1] = 3 * c[2];	
+	der[1] = 3 * c[2];
 	der[0] = c[1];
 
 	return der;
@@ -249,7 +249,7 @@ LapackMat* legcompanion(int N) {
 	}
 
 	std::vector<double> top = elementwiseMult(elementwiseMult(vecRemoveLast(scl), vecRemoveFirst(scl)), iota(1, N - 1)); //iota(1, N - 1) = (1,2,3,...,N-1)
-	
+
 	LapackMat* mat = new LapackMat(N, N); //Matrix mat = zeros(N*N)
 	for (int i = 0; i < N-1; i++) {
 		mat->setElement(i, i + 1, top[i]);
@@ -261,28 +261,28 @@ LapackMat* legcompanion(int N) {
 
 
 /* Get quadrature points and weights for an interval [a,b]*/
-kAndWPtrs gaussLegendreLineMesh(int N, int a, int b) {
-	TwoVectors X = leggauss(N);
-	std::vector<double> p = X.v1;
-	std::vector<double> wPrime = X.v2;
+// kAndWPtrs gaussLegendreLineMesh(int N, int a, int b) {
+// 	TwoVectors X = leggauss(N);
+// 	std::vector<double> p = X.v1;
+// 	std::vector<double> wPrime = X.v2;
 
-	/* Translate p and wPrime values for [-1,1] to a general
-	 * interval [a,b]  for quadrature points k and weights w */
-	std::vector<double> k(p.size(), 0);
-	std::vector<double> w(p.size(), 0);
-	for (int j{ 0 }; j < p.size(); j++)
-	{
-		k[j] = 0.5 * (p[j] + 1) * (b - a) + a;
-		w[j] = wPrime[j] * 0.5 * (b - a);
-	}
+// 	/* Translate p and wPrime values for [-1,1] to a general
+// 	 * interval [a,b]  for quadrature points k and weights w */
+// 	std::vector<double> k(p.size(), 0);
+// 	std::vector<double> w(p.size(), 0);
+// 	for (int j{ 0 }; j < p.size(); j++)
+// 	{
+// 		k[j] = 0.5 * (p[j] + 1) * (b - a) + a;
+// 		w[j] = wPrime[j] * 0.5 * (b - a);
+// 	}
 
-	double* kk = &k[0];
-	double* ww = &w[0];
+// 	double* kk = &k[0];
+// 	double* ww = &w[0];
 
-	kAndWPtrs kAndW{ kk, ww };
+// 	kAndWPtrs kAndW{ kk, ww };
 
-	return kAndW;
-}
+// 	return kAndW;
+// }
 
 
 /* This follows equation (2.18) and (2.19) with the same notation */
@@ -301,10 +301,8 @@ kAndWPtrs gaussLegendreInfMesh(int N, double vecScale) {
 		k[j] = vecScale * std::tan(constants::pi * (p[j] + 1.0) / 4);
 		w[j] = wPrime[j] * vecScale * (constants::pi / 4) / pow(std::cos(constants::pi * (p[j] + 1.0) / 4), 2);
 	}
-	double* kk = &k[0];
-	double* ww = &w[0];
 
-	kAndWPtrs kAndW{ kk, ww };
+	kAndWPtrs kAndW{ k, w };
 
 	return kAndW;
 }

@@ -60,9 +60,9 @@ void* xmalloc(size_t size) {
 //     printf("\n");
 // }
 
-void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
-         			cuDoubleComplex* h_Farray,
-		 			cuDoubleComplex* h_Varray,
+void computeTMatrixCUBLAS(cuDoubleComplex* d_Tarray,
+         			cuDoubleComplex* d_Farray, //h_Farray,
+		 			cuDoubleComplex* d_Varray, //h_Varray,
 		 			int matLength, int TLabLength) {
 
     //const int batchSize{ 1 };
@@ -84,10 +84,10 @@ void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
     h_Vptr_array = (cuDoubleComplex**)xmalloc(batchSize * sizeof(cuDoubleComplex*));
 
     // Device variables
-    cuDoubleComplex* d_Farray;
+    // cuDoubleComplex* d_Farray;
     cuDoubleComplex** d_Fptr_array;
 
-    cuDoubleComplex* d_Varray;
+    // cuDoubleComplex* d_Varray;
     cuDoubleComplex** d_Vptr_array;
 
     int* d_pivotArray;
@@ -130,10 +130,10 @@ void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
     // printMatrix(h_Varray, N, N);
 
     // Copy data to device from host
-    checkCudaErrors(cudaMemcpy(d_Farray, h_Farray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex),
-                               cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(d_Varray, h_Varray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex),
-                               cudaMemcpyHostToDevice));
+    // checkCudaErrors(cudaMemcpy(d_Farray, h_Farray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex),
+                            //    cudaMemcpyHostToDevice));
+    // checkCudaErrors(cudaMemcpy(d_Varray, h_Varray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex),
+                            //    cudaMemcpyHostToDevice));
 
     // Create pointer array for matrices
     for (int i = 0; i < TLabLength; i++) h_Fptr_array[i] = d_Farray + (i * matLength * matLength);
@@ -157,8 +157,8 @@ void computeTMatrixCUBLAS(cuDoubleComplex* h_Tarray,
 								 batchSize);
 
     // Copy data to host from device
-    checkCudaErrors(cudaMemcpy(h_Tarray, d_Varray, batchSize *matLength*matLength* sizeof(cuDoubleComplex),
-                               cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(d_Tarray, d_Varray, batchSize *matLength*matLength* sizeof(cuDoubleComplex),
+                               cudaMemcpyDeviceToDevice));
 
     // printMatrix(h_Varray, N, N);
 
