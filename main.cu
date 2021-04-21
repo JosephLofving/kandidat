@@ -102,8 +102,8 @@ int main() {
 	/* Prepare generation of TLab [Mev] */
 	const double TLabMin = 1;
 	const double TLabMax = 200;
-	constexpr int TLabLength = 200;
-	const double TLabIncr = (TLabMax - TLabMin) / TLabLength - 1;
+	constexpr int TLabLength = 1;
+	const double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
 
 	/* Allocate host memory */
 	double* TLab_h = new double[TLabLength];
@@ -116,7 +116,7 @@ int main() {
 	cuDoubleComplex* VG_h = new cuDoubleComplex[matLength * matLength * TLabLength];
 	cuDoubleComplex* F_h = new cuDoubleComplex[matLength * matLength * TLabLength];
 	cuDoubleComplex* phases_h = new cuDoubleComplex[phasesSize * TLabLength];
-	
+
 	/* Generate different experimental kinetic energies [MeV]*/
 	for (int i = 0; i < TLabLength; i++) {
 		TLab_h[i] = i * TLabIncr + TLabMin;
@@ -134,6 +134,15 @@ int main() {
 	cuDoubleComplex* F_d;
 	cuDoubleComplex* phases_d;
 
+	std::vector<double> k_hVect;
+	std::vector<double> w_hVect;
+
+	kAndWPtrs kAndW = gaussLegendreInfMesh(quadratureN, scale);
+	k_hVect = kAndW.k;
+	w_hVect = kAndW.w;
+	k_h = &k_hVect[0];
+	w_h = &w_hVect[0];
+
 
 
 	cudaMalloc((void**)&TLab_d, TLabLength * sizeof(double));
@@ -147,9 +156,7 @@ int main() {
 	cudaMalloc((void**)&T_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&phases_d, phasesSize * TLabLength * sizeof(cuDoubleComplex));
 
-	kAndWPtrs kAndW = gaussLegendreInfMesh(quadratureN, scale);
-	k_h = kAndW.k;
-	w_h = kAndW.w;
+
 
 	/* Copy host variables to device variables */
 	cudaMemcpy(TLab_d, TLab_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
@@ -173,13 +180,13 @@ int main() {
 	}
 
 	getk0 <<<threadsPerBlock, blocksPerGrid >>>(k0_d, TLab_d, TLabLength, tzChannel);
-	//detta överrensstämmer med CPU-kod :)
+	//detta ï¿½verrensstï¿½mmer med CPU-kod :)
 
 	cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
 
 	potential(V_h, channel, k_h, TLab_h, k0_h, quadratureN, TLabLength, coupled, matLength);
 
-	//V[(row) + (column * matLength) + (i * matLength * matLength)]; /ta inte bort denna rad i vårstädningen ty
+	//V[(row) + (column * matLength) + (i * matLength * matLength)]; /ta inte bort denna rad i vï¿½rstï¿½dningen ty
 
 	/* Create the potential matrix on the CPU */
 
@@ -195,32 +202,32 @@ int main() {
 	setupVGKernel <<<threadsPerBlock, blocksPerGrid >>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
 
 	/* Copying the matricies back to the CPU for CuBLAS */
-	cudaDeviceSynchronize();
-	cudaMemcpy(T_h, T_d, matLength* matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	cudaMemcpy(F_h, F_d, matLength* matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	cudaMemcpy(V_h, V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	// cudaDeviceSynchronize();
+	// cudaMemcpy(T_h, T_d, matLength* matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(F_h, F_d, matLength* matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(V_h, V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	/* Solve the equation FT = V with cuBLAS */
-	computeTMatrixCUBLAS(T_h, F_h, V_h, matLength, TLabLength);
+	computeTMatrixCUBLAS(T_d, F_d, V_d, matLength, TLabLength);
 
-	cudaMemcpy(T_d, T_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	// cudaMemcpy(T_d, T_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
 	/* Computes the phase shifts for the given T-matrix*/
 	computePhaseShifts <<<threadsPerBlock, blocksPerGrid >>> (phases_d, T_d, k0_d, quadratureN, mu, coupled, TLabLength, matLength);
-	
+
 	cudaDeviceSynchronize();
 
 	/* Copy (relevant) device variables to host variables */
-	cudaMemcpy(T_h, T_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(T_h, T_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(phases_h, phases_d, phasesSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	cudaMemcpy(k_h, k_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(w_h, w_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(V_h, V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	cudaMemcpy(F_h, F_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	cudaMemcpy(VG_h, VG_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(k_h, k_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(w_h, w_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(V_h, V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(F_h, F_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(VG_h, VG_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
-	
+
 	for (int i = 0; i < TLabLength; i++) {
 		for (int j = 0; j < phasesSize; ++j) {
 			printf("\nTLab = %f", TLab_h[i]);
@@ -230,7 +237,7 @@ int main() {
 		}
 	}
 
-	/* Free all the allocated memory */ 
+	/* Free all the allocated memory */
 	delete[] TLab_h;
 	delete[] k0_h;
 	delete[] V_h;
