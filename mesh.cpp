@@ -286,7 +286,7 @@ LapackMat* legcompanion(int N) {
 
 
 /* This follows equation (2.18) and (2.19) with the same notation */
-kAndWPtrs gaussLegendreInfMesh(int N, double vecScale) {
+void gaussLegendreInfMesh(double* k_h, double* w_h, int N, double vecScale) {
 	TwoVectors X = leggauss(N);
 	std::vector<double> p = X.v1;
 	std::vector<double> wPrime = X.v2;
@@ -301,10 +301,10 @@ kAndWPtrs gaussLegendreInfMesh(int N, double vecScale) {
 		k[j] = vecScale * std::tan(constants::pi * (p[j] + 1.0) / 4);
 		w[j] = wPrime[j] * vecScale * (constants::pi / 4) / pow(std::cos(constants::pi * (p[j] + 1.0) / 4), 2);
 	}
-
-	kAndWPtrs kAndW{ k, w };
-
-	return kAndW;
+	for(int i =0; i< N; ++i){
+		k_h[i] = k[i];
+		w_h[i] = w[i];
+	}
 }
 
 

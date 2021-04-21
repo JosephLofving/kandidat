@@ -16,8 +16,8 @@
 #include <cuComplex.h>
 
 struct kAndWPtrs {
-	std::vector<double> k;
-	std::vector<double> w;
+	double* k;
+	double* w;
 };
 
 std::vector<double> elementwiseMult(std::vector<double> v1, std::vector<double> v2);
@@ -27,7 +27,7 @@ std::vector<double> legval(std::vector<double> x, std::vector<double> c);
 std::vector<double> legder(std::vector<double> c);
 LapackMat* legcompanion(int N);
 kAndWPtrs gaussLegendreLineMesh(int N, int a, int b);
-kAndWPtrs gaussLegendreInfMesh(int N, double scale = 100.0);
+void gaussLegendreInfMesh(double* k_h, double* w_h, int N, double scale = 100.0);
 std::vector<double> vecScale(double a, std::vector<double> v);
 
 #endif

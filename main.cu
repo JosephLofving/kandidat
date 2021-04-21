@@ -134,14 +134,25 @@ int main() {
 	cuDoubleComplex* F_d;
 	cuDoubleComplex* phases_d;
 
-	std::vector<double> k_hVect;
-	std::vector<double> w_hVect;
 
-	kAndWPtrs kAndW = gaussLegendreInfMesh(quadratureN, scale);
-	k_hVect = kAndW.k;
-	w_hVect = kAndW.w;
-	k_h = &k_hVect[0];
-	w_h = &w_hVect[0];
+
+	gaussLegendreInfMesh(k_h, w_h, quadratureN, scale);
+
+	//k_h = kAndW.k;
+	//w_h = kAndW.w;
+
+
+	printf("kk[0] = %.4e\n", k_h[0]);
+	printf("kk[1] = %.4e\n", k_h[1]);
+	printf("kk[2] = %.4e\n", k_h[2]);
+	printf("kk[3] = %.4e\n", k_h[3]);
+	printf("kk[4] = %.4e\n", k_h[4]);
+
+	//printf("ww[0] = %.4e\n", w_h[0]);
+	//printf("ww[1] = %.4e\n", w_h[1]);
+	//printf("ww[2] = %.4e\n", w_h[2]);
+	//printf("ww[3] = %.4e\n", w_h[3]);
+	//printf("ww[4] = %.4e\n", w_h[4]);
 
 
 
@@ -246,7 +257,7 @@ int main() {
 	delete[] F_h;
 	delete[] T_h;
 	delete[] phases_h;
-	delete[] k_h;
+	//delete[] k_h;
 	delete[] w_h;
 	cudaFree(TLab_d);
 	cudaFree(k0_d);
