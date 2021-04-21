@@ -122,7 +122,7 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
 
             }
             potentialClassPtr->V(k0[energyIndex], k0[energyIndex], coupled, S, J, T, Tz, VArray);
-            VMatrix[(quadratureN + 1)+ rowIndex * (quadratureN + 1)) + ((quadratureN + 1) * (quadratureN + 1) + colIndex * (quadratureN + 1)) * (quadratureN + 1)+energyIndex*matLength*matLength] =
+            VMatrix[((quadratureN + 1)+ rowIndex * (quadratureN + 1)) + ((quadratureN + 1) * (quadratureN + 1)) + (colIndex * (quadratureN + 1) * (quadratureN + 1))+energyIndex*matLength*matLength] =
                 make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0);
         }
     }
