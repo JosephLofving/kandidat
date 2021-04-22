@@ -201,7 +201,7 @@ int main() {
 	//for(int i =0; i<matLength*matLength; i++ ){
 		//printf("V_h[%i] = %.4e\n",i,cuCreal(V_h[i]));
 		//printf("V_hImag[%i] = %.4e\n",i,cuCimag(V_h[i]));
-	}
+	//}
 
 	//V[(row) + (column * matLength) + (i * matLength * matLength)]; /ta inte bort denna rad i v�rst�dningen ty
 
