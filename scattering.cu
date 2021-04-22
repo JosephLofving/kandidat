@@ -132,8 +132,28 @@ cuDoubleComplex tanCudaComplex(cuDoubleComplex argument) {
 	return numerator / denominator;
 }
 
+__global__
+void setupG0VectorOnShell(cuDoubleComplex* G0,
+	double* k0,
+	double* sum,
+	int quadratureN,
+	int matLength,
+	int TLabLength,
+	double mu,
+	bool coupled) {
 
+	double twoMu = (2.0 * mu);
+	double twoOverPi = (2.0 / constants::pi);
 
+	int slice = blockIdx.z * blockDim.z + threadIdx.z;
+	if (slice < TLabLength) {
+		/* Assign the last element of D */
+		G0[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum[slice], -twoMu * k0[slice]);
+		if (coupled) {
+			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
+		}
+	}
+}
 
 __global__
 void setupG0Vector(cuDoubleComplex* G0,
@@ -161,15 +181,6 @@ void setupG0Vector(cuDoubleComplex* G0,
 		 * This means the second half of G0 is a copy of the first. */
 		if (coupled) {
 			G0[quadratureN + 1 + column + slice * matLength] = G0[column + slice * matLength];
-		}
-	}
-	cudaDeviceSynchronize();
-	printf("sum = %.4e", sum[0]);
-	if (column < quadratureN && slice < TLabLength) {
-		/* Assign the last element of D */
-		G0[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum[slice], -twoMu * k0[slice]);
-		if (coupled) {
-			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
 		}
 	}
 }

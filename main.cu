@@ -215,6 +215,7 @@ int main() {
 	/* Call kernels on GPU */
 
 	setupG0Vector <<<threadsPerBlock, blocksPerGrid >>> (G0_d, k_d, w_d, k0_d,sum_d, quadratureN, matLength, TLabLength, mu, coupled);
+	setupG0VectorOnShell <<<threadsPerBlock, blocksPerGrid >>> (G0, k0, sum, quadratureN, matLength, TLabLength, mu, coupled);
 	/* Setup the VG kernel and, at the same time, the F matrix */
 	setupVGKernel <<<threadsPerBlock, blocksPerGrid >>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
 
