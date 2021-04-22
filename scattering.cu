@@ -143,7 +143,7 @@ void setupG0VectorOnShell(cuDoubleComplex* G0,
 	bool coupled) {
 
 	printf("\nsum = %.4e\n", sum[0]);
-	printf("\nG0[5] = %.4e\n", G0[5]);
+	printf("\nG0[5] = %.4e, imag = %.4e\n", cuCreal(G0[5]), cuCimag(G0[5]));
 
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
