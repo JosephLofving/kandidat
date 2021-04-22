@@ -165,7 +165,7 @@ void setupG0Vector(cuDoubleComplex* G0,
 			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
 		}
 
-		printf("\nG0[col = %i, sli = %i] = %.4e, imag = %.4e\n", column, slice, cuCreal(G0[column + slice * matLength]), cuCimag(G0[column + slice * matLength]));
+		printf("\nG0[col = %i, sli = %i] = %.4e, imag = %.4e\n", column+1, slice, cuCreal(G0[column+1 + slice * matLength]), cuCimag(G0[column+1 + slice * matLength]));
 	}
 }
 
