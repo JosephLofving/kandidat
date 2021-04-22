@@ -1,16 +1,14 @@
 #include "scattering.h"
 
+__device__
+void cudaSetElement(cuDoubleComplex* tensor, int row, int column, int slice, int matLength, cuDoubleComplex value){
+    tensor[row + column*matLength+slice*matLength*matLength] = value;
+}
 
-/**
-	Sets up a complex vector needed to solve the T matrix equation.
-	@param k:	Quadrature points
-	@param w:	Weights for quadrature points
-	@param k0:	On-shell-point
-	@return		G0 vector
-*/
-
-//const cuDoubleComplex I = make_cuDoubleComplex(0.0, 1.0);
-
+__device__
+cuDoubleComplex cudaGetElement(cuDoubleComplex* tensor, int row, int column, int slice, int matLength){
+    return tensor[row + column*matLength+slice*matLength*matLength];
+}
 
 __device__
 cuDoubleComplex operator+(cuDoubleComplex A, cuDoubleComplex B) {
@@ -142,6 +140,7 @@ void setupG0Vector(cuDoubleComplex* G0,
 	double* k,
 	double* w,
 	double* k0,
+	double* sum,
 	int quadratureN,
 	int matLength,
 	int TLabLength,
@@ -153,20 +152,21 @@ void setupG0Vector(cuDoubleComplex* G0,
 
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
-	double sum = 0;
 
 	if (column < quadratureN && slice < TLabLength) {
 		G0[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
-		sum += w[column] / (k0[slice] * k0[slice] - k[column] * k[column]);
+		sum[slice] += w[column] / (k0[slice] * k0[slice] - k[column] * k[column]);
 
 		/* If coupled, append G0 to itself to facilitate calculations.
 		 * This means the second half of G0 is a copy of the first. */
 		if (coupled) {
 			G0[quadratureN + 1 + column + slice * matLength] = G0[column + slice * matLength];
 		}
+	}
 
+	if (column < quadratureN && slice < TLabLength) {
 		/* Assign the last element of D */
-		G0[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum, -twoMu * k0[slice]);
+		G0[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum[slice], -twoMu * k0[slice]);
 		if (coupled) {
 			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
 		}
