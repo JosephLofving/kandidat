@@ -120,7 +120,7 @@ int main() {
 	/* Prepare generation of TLab [Mev] */
 	const double TLabMin = 100;
 	const double TLabMax = 200;
-	constexpr int TLabLength = 1;
+	constexpr int TLabLength = 3;
 	const double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
 
 	/* Allocate host memory */
@@ -210,18 +210,10 @@ int main() {
 	}
 
 	getk0 <<<1,1>>>(k0_d, TLab_d, TLabLength, tzChannel);
-	//detta �verrensst�mmer med CPU-kod :)
 
 	cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
 
 	potential(V_h, channel, k_h, TLab_h, k0_h, quadratureN, TLabLength, coupled, matLength);
-
-	//for(int i =0; i<matLength*matLength; i++ ){
-		//printf("V_h[%i] = %.4e\n",i,cuCreal(V_h[i]));
-		//printf("V_hImag[%i] = %.4e\n",i,cuCimag(V_h[i]));
-	//}
-
-	//V[(row) + (column * matLength) + (i * matLength * matLength)]; /ta inte bort denna rad i v�rst�dningen ty
 
 	/* Create the potential matrix on the CPU */
 
@@ -231,7 +223,6 @@ int main() {
 	double mu = getReducedMass(channel);
 
 	/* Call kernels on GPU */
-
 	setupG0VectorSum <<<1,1>>> (sum_d, k0_d, quadratureN, TLabLength, k_d, w_d);
 	setupG0Vector <<<threadsPerBlock, blocksPerGrid >>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
 	/* Setup the VG kernel and, at the same time, the F matrix */
