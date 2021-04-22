@@ -144,17 +144,17 @@ int main() {
 	//w_h = kAndW.w;
 
 
-	printf("kk[0] = %.4e\n", k_h[0]);
-	printf("kk[1] = %.4e\n", k_h[1]);
-	printf("kk[2] = %.4e\n", k_h[2]);
-	printf("kk[3] = %.4e\n", k_h[3]);
-	printf("kk[4] = %.4e\n", k_h[4]);
-
-	printf("ww[0] = %.4e\n", w_h[0]);
-	printf("ww[1] = %.4e\n", w_h[1]);
-	printf("ww[2] = %.4e\n", w_h[2]);
-	printf("ww[3] = %.4e\n", w_h[3]);
-	printf("ww[4] = %.4e\n", w_h[4]);
+	//printf("kk[0] = %.4e\n", k_h[0]);
+	//printf("kk[1] = %.4e\n", k_h[1]);
+	//printf("kk[2] = %.4e\n", k_h[2]);
+	//printf("kk[3] = %.4e\n", k_h[3]);
+	//printf("kk[4] = %.4e\n", k_h[4]);
+	//
+	//printf("ww[0] = %.4e\n", w_h[0]);
+	//printf("ww[1] = %.4e\n", w_h[1]);
+	//printf("ww[2] = %.4e\n", w_h[2]);
+	//printf("ww[3] = %.4e\n", w_h[3]);
+	//printf("ww[4] = %.4e\n", w_h[4]);
 
 
 
@@ -201,8 +201,8 @@ int main() {
 
 	potential(V_h, channel, k_h, TLab_h, k0_h, quadratureN, TLabLength, coupled, matLength);
 
-	for(int i =0; i<matLength*matLength; i++ ){
-		printf("V_h[%i] = %.4e\n",i,cuCreal(V_h[i]));
+	//for(int i =0; i<matLength*matLength; i++ ){
+		//printf("V_h[%i] = %.4e\n",i,cuCreal(V_h[i]));
 		//printf("V_hImag[%i] = %.4e\n",i,cuCimag(V_h[i]));
 	}
 
