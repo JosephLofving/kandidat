@@ -140,9 +140,6 @@ int main() {
 
 	gaussLegendreInfMesh(k_h, w_h, quadratureN, scale);
 
-	//k_h = kAndW.k;
-	//w_h = kAndW.w;
-
 
 	//printf("kk[0] = %.4e\n", k_h[0]);
 	//printf("kk[1] = %.4e\n", k_h[1]);
