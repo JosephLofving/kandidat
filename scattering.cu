@@ -178,7 +178,9 @@ void setupG0Vector(cuDoubleComplex* G0,
 
 	if (column < quadratureN && slice < TLabLength) {
 		G0[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
-		sum[slice] = sum[slice] + w[column] / (k0[slice] * k0[slice] - k[column] * k[column]);
+		for (int i = 0; i < quadratureN; ++i) {
+			sum[slice] = sum[slice] + w[i] / (k0[slice] * k0[slice] - k[i] * k[i]);
+		}
 		printf("grejs[col=%i, slice = %i] = %.4e\n", column, slice, w[column] / (k0[slice] * k0[slice] - k[column] * k[column]));
 
 		/* If coupled, append G0 to itself to facilitate calculations.
