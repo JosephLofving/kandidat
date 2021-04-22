@@ -29,15 +29,14 @@ void setupG0Vector(cuDoubleComplex* G0,
 	double mu,
 	bool coupled);
 
-__global__
-void setupG0VectorOnShell(cuDoubleComplex* G0,
-	double* k0,
+__device__
+void setupG0VectorSum(
 	double* sum,
+	double* k0,
 	int quadratureN,
-	int matLength,
 	int TLabLength,
-	double mu,
-	bool coupled);
+	double* k,
+	double* w);
 
 __global__
 void setupVGKernel(cuDoubleComplex* VG,

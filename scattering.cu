@@ -132,28 +132,18 @@ cuDoubleComplex tanCudaComplex(cuDoubleComplex argument) {
 	return numerator / denominator;
 }
 
-__global__
-void setupG0VectorOnShell(cuDoubleComplex* G0,
-	double* k0,
+__device__
+void setupG0VectorSum(
 	double* sum,
+	double* k0,
 	int quadratureN,
-	int matLength,
 	int TLabLength,
-	double mu,
-	bool coupled) {
+	double* k,
+	double* w) {
 
-	printf("\nsum = %.4e\n", sum[0]);
-	printf("\nG0[5] = %.4e, imag = %.4e\n", cuCreal(G0[5]), cuCimag(G0[5]));
-
-	double twoMu = (2.0 * mu);
-	double twoOverPi = (2.0 / constants::pi);
-
-	int slice = blockIdx.z * blockDim.z + threadIdx.z;
-	if (slice < TLabLength) {
-		/* Assign the last element of D */
-		G0[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum[slice], -twoMu * k0[slice]);
-		if (coupled) {
-			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
+	for (int energyIndex = 0; energyIndex < TLabLength; ++energyIndex) {
+		for (int column = 0; column < quadratureN; ++column) {
+			sum[energyIndex] += w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]);
 		}
 	}
 }
@@ -176,17 +166,24 @@ void setupG0Vector(cuDoubleComplex* G0,
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
 
+	setupG0VectorSum(sum, k0, quadratureN, TLabLength, k, w);
+	printf("\nsum = %.4e\n", sum[0]);
+	printf("\nG0[5] = %.4e, imag = %.4e\n", cuCreal(G0[5]), cuCimag(G0[5]));
+
 	if (column < quadratureN && slice < TLabLength) {
 		G0[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
-		for (int i = 0; i < quadratureN; ++i) {
-			sum[slice] = sum[slice] + w[i] / (k0[slice] * k0[slice] - k[i] * k[i]);
-		}
 		printf("grejs[col=%i, slice = %i] = %.4e\n", column, slice, w[column] / (k0[slice] * k0[slice] - k[column] * k[column]));
 
 		/* If coupled, append G0 to itself to facilitate calculations.
 		 * This means the second half of G0 is a copy of the first. */
 		if (coupled) {
 			G0[quadratureN + 1 + column + slice * matLength] = G0[column + slice * matLength];
+		}
+
+		/* Assign the last element of D */
+		G0[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum[slice], -twoMu * k0[slice]);
+		if (coupled) {
+			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
 		}
 	}
 }
