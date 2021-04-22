@@ -144,6 +144,7 @@ void setupG0VectorSum(
 	for (int energyIndex = 0; energyIndex < TLabLength; ++energyIndex) {
 		for (int column = 0; column < quadratureN; ++column) {
 			sum[energyIndex] += w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]);
+			printf("sumgrejs[col=%i, slice = %i] = %.4e\n", column, energyIndex, w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]));
 		}
 	}
 }
@@ -172,7 +173,6 @@ void setupG0Vector(cuDoubleComplex* G0,
 
 	if (column < quadratureN && slice < TLabLength) {
 		G0[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
-		printf("grejs[col=%i, slice = %i] = %.4e\n", column, slice, w[column] / (k0[slice] * k0[slice] - k[column] * k[column]));
 
 		/* If coupled, append G0 to itself to facilitate calculations.
 		 * This means the second half of G0 is a copy of the first. */
