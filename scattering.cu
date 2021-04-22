@@ -145,7 +145,7 @@ void setupG0Vector(cuDoubleComplex* G0,
 	bool coupled) {
 
 	int column = blockIdx.x * blockDim.x + threadIdx.x;
-	int slice = blockIdx.y * blockDim.y + threadIdx.y;
+	int slice = blockIdx.z * blockDim.z + threadIdx.z;
 
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
@@ -254,7 +254,7 @@ void blattToStapp(cuDoubleComplex* phases,
 				  cuDoubleComplex* twoEpsilonJBB,
 				  int TLabLength) {
 
-	int slice = blockIdx.x * blockDim.x + threadIdx.x;
+	int slice = blockIdx.z * blockDim.z + threadIdx.z;
 	cuDoubleComplex* twoEpsilonJ = new cuDoubleComplex[TLabLength];
 	if (slice < TLabLength) {
 		twoEpsilonJ[slice] = asinCudaComplex(sinCudaComplex(twoEpsilonJBB[slice]) * sinCudaComplex(deltaMinusBB[slice] - deltaPlusBB[slice]));
@@ -285,7 +285,7 @@ void computePhaseShifts(cuDoubleComplex* phases,
 	int TLabLength,
 	int matLength) {
 
-	int slice = blockIdx.x * blockDim.x + threadIdx.x;
+	int slice = blockIdx.z * blockDim.z + threadIdx.z;
 
 	double* rhoT = new double[TLabLength];
 	cuDoubleComplex* T11 = new cuDoubleComplex[TLabLength];

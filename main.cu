@@ -200,8 +200,8 @@ int main() {
 	cudaMemcpy(phases_d, phases_h, phasesSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
 
-	dim3 threadsPerBlock(matLength, matLength);
-	dim3 blocksPerGrid(1, 1);
+	dim3 threadsPerBlock(matLength, matLength,TLabLength); //Blocksize
+	dim3 blocksPerGrid(1,1,1);//Gridsize
 	if (matLength * matLength > 512) {
 		threadsPerBlock.x = 512;
 		threadsPerBlock.y = 512;
