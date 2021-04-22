@@ -163,6 +163,7 @@ void setupG0Vector(cuDoubleComplex* G0,
 			G0[quadratureN + 1 + column + slice * matLength] = G0[column + slice * matLength];
 		}
 	}
+	cudaDeviceSynchronize();
 	printf("sum = %.4e", sum[0]);
 	if (column < quadratureN && slice < TLabLength) {
 		/* Assign the last element of D */
