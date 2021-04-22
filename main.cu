@@ -39,6 +39,26 @@ bool isCoupled(std::vector<QuantumState> channel) {
 	return !(channel.size() == 1);
 }
 
+__global__
+void setupG0VectorSum(
+	double* sum,
+	double* k0,
+	int quadratureN,
+	int TLabLength,
+	double* k,
+	double* w) {
+
+
+	for (int energyIndex = 0; energyIndex < TLabLength; ++energyIndex) {
+		sum[energyIndex] = 0;
+		for (int column = 0; column < quadratureN; ++column) {
+			sum[energyIndex] += w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]);
+			printf("sumgrejs[col=%i, slice = %i] = %.4e\n", column, energyIndex, w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]));
+			printf("\nsumisinfunktion[energyindex = %i] = %.4e\n", energyIndex, sum[energyIndex]);
+		}
+	}
+}
+
 
 __global__
 void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
@@ -214,6 +234,7 @@ int main() {
 
 	/* Call kernels on GPU */
 
+	setupG0VectorSum <<<1,1>>> (sum_d, k0_d, quadratureN, TLabLength, k_d, w_d);
 	setupG0Vector <<<threadsPerBlock, blocksPerGrid >>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
 	/* Setup the VG kernel and, at the same time, the F matrix */
 	setupVGKernel <<<threadsPerBlock, blocksPerGrid >>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);

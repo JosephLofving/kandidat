@@ -132,26 +132,6 @@ cuDoubleComplex tanCudaComplex(cuDoubleComplex argument) {
 	return numerator / denominator;
 }
 
-__device__
-void setupG0VectorSum(
-	double* sum,
-	double* k0,
-	int quadratureN,
-	int TLabLength,
-	double* k,
-	double* w) {
-
-
-	for (int energyIndex = 0; energyIndex < TLabLength; ++energyIndex) {
-		sum[energyIndex] = 0;
-		for (int column = 0; column < quadratureN; ++column) {
-			sum[energyIndex] += w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]);
-			printf("sumgrejs[col=%i, slice = %i] = %.4e\n", column, energyIndex, w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]));
-			printf("\nsumisinfunktion[energyindex = %i] = %.4e\n", energyIndex, sum[energyIndex]);
-		}
-	}
-}
-
 __global__
 void setupG0Vector(cuDoubleComplex* G0,
 	double* k,
@@ -170,9 +150,9 @@ void setupG0Vector(cuDoubleComplex* G0,
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
 
-	setupG0VectorSum(sum, k0, quadratureN, TLabLength, k, w);
+
 	printf("\nsum = %.4e\n", sum[0]);
-	printf("\nG0[5] = %.4e, imag = %.4e\n", cuCreal(G0[5]), cuCimag(G0[5]));
+	//printf("\nG0[5] = %.4e, imag = %.4e\n", cuCreal(G0[5]), cuCimag(G0[5]));
 
 	if (column < quadratureN && slice < TLabLength) {
 		G0[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
