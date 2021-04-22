@@ -150,10 +150,6 @@ void setupG0Vector(cuDoubleComplex* G0,
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
 
-
-	printf("\nsum = %.4e\n", sum[0]);
-	//printf("\nG0[5] = %.4e, imag = %.4e\n", cuCreal(G0[5]), cuCimag(G0[5]));
-
 	if (column < quadratureN && slice < TLabLength) {
 		G0[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
 
@@ -168,6 +164,8 @@ void setupG0Vector(cuDoubleComplex* G0,
 		if (coupled) {
 			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
 		}
+
+		printf("\nG0[col = %i, sli = %i] = %.4e, imag = %.4e\n", column, slice, cuCreal(G0[column + slice * matLength]), cuCimag(G0[column + slice * matLength]));
 	}
 }
 

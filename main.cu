@@ -53,8 +53,6 @@ void setupG0VectorSum(
 		sum[energyIndex] = 0;
 		for (int column = 0; column < quadratureN; ++column) {
 			sum[energyIndex] += w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]);
-			printf("sumgrejs[col=%i, slice = %i] = %.4e\n", column, energyIndex, w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]));
-			printf("\nsumisinfunktion[energyindex = %i] = %.4e\n", energyIndex, sum[energyIndex]);
 		}
 	}
 }
