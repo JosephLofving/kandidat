@@ -107,6 +107,7 @@ int main() {
 
 	/* Allocate host memory */
 	double* TLab_h = new double[TLabLength];
+	double* sum_h = new double[TLabLength];
 	double* k0_h = new double[TLabLength];
 	double* k_h = new double[quadratureN];
 	double* w_h = new double[quadratureN];
@@ -127,6 +128,7 @@ int main() {
 	double* k0_d;
 	double* k_d;
 	double* w_d;
+	double* sum_d;
 	cuDoubleComplex* V_d;
 	cuDoubleComplex* T_d;
 	cuDoubleComplex* G0_d;
@@ -158,6 +160,7 @@ int main() {
 
 	cudaMalloc((void**)&TLab_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&k0_d, TLabLength * sizeof(double));
+	cudaMalloc((void**)&sum_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&k_d, quadratureN * sizeof(double));
 	cudaMalloc((void**)&w_d, quadratureN * sizeof(double));
 	cudaMalloc((void**)&G0_d, matLength * TLabLength * sizeof(cuDoubleComplex));
@@ -171,6 +174,7 @@ int main() {
 
 	/* Copy host variables to device variables */
 	cudaMemcpy(TLab_d, TLab_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(sum_d, sum_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(k0_d, k0_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(k_d, k_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(w_d, w_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
@@ -213,7 +217,7 @@ int main() {
 
 	/* Call kernels on GPU */
 
-	setupG0Vector <<<threadsPerBlock, blocksPerGrid >>> (G0_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
+	setupG0Vector <<<threadsPerBlock, blocksPerGrid >>> (G0_d, k_d, w_d, k0_d,sum_d, quadratureN, matLength, TLabLength, mu, coupled);
 	/* Setup the VG kernel and, at the same time, the F matrix */
 	setupVGKernel <<<threadsPerBlock, blocksPerGrid >>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
 

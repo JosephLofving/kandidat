@@ -140,6 +140,7 @@ void setupG0Vector(cuDoubleComplex* G0,
 	double* k,
 	double* w,
 	double* k0,
+	double* sum,
 	int quadratureN,
 	int matLength,
 	int TLabLength,
@@ -151,7 +152,6 @@ void setupG0Vector(cuDoubleComplex* G0,
 
 	double twoMu = (2.0 * mu);
 	double twoOverPi = (2.0 / constants::pi);
-	double* sum;
 
 	if (column < quadratureN && slice < TLabLength) {
 		G0[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
