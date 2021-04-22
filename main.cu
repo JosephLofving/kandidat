@@ -119,7 +119,7 @@ int main() {
 
 	/* Prepare generation of TLab [Mev] */
 	const double TLabMin = 100;
-	const double TLabMax = 200;
+	const double TLabMax = 100;
 	constexpr int TLabLength = 3;
 	const double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
 
