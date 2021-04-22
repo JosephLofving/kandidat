@@ -107,8 +107,8 @@ void computeTMatrixCUBLAS(cuDoubleComplex* d_Tarray,
 
     // Allocate memory for device variables
 
-    checkCudaErrors(cudaMalloc((void**)&d_Farray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex)));
-    checkCudaErrors(cudaMalloc((void**)&d_Varray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex)));
+    // checkCudaErrors(cudaMalloc((void**)&d_Farray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex)));
+    // checkCudaErrors(cudaMalloc((void**)&d_Varray, TLabLength *matLength*matLength* sizeof(cuDoubleComplex)));
     checkCudaErrors(
             cudaMalloc((void**)&d_pivotArray,matLength* TLabLength * sizeof(int)));
     checkCudaErrors(cudaMalloc((void**)&d_trfInfo, TLabLength * sizeof(int)));
