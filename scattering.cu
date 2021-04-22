@@ -141,7 +141,9 @@ void setupG0VectorSum(
 	double* k,
 	double* w) {
 
+
 	for (int energyIndex = 0; energyIndex < TLabLength; ++energyIndex) {
+		sum[energyIndex] = 0;
 		for (int column = 0; column < quadratureN; ++column) {
 			sum[energyIndex] += w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]);
 			printf("sumgrejs[col=%i, slice = %i] = %.4e\n", column, energyIndex, w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]));
