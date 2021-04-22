@@ -30,6 +30,16 @@ void setupG0Vector(cuDoubleComplex* G0,
 	bool coupled);
 
 __global__
+void setupG0VectorOnShell(cuDoubleComplex* G0,
+	double* k0,
+	double* sum,
+	int quadratureN,
+	int matLength,
+	int TLabLength,
+	double mu,
+	bool coupled);
+
+__global__
 void setupVGKernel(cuDoubleComplex* VG,
 	cuDoubleComplex* V,
 	cuDoubleComplex* G0,
