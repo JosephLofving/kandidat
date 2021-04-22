@@ -162,7 +162,9 @@ void setupG0Vector(cuDoubleComplex* G0,
 		if (coupled) {
 			G0[quadratureN + 1 + column + slice * matLength] = G0[column + slice * matLength];
 		}
+	}
 
+	if (column < quadratureN && slice < TLabLength) {
 		/* Assign the last element of D */
 		G0[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum[slice], -twoMu * k0[slice]);
 		if (coupled) {
