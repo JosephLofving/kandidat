@@ -207,6 +207,8 @@ void setupVGKernel(cuDoubleComplex* VG,
 		else {
 			F[row + column * matLength + slice * matLength * matLength] = cuCmul(make_cuDoubleComplex(-1, 0), VG[row + column * matLength + slice * matLength * matLength]);
 		}
+		printf("\nF[col = %i, row = %i, sli = %i] = %.4e, imag = %.4e\n", column, row, slice, cuCreal(F[row + column * matLength+slice * matLength * matLength]));
+	
 
 	}
 
