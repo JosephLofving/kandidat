@@ -317,11 +317,14 @@ void computePhaseShifts(cuDoubleComplex* phases,
 			cuDoubleComplex T0 = (T[(quadratureN)+(quadratureN * matLength) + slice * matLength * matLength ]); //Farligt, detta element kanske inte �r helt reellt. Dock var koden d�lig f�rut is�fall.
 			printf("\ngrej = %.4e, imag = %.4e\n", cuCreal(2.0 * rhoT[slice] * T0 * I), cuCimag(2.0 * rhoT[slice] * T0 * I));
 			cuDoubleComplex* argument = new cuDoubleComplex[TLabLength];
+			cuDoubleComplex* swappedLog = new cuDoubleComplex[TLabLength];
+			cuDoubleComplex* delta = new cuDoubleComplex[TLabLength];
 			argument[slice] = make_cuDoubleComplex(1,0) - 2.0 * I * rhoT[slice] * T0;
-			printf("\nargument[slice = %i] = %.4e, imag = %.4e\n", slice, cuCreal(argument[slice]), cuCimag(argument[slice]));
-			cuDoubleComplex swappedLog = make_cuDoubleComplex(cuCimag(logCudaComplex(argument[slice])), cuCreal(logCudaComplex(argument[slice])));
-			cuDoubleComplex delta = cuCmul(make_cuDoubleComplex(-0.5 * constants::rad2deg, 0), swappedLog);
-			phases[slice] = delta;
+			swappedLog[slice] = make_cuDoubleComplex(cuCimag(logCudaComplex(argument[slice])), cuCreal(logCudaComplex(argument[slice])));
+			delta[slice] = cuCmul(make_cuDoubleComplex(-0.5 * constants::rad2deg, 0), swappedLog[slice]);
+
+			printf("\ndelta[slice = %i] = %.4e, imag = %.4e\n", slice, cuCreal(delta[slice]), cuCimag(delta[slice]));
+			phases[slice] = delta[slice];
 		}
 	}
 
