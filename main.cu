@@ -118,9 +118,9 @@ int main() {
 	}
 
 	/* Prepare generation of TLab [Mev] */
-	const double TLabMin = 100;
-	const double TLabMax = 100;
-	constexpr int TLabLength = 3;
+	const double TLabMin = 1;
+	const double TLabMax = 300;
+	constexpr int TLabLength = 400;
 	const double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
 
 	/* Allocate host memory */
@@ -137,13 +137,13 @@ int main() {
 	cuDoubleComplex* phases_h = new cuDoubleComplex[phasesSize * TLabLength];
 
 	/* Generate different experimental kinetic energies [MeV]*/
-	//for (int i = 0; i < TLabLength; i++) {
-	//	TLab_h[i] = i * TLabIncr + TLabMin;
-	//}
+	for (int i = 0; i < TLabLength; i++) {
+		TLab_h[i] = i * TLabIncr + TLabMin;
+	}
 
-	TLab_h[0]=100;
-	TLab_h[2]=100;
-	TLab_h[1]=100;
+	//TLab_h[0]=100;
+	//TLab_h[2]=100;
+	//TLab_h[1]=100;
 
 	/* Allocate device memory */
 	double* TLab_d;
