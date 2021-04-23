@@ -279,7 +279,9 @@ int main() {
 			printf("\n");
 		}
 	}
-
+	printf("\nbraReal(phase) = %.10e", cuCreal(phases_h[0]));
+	printf("\nbraReal(phase) = %.10e", cuCreal(phases_h[1]));
+	printf("\nbraReal(phase) = %.10e", cuCreal(phases_h[2]));
 	/* Free all the allocated memory */
 	delete[] TLab_h;
 	delete[] k0_h;
