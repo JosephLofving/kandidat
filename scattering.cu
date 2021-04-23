@@ -164,8 +164,6 @@ void setupG0Vector(cuDoubleComplex* G0,
 		if (coupled) {
 			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
 		}
-
-		printf("\nG0[col = %i, sli = %i] = %.4e, imag = %.4e\n", column+1, slice, cuCreal(G0[column+1 + slice * matLength]), cuCimag(G0[column+1 + slice * matLength]));
 	}
 }
 
@@ -207,8 +205,6 @@ void setupVGKernel(cuDoubleComplex* VG,
 		else {
 			F[row + column * matLength + slice * matLength * matLength] = cuCmul(make_cuDoubleComplex(-1, 0), VG[row + column * matLength + slice * matLength * matLength]);
 		}
-		printf("\nF[col = %i, row = %i, sli = %i] = %.4e\n", column, row, slice, cuCreal(F[row + column * matLength+slice * matLength * matLength]));
-	
 
 	}
 
@@ -320,7 +316,6 @@ void computePhaseShifts(cuDoubleComplex* phases,
 			cuDoubleComplex* delta = new cuDoubleComplex[TLabLength];
 			argument[slice] = make_cuDoubleComplex(1,0) - 2.0 * I * rhoT[slice] * T0;
 			phases[slice] = -0.5 * I * constants::rad2deg * logCudaComplex(argument[slice]);
-			printf("\nphases[slice = %i] = %.4e, imag = %.4e\n", slice, cuCreal(phases[slice]), cuCimag(phases[slice]));
 		}
 	}
 
