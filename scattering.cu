@@ -314,8 +314,7 @@ void computePhaseShifts(cuDoubleComplex* phases,
 		}
 		/* The uncoupled case completely follows equation (2.26). */
 		else {
-			cuDoubleComplex T0 = (T[(quadratureN)+(quadratureN * matLength) + slice * matLength * matLength ]); //Farligt, detta element kanske inte �r helt reellt. Dock var koden d�lig f�rut is�fall.
-			printf("\ngrej = %.4e, imag = %.4e\n", cuCreal(2.0 * rhoT[slice] * T0 * I), cuCimag(2.0 * rhoT[slice] * T0 * I));
+			cuDoubleComplex T0 = (T[(quadratureN)+(quadratureN * matLength) + slice * matLength * matLength ]);
 			cuDoubleComplex* argument = new cuDoubleComplex[TLabLength];
 			cuDoubleComplex* swappedLog = new cuDoubleComplex[TLabLength];
 			cuDoubleComplex* delta = new cuDoubleComplex[TLabLength];
@@ -323,6 +322,7 @@ void computePhaseShifts(cuDoubleComplex* phases,
 			delta[slice] = -0.5 * I * constants::rad2deg * logCudaComplex(argument[slice]);
 
 			phases[slice] = delta[slice];
+			printf("\nphases[slice = %i] = %.4e, imag = %.4e\n", slice, cuCreal(phases[slice]), cuCimag(phases[slice]));
 		}
 	}
 
