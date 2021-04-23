@@ -10,7 +10,7 @@ int main() {
     std::map<std::string, std::vector<QuantumState> > channels = setupNNChannels(base);
 	printChannels(channels);
 
-	int N = 100;
+	int N = 5;
 	double scale = 100;
 
 	TwoVectors k_and_w = gaussLegendreInfMesh(N, scale);
@@ -34,6 +34,9 @@ int main() {
 
 	LapackMat T = computeTMatrix(channel, key, V_matrix, k, w, k0);
 	//T.print();
+
+	std::vector<std::complex<double>> phase = computePhaseShifts(channel, key, k0, T);
+	printf("fas(real) = %.4e, fas(imag) = %.4e,", phase[0].real(), phase[0].imag());
 
 
 
