@@ -243,8 +243,12 @@ int main() {
 
 	// cudaMemcpy(T_d, T_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
+
+	dim3 threadsPerBlockPhaseShift(TLabLength); //Blocksize
+	dim3 blocksPerGridPhaseShift(1);//Gridsize
+
 	/* Computes the phase shifts for the given T-matrix*/
-	computePhaseShifts <<<threadsPerBlock, blocksPerGrid >>> (phases_d, T_d, k0_d, quadratureN, mu, coupled, TLabLength, matLength);
+	computePhaseShifts <<<threadsPerBlockPhaseShift, blocksPerGridPhaseShift>>> (phases_d, T_d, k0_d, quadratureN, mu, coupled, TLabLength, matLength);
 
 	cudaDeviceSynchronize();
 
