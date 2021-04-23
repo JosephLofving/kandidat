@@ -274,8 +274,8 @@ int main() {
 		}
 		else {
 			printf("\nTLab = %f", TLab_h[i]);
-			printf("\nReal(phase) = %.10e", cuCreal(phases_h[i * phasesSize]));
-			printf("\nImag(phase) = %.10e", cuCimag(phases_h[i * phasesSize]));
+			printf("\nReal(phase) = %.10e", cuCreal(phases_h[i]));
+			printf("\nImag(phase) = %.10e", cuCimag(phases_h[i]));
 			printf("\n");
 		}
 	}
