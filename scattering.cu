@@ -316,7 +316,7 @@ void computePhaseShifts(cuDoubleComplex* phases,
 		else {
 			cuDoubleComplex T0 = (T[(quadratureN)+(quadratureN * matLength) + slice * matLength * matLength ]); //Farligt, detta element kanske inte �r helt reellt. Dock var koden d�lig f�rut is�fall.
 			cuDoubleComplex argument = make_cuDoubleComplex(1,0) - 2.0 * rhoT[slice] * T0;
-			printf("\n = %.4e, imag = %.4e\n", cuCreal(argument), cuCimag(argument));
+			printf("\nargument = %.4e, imag = %.4e\n", cuCreal(argument), cuCimag(argument));
 			cuDoubleComplex swappedLog = make_cuDoubleComplex(cuCimag(logCudaComplex(argument)), cuCreal(logCudaComplex(argument)));
 			cuDoubleComplex delta = cuCmul(make_cuDoubleComplex(-0.5 * constants::rad2deg, 0), swappedLog);
 			phases[slice] = delta;
