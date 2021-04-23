@@ -48,7 +48,7 @@ cuDoubleComplex operator*(cuDoubleComplex A, double scalar) {
 __device__
 cuDoubleComplex operator*(cuDoubleComplex A, cuDoubleComplex B) {
 	cuDoubleComplex realProd = cuCreal(A) * B;
-	cuDoubleComplex imagProd = cuCimag(A) * B;
+	cuDoubleComplex imagProd = make_cuDoubleComplex(-cuCimag(A) * cuCimag(B), cuCimag(A)*cuCreal(B));
 	cuDoubleComplex result = cuCadd(realProd, imagProd);
 	return result;
 }
