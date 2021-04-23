@@ -285,7 +285,7 @@ void computePhaseShifts(cuDoubleComplex* phases,
 	int TLabLength,
 	int matLength) {
 
-	int slice = blockIdx.z * blockDim.z + threadIdx.z;
+	int slice = blockIdx.x * blockDim.x + threadIdx.x;
 
 	double* rhoT = new double[TLabLength];
 	cuDoubleComplex* T11 = new cuDoubleComplex[TLabLength];
