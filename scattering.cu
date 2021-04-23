@@ -320,11 +320,8 @@ void computePhaseShifts(cuDoubleComplex* phases,
 			cuDoubleComplex* swappedLog = new cuDoubleComplex[TLabLength];
 			cuDoubleComplex* delta = new cuDoubleComplex[TLabLength];
 			argument[slice] = make_cuDoubleComplex(1,0) - 2.0 * I * rhoT[slice] * T0;
-			//swappedLog[slice] = make_cuDoubleComplex(cuCimag(logCudaComplex(argument[slice])), cuCreal(logCudaComplex(argument[slice])));
-			//delta[slice] = cuCmul(make_cuDoubleComplex(-0.5 * constants::rad2deg, 0), swappedLog[slice]);
 			delta[slice] = -0.5 * I * constants::rad2deg * logCudaComplex(argument[slice]);
 
-			printf("\ndelta[slice = %i] = %.4e, imag = %.4e\n", slice, cuCreal(delta[slice]), cuCimag(delta[slice]));
 			phases[slice] = delta[slice];
 		}
 	}
