@@ -120,7 +120,7 @@ int main() {
 	/* Prepare generation of TLab [Mev] */
 	const double TLabMin = 1;
 	const double TLabMax = 300;
-	constexpr int TLabLength = 10;
+	constexpr int TLabLength = 100;
 	const double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
 
 	/* Allocate host memory */
