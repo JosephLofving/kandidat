@@ -254,7 +254,7 @@ int main() {
 
 	/* Copy (relevant) device variables to host variables */
 	// cudaMemcpy(T_h, T_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	cudaMemcpy(phases_h, phases_d, phasesSize * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+	cudaMemcpy(phases_h, phases_d, phasesSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	// cudaMemcpy(k_h, k_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
 	// cudaMemcpy(w_h, w_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
 	// cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
