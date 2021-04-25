@@ -225,6 +225,10 @@ int main() {
 		blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
 		blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
 	}
+	if(TLabLength>512){
+		threadsPerBlock.z = 512;
+		blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
+	}
 
 	/* Get the on-shell points for different TLab with parallellization */
 	getk0 <<<1,1>>>(k0_d, TLab_d, TLabLength, tzChannel);
@@ -254,7 +258,7 @@ int main() {
 	dim3 blocksPerGridPhaseShift(1); //Gridsize
 
 	/* Computes the phase shifts for the given T-matrix*/
-	computePhaseShifts <<<threadsPerBlockPhaseShift, blocksPerGridPhaseShift>>> (phases_d, T_d, k0_d, quadratureN, mu, coupled, TLabLength, matLength);
+	computePhaseShifts <<<threadsPerBlock.z, blocksPerGrid.z>>> (phases_d, T_d, k0_d, quadratureN, mu, coupled, TLabLength, matLength);
 
 	/* Make sure all kernels are done before accessing device variables from host */
 	cudaDeviceSynchronize();
