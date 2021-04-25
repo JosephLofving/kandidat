@@ -33,7 +33,7 @@ int main() {
 	double scale = 100.0;
 	double Tlab = 100.0;
 
-	std::vector<QuantumState> base = setupBase(0, 2, 0, 2);
+	std::vector<QuantumState> base = setupBasis(0, 2, 0, 2);
     std::map<std::string, std::vector<QuantumState> > channels = setupNNChannels(base);
 	std::string key = "j:0 s:0 tz:0 pi:1";
 	std::vector<QuantumState> channel = channels[key];
