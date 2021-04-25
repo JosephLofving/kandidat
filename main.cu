@@ -256,6 +256,7 @@ int main() {
 	/* Computes the phase shifts for the given T-matrix*/
 	computePhaseShifts <<<threadsPerBlockPhaseShift, blocksPerGridPhaseShift>>> (phases_d, T_d, k0_d, quadratureN, mu, coupled, TLabLength, matLength);
 
+	/* Make sure all kernels are done before accessing device variables from host */
 	cudaDeviceSynchronize();
 
 	/* Copy (relevant) device variables to host variables */
@@ -310,26 +311,30 @@ int main() {
 
 
 
-	/* Free all the allocated memory */
-	delete[] TLab_h;
-	delete[] k0_h;
-	delete[] V_h;
-	delete[] G0_h;
-	delete[] VG_h;
+	/* Free allocated host memory */
 	delete[] F_h;
-	delete[] T_h;
+	delete[] G0_h;
+	delete[] k_h;
+	delete[] k0_h;
 	delete[] phases_h;
-	//delete[] k_h;
+	delete[] sum_h;
+	delete[] T_h;
+	delete[] TLab_h;
+	delete[] V_h;
+	delete[] VG_h;
 	delete[] w_h;
-	cudaFree(TLab_d);
-	cudaFree(k0_d);
-	cudaFree(V_d);
-	cudaFree(G0_d);
-	cudaFree(VG_d);
+
+	/* Free allocated device memory */
 	cudaFree(F_d);
-	cudaFree(T_d);
-	cudaFree(phases_d);
+	cudaFree(G0_d);
+	cudaFree(k0_d);
 	cudaFree(k_d);
+	cudaFree(phases_d);
+	cudaFree(sum_d);
+	cudaFree(T_d);
+	cudaFree(TLab_d);
+	cudaFree(V_d);
+	cudaFree(VG_d);
 	cudaFree(w_d);
 
 	return 0;

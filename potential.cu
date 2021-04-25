@@ -1,8 +1,7 @@
-
 #include "potential.h"
 
-
-int getArrayIndex(QuantumState state){
+/* TODO: Explain what happens here */
+int getArrayIndex(QuantumState state) {
     /* Array to be filled with potential elements. The ordering of the elements are:
      * V_array[0]="V_S0": S=0, L=LL=J
      * V_array[1]="V_S1": S=1, L=LL=J
@@ -14,24 +13,26 @@ int getArrayIndex(QuantumState state){
     if(state.state["s"]==0){
          return 0;
      }
-    if(state.state["l"]==state.state["ll"]){
-        if(state.state["l"]==state.state["j"]){
+
+    if (state.state["l"]==state.state["ll"]) {
+        if (state.state["l"]==state.state["j"]) {
             return 1;
         }
-        if(state.state["l"]==state.state["j"]+1){
+        if (state.state["l"]==state.state["j"] + 1) {
             return 2;
         }
-        if(state.state["l"]==state.state["j"]-1){
+        if (state.state["l"]==state.state["j"] - 1) {
             return 3;
         }
      }
 
-     if(state.state["l"]>state.state["ll"]){
+     if (state.state["l"]>state.state["ll"]) {
          return 4;
      }
-    else{
+
+     else {
         return 5;
-    }
+     }
 }
 
 
@@ -46,6 +47,7 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
     double* VArray = new double [6];
     
     int arrayIndex;
+    cuDoubleComplex* VMat2 = new cuDoubleComplex[matLength * matLength];
     for (QuantumState state : channel){
         int L = state.state["l"];
         int S = state.state["s"];
@@ -56,7 +58,6 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
         arrayIndex=getArrayIndex(state);
 
         //Creates Vmatrix without on-shell
-        cuDoubleComplex* VMat2 = new cuDoubleComplex[matLength * matLength];
         for (int kIn = 0; kIn < matLength-1; kIn++) {
             for (int kOut = 0; kOut < matLength-1; kOut++) {
                 potentialClassPtr->V(k[kIn], k[kOut], coupled, S, J, T, Tz, VArray);
@@ -68,7 +69,8 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
         for (int row = 0; row < matLength-1; ++row) {
             for (int col = 0; col < matLength-1; ++col) {
                 for (int energyIndex = 0; energyIndex < TLabLength; ++energyIndex) {
-                    setElement(VMatrix,row,col,energyIndex,matLength,getElement(VMat2,row,col,0,matLength));
+                    setElement(VMatrix, row, col, energyIndex, matLength, getElement(VMat2, row, col, 0, matLength));
+                }
             }
         }
 
@@ -78,21 +80,24 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
             //Sets on-shell points for last row
             for (int col = 0; col < matLength-1; ++col) {
                 potentialClassPtr->V(k0[energyIndex], k[col], coupled, S, J, T, Tz, VArray);
-                setElement(VMatrix,matLength-1,col,energyIndex,matLength,make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0));
+                setElement(VMatrix, matLength - 1, col, energyIndex, matLength, make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0));
             }
 
             //Sets on-shell points for last column
             for (int row = 0; row < matLength-1; ++row) {
                 potentialClassPtr->V(k[row], k0[energyIndex], coupled, S, J, T, Tz, VArray);
-                setElement(VMatrix,row,matLength-1,energyIndex,matLength,make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0));
+                setElement(VMatrix, row, matLength - 1, energyIndex, matLength, make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0));
             }
 
             //Sets on-shell points for corner elements
             potentialClassPtr->V(k0[energyIndex], k0[energyIndex], coupled, S, J, T, Tz, VArray);
-            setElement(VMatrix,matLength-1,matLength-1,energyIndex,matLength,make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0));
+            setElement(VMatrix, matLength - 1, matLength - 1, energyIndex, matLength, make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0));
         }
     }
-    }
-}
+    delete potentialClassPtr;
+    delete[] VArray;
+    delete[] VMat2;
+ }
+    
 
    
