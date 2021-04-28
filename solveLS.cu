@@ -246,8 +246,6 @@ int solveLS() {
 	// cudaMemcpy(T_d, T_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 
 	/* TODO: Explain this */
-	dim3 threadsPerBlockPhaseShift(TLabLength); //Blocksize
-	dim3 blocksPerGridPhaseShift(1); //Gridsize
 
 	/* Computes the phase shifts for the given T-matrix*/
 	computePhaseShifts <<<threadsPerBlock.z, blocksPerGrid.z>>> (phases_d, T_d, k0_d, quadratureN, mu, coupled, TLabLength, matLength);
