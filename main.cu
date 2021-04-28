@@ -139,7 +139,6 @@ int main() {
 	/* Generate different experimental kinetic energies [MeV]*/
 	for (int i = 0; i < TLabLength; i++) {
 		TLab_h[i] = i * TLabIncr + TLabMin;
-		printf("Tlab[%i] = %.4e", i, TLab_h[i]);
 	}
 
 	//TLab_h[0]=100;
