@@ -68,29 +68,16 @@ void setupG0VectorSum(
 */
 __global__
 void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
-	double k0Squared = 0;
-	for (int i = 0; i < TLabLength; i++) {
-		/* Proton-proton scattering */
-		if (tzChannel == -1) {
-			k0Squared = constants::protonMass * TLab[i] / 2;
-		}
-		/* Proton-neutron scattering (with proton as projectile, neutron as target) */
-		else if (tzChannel == 0) {
-			k0Squared = pow(constants::neutronMass, 2) * TLab[i] * (TLab[i]
+	int slice = blockIdx.x * blockDim.x + threadIdx.x;	
+		//Hardcode for tz=0
+			k0[slice] = sqrt(pow(constants::neutronMass, 2) * TLab[slice] * (TLab[slice]
 				+ 2 * constants::protonMass) / ((pow(constants::protonMass
-					+ constants::neutronMass, 2) + 2 * TLab[i] * constants::neutronMass));
+					+ constants::neutronMass, 2) + 2 * TLab[slice] * constants::neutronMass)));
 		}
-		/* Neutron-neutron scattering */
-		else if (tzChannel == 1) {
-			k0Squared = constants::neutronMass * TLab[i] / 2;
-		}
-		k0[i] = sqrtf(k0Squared);
-	}
-}
 
 
 
-int solveLS() {
+int main() {
 	/* Set up the quantum states by choosing ranges for the j and tz quantum numbers*/
 	int jMin = 0;
 	int jMax = 2;
@@ -219,13 +206,16 @@ int solveLS() {
 		blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
 		blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
 	}
+
+	int blockSize = 256;
+	int numBlocks = (TLabLength + blockSize - 1) / blockSize;
 	// if(TLabLength>512){
 	// 	threadsPerBlock.z = 512;
 	// 	blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
 	// }
 
 	/* Get the on-shell points for different TLab with parallellization */
-	getk0 <<<1,1>>>(k0_d, TLab_d, TLabLength, tzChannel);
+	getk0 <<<numBlocks, blockSize>>>(k0_d, TLab_d, TLabLength, tzChannel);
 
 	/* Use k0 to generate different potentials on the CPU. The CPU generated potentials are
 	 * then sent to the GPU as an array. */
@@ -250,8 +240,7 @@ int solveLS() {
 	/* TODO: Explain this */
 
 	/* Computes the phase shifts for the given T-matrix*/
-	int blockSize = 256;
-	int numBlocks = (TLabLength + blockSize - 1) / blockSize;
+	
 
 	computePhaseShifts <<<numBlocks, blockSize>>> (phases_d, T_d, k0_d, quadratureN, mu, coupled,
 		TLabLength, matLength);
