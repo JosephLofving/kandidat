@@ -25,7 +25,7 @@ void datainsamling() {
 
 
 	for (int i = 0; i < 5; i++) {
-		using milli = std::chrono::milliseconds;
+		using milli = std::chrono::microseconds;
 		auto start = std::chrono::high_resolution_clock::now();
 
 		solveLS();

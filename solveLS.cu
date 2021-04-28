@@ -47,7 +47,6 @@ void setupG0VectorSum(
 	double* k,
 	double* w) {
 
-
 	for (int energyIndex = 0; energyIndex < TLabLength; ++energyIndex) {
 		sum[energyIndex] = 0;
 		for (int column = 0; column < quadratureN; ++column) {
@@ -70,10 +69,12 @@ __global__
 void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
 	int slice = blockIdx.x * blockDim.x + threadIdx.x;	
 		//Hardcode for tz=0
+		if (slice < TLabLength) {
 			k0[slice] = sqrt(pow(constants::neutronMass, 2) * TLab[slice] * (TLab[slice]
 				+ 2 * constants::protonMass) / ((pow(constants::protonMass
 					+ constants::neutronMass, 2) + 2 * TLab[slice] * constants::neutronMass)));
 		}
+	}
 
 
 
@@ -116,9 +117,9 @@ int main() {
 	}
 
 	/* Prepare to generate TLab [Mev] */
-	constexpr double TLabMin = 1;	// Minimum energy
-	constexpr double TLabMax = 300; // Threshold energy for pion creation
-	constexpr int TLabLength = 1000; // Number of energies to generate
+	constexpr double TLabMin = 100;	// Minimum energy
+	constexpr double TLabMax = 100; // Threshold energy for pion creation
+	constexpr int TLabLength = 3; // Number of energies to generate
 	constexpr double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
 
 	/* Allocate memory on the host */
