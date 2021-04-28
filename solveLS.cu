@@ -90,7 +90,7 @@ void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
 
 
 
-int solveLS() {
+int main() {
 	/* Set up the quantum states by choosing ranges for the j and tz quantum numbers*/
 	int jMin = 0;
 	int jMax = 2;
@@ -112,8 +112,8 @@ int solveLS() {
 	constexpr int quadratureN = 5;
 
 	/* All matrices and vectors have the same length/height; the number of quadrature points
-	 * plus one (because of the on-shell point). Furthermore, in the uncoupled case there is 
-	 * is only one phase shift whereas in the uncoupled case there are two phase shifts and 
+	 * plus one (because of the on-shell point). Furthermore, in the uncoupled case there is
+	 * is only one phase shift whereas in the uncoupled case there are two phase shifts and
 	 * one mixing angle. */
 	int matLength;
 	int phasesSize;
@@ -131,7 +131,7 @@ int solveLS() {
 	/* Prepare to generate TLab [Mev] */
 	constexpr double TLabMin = 1;	// Minimum energy
 	constexpr double TLabMax = 300; // Threshold energy for pion creation
-	constexpr int TLabLength = 100; // Number of energies to generate
+	constexpr int TLabLength = 400; // Number of energies to generate
 	constexpr double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
 
 	/* Allocate memory on the host */
@@ -209,18 +209,20 @@ int solveLS() {
 	cudaMemcpy(w_d, w_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 
 	// TODO: Explain this
-	dim3 threadsPerBlock(matLength, matLength,TLabLength); // Block size
+	dim3 threadsPerBlock(matLength, matLength, TLabLength); // Block size
 	dim3 blocksPerGrid(1,1,1); // Grid size
-	if (matLength * matLength > 512) {
-		threadsPerBlock.x = 512;
-		threadsPerBlock.y = 512;
+	if (matLength * matLength * TLabLength > 1024) {
+		threadsPerBlock.x = 16;
+		threadsPerBlock.y = 16;
+		threadsPerBlock.z = 16;
 		blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
 		blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
-	}
-	if(TLabLength>512){
-		threadsPerBlock.z = 512;
 		blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
 	}
+	// if(TLabLength>512){
+	// 	threadsPerBlock.z = 512;
+	// 	blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
+	// }
 
 	/* Get the on-shell points for different TLab with parallellization */
 	getk0 <<<1,1>>>(k0_d, TLab_d, TLabLength, tzChannel);
@@ -236,19 +238,21 @@ int solveLS() {
 
 	/* Call kernels on GPU */
 	setupG0VectorSum <<<1,1>>> (sum_d, k0_d, quadratureN, TLabLength, k_d, w_d);
-	setupG0Vector <<<threadsPerBlock, blocksPerGrid >>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
+	setupG0Vector <<<threadsPerBlock, blocksPerGrid>>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
 	/* Setup the VG kernel and, at the same time, the F matrix */
-	setupVGKernel <<<threadsPerBlock, blocksPerGrid >>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
+	setupVGKernel <<<threadsPerBlock, blocksPerGrid>>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
 
 	/* Solve the equation FT = V with cuBLAS */
 	computeTMatrixCUBLAS(T_d, F_d, V_d, matLength, TLabLength);
 
-	// cudaMemcpy(T_d, T_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-
 	/* TODO: Explain this */
 
 	/* Computes the phase shifts for the given T-matrix*/
-	computePhaseShifts <<<threadsPerBlock.z, blocksPerGrid.z>>> (phases_d, T_d, k0_d, quadratureN, mu, coupled, TLabLength, matLength);
+	int blockSize = 256;
+	int numBlocks = (TLabLength + blockSize - 1) / blockSize;
+
+	computePhaseShifts <<<numBlocks, blockSize>>> (phases_d, T_d, k0_d, quadratureN, mu, coupled,
+		TLabLength, matLength);
 
 	/* Make sure all kernels are done before accessing device variables from host */
 	cudaDeviceSynchronize();
