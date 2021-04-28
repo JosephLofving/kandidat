@@ -303,7 +303,7 @@ int solveLS() {
 	}
 	*/
 
-	std::cout << "\nen körning :)\n";
+	printf("\nen körning :)\n");
 
 
 
