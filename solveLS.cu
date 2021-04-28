@@ -311,7 +311,7 @@ int main() {
 	}
 
 	*/
-	
+	/**
 		for (int i = 0; i < TLabLength; i = i+20) {
 		if (coupled) {
 			for (int j = 0; j < phasesSize; ++j) {
@@ -328,7 +328,7 @@ int main() {
 			printf("\n");
 		}
 	}
-	
+	*/
 
 
 	/* Free allocated host memory */
@@ -358,53 +358,41 @@ int main() {
 	cudaFree(w_d);
 
 	auto finish = std::chrono::high_resolution_clock::now();
-	std::cout << "Complete program: "
-			<< std::chrono::duration_cast<microseconds>(finish - start).count()
-			<< " microseconds\n";
+	std::cout << std::chrono::duration_cast<microseconds>(finish - start).count()<<", ";
+			
 
-	std::cout << "Allocate Host: "
-			<< std::chrono::duration_cast<microseconds>(stopAllocateHost - startAllocateHost).count()
-			<< " microseconds\n";
+	std::cout << std::chrono::duration_cast<microseconds>(stopAllocateHost - startAllocateHost).count()<<", ";
 
-	std::cout << "Kvadratur: "
-			<< std::chrono::duration_cast<microseconds>(stopKvadratur - startKvadratur).count()
-			<< " microseconds\n";
 
-	std::cout << "Allocate Device: "
-			<< std::chrono::duration_cast<microseconds>(stopAllocateDevice - startAllocateDevice).count()
-			<< " microseconds\n";
+	std::cout << std::chrono::duration_cast<microseconds>(stopKvadratur - startKvadratur).count()<<", ";
 
-	std::cout << "Copy Host to Device: "
-			<< std::chrono::duration_cast<microseconds>(stopCopyHostToDevice - startCopyHostToDevice).count()
-			<< " microseconds\n";
 
-	std::cout << "getK0: "
-			<< std::chrono::duration_cast<microseconds>(stopGetk0 - startGetk0).count()
-			<< " microseconds\n";
+	std::cout << std::chrono::duration_cast<microseconds>(stopAllocateDevice - startAllocateDevice).count()<<", ";
 
-	std::cout << "Potential: "
-			<< std::chrono::duration_cast<microseconds>(stopPotential - startPotential).count()
-			<< " microseconds\n";
 
-	std::cout << "G0Sum: "
-			<< std::chrono::duration_cast<microseconds>(stopG0sum - startG0sum).count()
-			<< " microseconds\n";
+	std::cout << std::chrono::duration_cast<microseconds>(stopCopyHostToDevice - startCopyHostToDevice).count()<<", ";
 
-	std::cout << "setupG0: "
-			<< std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count()
-			<< " microseconds\n";
 
-	std::cout << "setupVGKernal: "
-			<< std::chrono::duration_cast<microseconds>(stopSetupVGKernal - startSetupVGKernal).count()
-			<< " microseconds\n";
+	std::cout << std::chrono::duration_cast<microseconds>(stopGetk0 - startGetk0).count()<<", ";
 
-	std::cout << "computeTMatrixCUBLAS: "
-			<< std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count()
-			<< " microseconds\n";
 
-	std::cout << "computePhaseShifts: "
-			<< std::chrono::duration_cast<microseconds>(stopcomputePhaseShifts - startcomputePhaseShifts).count()
-			<< " microseconds\n";
+	std::cout << std::chrono::duration_cast<microseconds>(stopPotential - startPotential).count()<<", ";
+
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopG0sum - startG0sum).count()<<", ";
+
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count()<<", ";
+
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopSetupVGKernal - startSetupVGKernal).count()<<", ";
+
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count()<<", ";
+
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopcomputePhaseShifts - startcomputePhaseShifts).count()<<", ";
+
 
 	return 0;
 }
