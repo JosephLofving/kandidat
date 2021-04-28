@@ -11,13 +11,6 @@
 #include <cuComplex.h>
 #include <chrono>
 
-int main() {
-
-	datainsamling();
-
-	return 0;
-}
-
 void datainsamling() {
 
 	/*
@@ -43,4 +36,11 @@ void datainsamling() {
 			<< " milliseconds\n";
 	}
 
+}
+
+int main() {
+
+	datainsamling();
+
+	return 0;
 }
