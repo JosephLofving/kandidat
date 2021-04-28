@@ -90,7 +90,7 @@ void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
 
 
 
-int main() {
+int solveLS() {
 	/* Set up the quantum states by choosing ranges for the j and tz quantum numbers*/
 	int jMin = 0;
 	int jMax = 2;
