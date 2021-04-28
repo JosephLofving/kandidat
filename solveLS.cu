@@ -109,7 +109,7 @@ int solveLS() {
 	int tzChannel = channel[0].state["tz"];
 
 	/* Number of quadrature points, needed for array sizes and later the quadrature setup */
-	constexpr int quadratureN = 5;
+	constexpr int quadratureN = 30;
 
 	/* All matrices and vectors have the same length/height; the number of quadrature points
 	 * plus one (because of the on-shell point). Furthermore, in the uncoupled case there is
@@ -131,7 +131,7 @@ int solveLS() {
 	/* Prepare to generate TLab [Mev] */
 	constexpr double TLabMin = 1;	// Minimum energy
 	constexpr double TLabMax = 300; // Threshold energy for pion creation
-	constexpr int TLabLength = 400; // Number of energies to generate
+	constexpr int TLabLength = 1000; // Number of energies to generate
 	constexpr double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
 
 	/* Allocate memory on the host */
@@ -239,12 +239,14 @@ int solveLS() {
 	/* Call kernels on GPU */
 	setupG0VectorSum <<<1,1>>> (sum_d, k0_d, quadratureN, TLabLength, k_d, w_d);
 	setupG0Vector <<<threadsPerBlock, blocksPerGrid>>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
+	cudaMemcpy(G0_h, G0_d, matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	/* Setup the VG kernel and, at the same time, the F matrix */
 	setupVGKernel <<<threadsPerBlock, blocksPerGrid>>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
+	cudaMemcpy(VG_h, VG_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	/* Solve the equation FT = V with cuBLAS */
 	computeTMatrixCUBLAS(T_d, F_d, V_d, matLength, TLabLength);
-
+	cudaMemcpy(T_h, T_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	/* TODO: Explain this */
 
 	/* Computes the phase shifts for the given T-matrix*/
@@ -268,22 +270,22 @@ int solveLS() {
 	// cudaMemcpy(VG_h, VG_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 
-	//for (int i = 0; i < TLabLength; i++) {
-	//	if (coupled) {
-	//		for (int j = 0; j < phasesSize; ++j) {
-	//			printf("\nTLab = %f", TLab_h[i]);
-	//			printf("\nReal(phases[%i]) = %.10e", j, cuCreal(phases_h[j + i * phasesSize]));
-	//			printf("\nImag(phases[%i]) = %.10e", j, cuCimag(phases_h[j + i * phasesSize]));
-	//			printf("\n");
-	//		}
-	//	}
-	//	else {
-	//		printf("\nTLab = %f", TLab_h[i]);
-	//		printf("\nReal(phase) = %.10e", cuCreal(phases_h[i]));
-	//		printf("\nImag(phase) = %.10e", cuCimag(phases_h[i]));
-	//		printf("\n");
-	//	}
-	//}
+	for (int i = 0; i < TLabLength; i++) {
+		if (coupled) {
+			for (int j = 0; j < phasesSize; ++j) {
+				printf("\nTLab = %f", TLab_h[i]);
+				printf("\nReal(phases[%i]) = %.10e", j, cuCreal(phases_h[j + i * phasesSize]));
+				printf("\nImag(phases[%i]) = %.10e", j, cuCimag(phases_h[j + i * phasesSize]));
+				printf("\n");
+			}
+		}
+		else {
+			printf("\nTLab = %f", TLab_h[i]);
+			printf("\nReal(phase) = %.10e", cuCreal(phases_h[i]));
+			printf("\nImag(phase) = %.10e", cuCimag(phases_h[i]));
+			printf("\n");
+		}
+	}
 
 
 	/*
