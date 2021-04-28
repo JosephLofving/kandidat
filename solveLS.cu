@@ -303,7 +303,7 @@ int solveLS() {
 	}
 	*/
 
-	printf("\nen körning :)\n");
+	printf("\none run\n");
 
 
 
