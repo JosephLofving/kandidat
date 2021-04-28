@@ -69,7 +69,7 @@ void printStates(std::vector<QuantumState> states){
 	@return The set of allowed quantum states as a vector
 	
 */
-std::vector<QuantumState> setupBase(int jmin, int jmax, int tzmin, int tzmax){
+std::vector<QuantumState> setupBasis(int jmin, int jmax, int tzmin, int tzmax){
 	std::vector<QuantumState> basis; 
 	for (int tz = tzmin; tz <= tzmax; tz++){
 		for (int j = jmin; j <= jmax; j++){
