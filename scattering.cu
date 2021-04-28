@@ -245,22 +245,19 @@ void setupVGKernel(cuDoubleComplex* VG,
 /* TODO: Explain theory for this. */
 __device__
 void blattToStapp(cuDoubleComplex* phases,
-				  cuDoubleComplex* deltaMinusBB,
-				  cuDoubleComplex* deltaPlusBB,
-				  cuDoubleComplex* twoEpsilonJBB,
+				  cuDoubleComplex deltaMinusBB,
+				  cuDoubleComplex deltaPlusBB,
+				  cuDoubleComplex twoEpsilonJBB,
 				  int TLabLength) {
 
 	int slice = blockIdx.z * blockDim.z + threadIdx.z;
-	cuDoubleComplex* twoEpsilonJ = new cuDoubleComplex[TLabLength];
 	if (slice < TLabLength) {
-		twoEpsilonJ[slice] = asinCudaComplex(sinCudaComplex(twoEpsilonJBB[slice]) * sinCudaComplex(deltaMinusBB[slice] - deltaPlusBB[slice]));
+		cuDoubleComplex twoEpsilonJ = asinCudaComplex(sinCudaComplex(twoEpsilonJBB) * sinCudaComplex(deltaMinusBB - deltaPlusBB));
 
-		phases[0 + slice*3] = 0.5 * (deltaPlusBB[slice] + deltaMinusBB[slice] + asinCudaComplex(tanCudaComplex(twoEpsilonJ[slice]) / tanCudaComplex(twoEpsilonJBB[slice]))) * constants::rad2deg;
-		phases[1 + slice*3] = 0.5 * (deltaPlusBB[slice] + deltaMinusBB[slice] - asinCudaComplex(tanCudaComplex(twoEpsilonJ[slice]) / tanCudaComplex(twoEpsilonJBB[slice]))) * constants::rad2deg;
-		phases[2 + slice*3] = 0.5 * twoEpsilonJ[slice] * constants::rad2deg;
+		phases[0 + slice*3] = 0.5 * (deltaPlusBB + deltaMinusBB + asinCudaComplex(tanCudaComplex(twoEpsilonJ) / tanCudaComplex(twoEpsilonJBB))) * constants::rad2deg;
+		phases[1 + slice*3] = 0.5 * (deltaPlusBB + deltaMinusBB - asinCudaComplex(tanCudaComplex(twoEpsilonJ) / tanCudaComplex(twoEpsilonJBB))) * constants::rad2deg;
+		phases[2 + slice*3] = 0.5 * twoEpsilonJ * constants::rad2deg;
 	}
-
-	delete[] twoEpsilonJ;
 }
 
 
@@ -283,52 +280,28 @@ void computePhaseShifts(cuDoubleComplex* phases,
 	int TLabLength,
 	int matLength) {
 
-	double* rhoT = new double[TLabLength];
-	cuDoubleComplex* T11 = new cuDoubleComplex[TLabLength];
-	cuDoubleComplex* T12 = new cuDoubleComplex[TLabLength];
-	cuDoubleComplex* T22 = new cuDoubleComplex[TLabLength];
-	cuDoubleComplex* twoEpsilonJBB = new cuDoubleComplex[TLabLength];
-	cuDoubleComplex* deltaPlusBB = new cuDoubleComplex[TLabLength];
-	cuDoubleComplex* deltaMinusBB = new cuDoubleComplex[TLabLength];
-	cuDoubleComplex* argument = new cuDoubleComplex[TLabLength];
-	cuDoubleComplex* swappedLog = new cuDoubleComplex[TLabLength];
-	cuDoubleComplex* delta = new cuDoubleComplex[TLabLength];
-
 	int slice = blockIdx.x * blockDim.x + threadIdx.x;
 	if (slice < TLabLength) {
-		rhoT[slice] = 2 * mu * k0[slice];
+		double rhoT = 2 * mu * k0[slice];
 		const cuDoubleComplex I = make_cuDoubleComplex(0.0, 1.0);
 		// TODO: Explain theory for the phase shift for the coupled state
 		if (coupled) {
-			T11[slice] = T[(quadratureN)+(quadratureN * quadratureN) + slice * matLength * matLength]; //row + column * size
-			T12[slice] = T[(2 * quadratureN + 1) + (quadratureN * quadratureN) + slice * matLength * matLength];
-			T22[slice] = T[(2 * quadratureN + 1) + (quadratureN * (2 * quadratureN + 1)) + slice * matLength * matLength];
+			cuDoubleComplex T11 = T[(quadratureN)+(quadratureN * quadratureN) + slice * matLength * matLength]; //row + column * size
+			cuDoubleComplex T12 = T[(2 * quadratureN + 1) + (quadratureN * quadratureN) + slice * matLength * matLength];
+			cuDoubleComplex T22 = T[(2 * quadratureN + 1) + (quadratureN * (2 * quadratureN + 1)) + slice * matLength * matLength];
 
 			//Blatt - Biedenharn(BB) convention
-			twoEpsilonJBB[slice] = atanCudaComplex(cuCdiv(cuCmul(make_cuDoubleComplex(2.0, 0), T12[slice]), cuCsub(T11[slice], T22[slice])));
-			deltaPlusBB[slice] = -0.5 * I * logCudaComplex(1.0 - I * rhoT[slice] * (T11[slice] + T22[slice]) + I * rhoT[slice] * (2.0 * T12[slice]) / sinCudaComplex(twoEpsilonJBB[slice]));
-			deltaMinusBB[slice] = -0.5 * I * logCudaComplex(1.0 - I * rhoT[slice] * (T11[slice] + T22[slice]) - I * rhoT[slice] * (2.0 * T12[slice]) / sinCudaComplex(twoEpsilonJBB[slice]));
+			cuDoubleComplex twoEpsilonJBB = atanCudaComplex(cuCdiv(cuCmul(make_cuDoubleComplex(2.0, 0), T12), cuCsub(T11, T22)));
+			cuDoubleComplex deltaPlusBB = -0.5 * I * logCudaComplex(1.0 - I * rhoT * (T11 + T22) + I * rhoT * (2.0 * T12) / sinCudaComplex(twoEpsilonJBB));
+			cuDoubleComplex deltaMinusBB = -0.5 * I * logCudaComplex(1.0 - I * rhoT * (T11 + T22) - I * rhoT * (2.0 * T12) / sinCudaComplex(twoEpsilonJBB));
+
+			blattToStapp(phases, deltaMinusBB, deltaPlusBB, twoEpsilonJBB, TLabLength);
 		}
 		/* The uncoupled case completely follows equation (2.26). */
 		else {
 			cuDoubleComplex T0 = (T[(quadratureN)+(quadratureN * matLength) + slice * matLength * matLength ]);
-			argument[slice] = make_cuDoubleComplex(1,0) - 2.0 * I * rhoT[slice] * T0;
-			phases[slice] = -0.5 * I * constants::rad2deg * logCudaComplex(argument[slice]);
+			cuDoubleComplex argument = make_cuDoubleComplex(1,0) - 2.0 * I * rhoT * T0;
+			phases[slice] = -0.5 * I * constants::rad2deg * logCudaComplex(argument);
 		}
 	}
-
-	if (coupled) {
-		blattToStapp(phases, deltaMinusBB, deltaPlusBB, twoEpsilonJBB, TLabLength);
-	}
-
-	delete[] rhoT;
-	delete[] T11;
-	delete[] T12;
-	delete[] T22;
-	delete[] twoEpsilonJBB;
-	delete[] deltaPlusBB;
-	delete[] deltaMinusBB;
-	delete[] argument;
-	delete[] swappedLog;
-	delete[] delta;
 }

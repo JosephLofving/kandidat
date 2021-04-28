@@ -45,9 +45,9 @@ void setupVGKernel(cuDoubleComplex* VG,
 
 __device__
 void blattToStapp(cuDoubleComplex* phases,
-	cuDoubleComplex* deltaMinusBB,
-	cuDoubleComplex* deltaPlusBB,
-	cuDoubleComplex* twoEpsilonJBB,
+	cuDoubleComplex deltaMinusBB,
+	cuDoubleComplex deltaPlusBB,
+	cuDoubleComplex twoEpsilonJBB,
 	int TLabLength);
 
 __global__
