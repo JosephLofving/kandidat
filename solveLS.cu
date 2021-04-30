@@ -82,6 +82,18 @@ void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
 
 int main() {
 
+	/*We define our parameters here*/
+
+	constexpr double TLabMin = 1;	// Minimum energy
+	constexpr double TLabMax = 300; // Threshold energy for pion creation
+	constexpr int TLabLength = 400; // Number of energies to generate
+
+	constexpr int quadratureN = 30;
+
+	/*End of defining parameters*/
+
+
+
 	using microseconds = std::chrono::microseconds;
 	auto start = std::chrono::high_resolution_clock::now();
 	/* Set up the quantum states by choosing ranges for the j and tz quantum numbers*/
@@ -102,7 +114,6 @@ int main() {
 	int tzChannel = channel[0].state["tz"];
 
 	/* Number of quadrature points, needed for array sizes and later the quadrature setup */
-	constexpr int quadratureN = 30;
 
 	/* All matrices and vectors have the same length/height; the number of quadrature points
 	 * plus one (because of the on-shell point). Furthermore, in the uncoupled case there is
@@ -122,9 +133,6 @@ int main() {
 	}
 
 	/* Prepare to generate TLab [Mev] */
-	constexpr double TLabMin = 1;	// Minimum energy
-	constexpr double TLabMax = 300; // Threshold energy for pion creation
-	constexpr int TLabLength = 400; // Number of energies to generate
 	constexpr double TLabIncr = (TLabMax - TLabMin + 1) / TLabLength;
 
 	auto startAllocateHost = std::chrono::high_resolution_clock::now();
