@@ -190,9 +190,9 @@ int main() {
 	dim3 threadsPerBlock(matLength, matLength, TLabLength); // Block size
 	dim3 blocksPerGrid(1,1,1); // Grid size
 
-	threadsPerBlock.x = 1024;
-	threadsPerBlock.y = 1024;
-	threadsPerBlock.z = 1024;
+	threadsPerBlock.x = 32;
+	threadsPerBlock.y = 32;
+	threadsPerBlock.z = 32;
 	blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
 	blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
 	blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
@@ -302,7 +302,7 @@ int main() {
 	delete[] w_h;
 
 	/* Free allocated device memory */
-	cudaFree(F_d);
+	// cudaFree(F_d);
 	cudaFree(G0_d);
 	cudaFree(k0_d);
 	cudaFree(k_d);
@@ -310,7 +310,7 @@ int main() {
 	cudaFree(sum_d);
 	cudaFree(T_d);
 	cudaFree(TLab_d);
-	cudaFree(V_d);
+	// cudaFree(V_d);
 	cudaFree(VG_d);
 	cudaFree(w_d);
 
