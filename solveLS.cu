@@ -69,14 +69,14 @@ void setupG0VectorSum(
 */
 __global__
 void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
-	int slice = blockIdx.x * blockDim.x + threadIdx.x;	
-	//Hardcode for tz=0
-	if (slice < TLabLength) {
-		k0[slice] = sqrt(pow(constants::neutronMass, 2) * TLab[slice] * (TLab[slice]
-			+ 2 * constants::protonMass) / ((pow(constants::protonMass
-			+ constants::neutronMass, 2) + 2 * TLab[slice] * constants::neutronMass)));
+	int slice = blockIdx.x * blockDim.x + threadIdx.x;
+		//Hardcode for tz=0
+		if (slice < TLabLength) {
+			k0[slice] = sqrt(pow(constants::neutronMass, 2) * TLab[slice] * (TLab[slice]
+				+ 2 * constants::protonMass) / ((pow(constants::protonMass
+					+ constants::neutronMass, 2) + 2 * TLab[slice] * constants::neutronMass)));
 		}
-}
+	}
 
 
 
@@ -129,16 +129,11 @@ int main() {
 
 	auto startAllocateHost = std::chrono::high_resolution_clock::now();
 	/* Allocate memory on the host */
-	cuDoubleComplex* F_h = new cuDoubleComplex[matLength * matLength * TLabLength];
-	cuDoubleComplex* G0_h = new cuDoubleComplex[matLength * TLabLength];
 	double* k_h = new double[quadratureN];
 	double* k0_h = new double[TLabLength];
 	cuDoubleComplex* phases_h = new cuDoubleComplex[phasesSize * TLabLength];
-	double* sum_h = new double[TLabLength];
-	cuDoubleComplex* T_h = new cuDoubleComplex[matLength * matLength * TLabLength];
 	double* TLab_h = new double[TLabLength];
 	cuDoubleComplex* V_h = new cuDoubleComplex[matLength * matLength * TLabLength];
-	cuDoubleComplex* VG_h = new cuDoubleComplex[matLength * matLength * TLabLength];
 	double* w_h = new double[quadratureN];
 	auto stopAllocateHost = std::chrono::high_resolution_clock::now();
 
@@ -168,19 +163,8 @@ int main() {
 	cuDoubleComplex* VG_d;
 	double* w_d;
 
-	//printf("kk[0] = %.4e\n", k_h[0]);
-	//printf("kk[1] = %.4e\n", k_h[1]);
-	//printf("kk[2] = %.4e\n", k_h[2]);
-	//printf("kk[3] = %.4e\n", k_h[3]);
-	//printf("kk[4] = %.4e\n", k_h[4]);
-	//
-	//printf("ww[0] = %.4e\n", w_h[0]);
-	//printf("ww[1] = %.4e\n", w_h[1]);
-	//printf("ww[2] = %.4e\n", w_h[2]);
-	//printf("ww[3] = %.4e\n", w_h[3]);
-	//printf("ww[4] = %.4e\n", w_h[4]);
-
 	auto startAllocateDevice = std::chrono::high_resolution_clock::now();
+
 	/* Allocate memory on the device */
 	cudaMalloc((void**)&F_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&G0_d, matLength * TLabLength * sizeof(cuDoubleComplex));
@@ -195,17 +179,10 @@ int main() {
 	cudaMalloc((void**)&w_d, quadratureN * sizeof(double));
 	auto stopAllocateDevice = std::chrono::high_resolution_clock::now();
 
-	/* Copy host variables to device variables */
 	auto startCopyHostToDevice = std::chrono::high_resolution_clock::now();
-	cudaMemcpy(F_d, F_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(G0_d, G0_h, matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
+	/* Copy host variables to device variables */
 	cudaMemcpy(k_d, k_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(k0_d, k0_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(phases_d, phases_h, phasesSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
-	cudaMemcpy(sum_d, sum_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(T_d, T_h, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 	cudaMemcpy(TLab_d, TLab_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(VG_d, VG_h, matLength* matLength* TLabLength * sizeof(cuDoubleComplex), cudaMemcpyHostToDevice);
 	cudaMemcpy(w_d, w_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 	auto stopCopyHostToDevice = std::chrono::high_resolution_clock::now();
 
@@ -223,10 +200,6 @@ int main() {
 
 	int blockSize = 256;
 	int numBlocks = (TLabLength + blockSize - 1) / blockSize;
-	// if(TLabLength>512){
-	// 	threadsPerBlock.z = 512;
-	// 	blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
-	// }
 
 	auto startGetk0 = std::chrono::high_resolution_clock::now();
 	/* Get the on-shell points for different TLab with parallellization */
@@ -261,20 +234,16 @@ int main() {
 	setupVGKernel <<<threadsPerBlock, blocksPerGrid>>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
 	auto stopSetupVGKernal = std::chrono::high_resolution_clock::now();
 
-	cudaMemcpy(VG_h, VG_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-
 
 	auto startcomputeTMatrixCUBLAS = std::chrono::high_resolution_clock::now();
 	/* Solve the equation FT = V with cuBLAS */
 	computeTMatrixCUBLAS(T_d, F_d, V_d, matLength, TLabLength);
 	auto stopcomputeTMatrixCUBLAS = std::chrono::high_resolution_clock::now();
-
-	cudaMemcpy(T_h, T_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	/* TODO: Explain this */
 
 	/* Computes the phase shifts for the given T-matrix*/
-	
-	
+
+
 	auto startcomputePhaseShifts = std::chrono::high_resolution_clock::now();
 	computePhaseShifts <<<numBlocks, blockSize>>> (phases_d, T_d, k0_d, quadratureN, mu, coupled,
 		TLabLength, matLength);
@@ -283,14 +252,7 @@ int main() {
 	cudaDeviceSynchronize();
 
 	/* Copy (relevant) device variables to host variables */
-	// cudaMemcpy(T_h, T_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 	cudaMemcpy(phases_h, phases_d, phasesSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	// cudaMemcpy(k_h, k_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
-	// cudaMemcpy(w_h, w_d, quadratureN * sizeof(double), cudaMemcpyDeviceToHost);
-	// cudaMemcpy(k0_h, k0_d, TLabLength * sizeof(double), cudaMemcpyDeviceToHost);
-	// cudaMemcpy(V_h, V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	// cudaMemcpy(F_h, F_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-	// cudaMemcpy(VG_h, VG_d, matLength * matLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 
 	/**
@@ -333,16 +295,11 @@ int main() {
 
 
 	/* Free allocated host memory */
-	delete[] F_h;
-	delete[] G0_h;
 	delete[] k_h;
 	delete[] k0_h;
 	delete[] phases_h;
-	delete[] sum_h;
-	delete[] T_h;
 	delete[] TLab_h;
 	delete[] V_h;
-	delete[] VG_h;
 	delete[] w_h;
 
 	/* Free allocated device memory */
@@ -360,7 +317,7 @@ int main() {
 
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::cout << std::chrono::duration_cast<microseconds>(finish - start).count()<<", ";
-			
+
 
 	std::cout << std::chrono::duration_cast<microseconds>(stopAllocateHost - startAllocateHost).count()<<", ";
 
