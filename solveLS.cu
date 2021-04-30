@@ -48,10 +48,11 @@ void setupG0VectorSum(
 	double* k,
 	double* w) {
 
-	for (int energyIndex = 0; energyIndex < TLabLength; ++energyIndex) {
-		sum[energyIndex] = 0;
+	int slice = blockIdx.x * blockDim.x + threadIdx.x;
+	if (slice < TLabLength) {
+		sum[slice] = 0;
 		for (int column = 0; column < quadratureN; ++column) {
-			sum[energyIndex] += w[column] / (k0[energyIndex] * k0[energyIndex] - k[column] * k[column]);
+			sum[slice] += w[column] / (k0[slice] * k0[slice] - k[column] * k[column]);
 		}
 	}
 }
@@ -69,13 +70,13 @@ void setupG0VectorSum(
 __global__
 void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
 	int slice = blockIdx.x * blockDim.x + threadIdx.x;	
-		//Hardcode for tz=0
-		if (slice < TLabLength) {
-			k0[slice] = sqrt(pow(constants::neutronMass, 2) * TLab[slice] * (TLab[slice]
-				+ 2 * constants::protonMass) / ((pow(constants::protonMass
-					+ constants::neutronMass, 2) + 2 * TLab[slice] * constants::neutronMass)));
+	//Hardcode for tz=0
+	if (slice < TLabLength) {
+		k0[slice] = sqrt(pow(constants::neutronMass, 2) * TLab[slice] * (TLab[slice]
+			+ 2 * constants::protonMass) / ((pow(constants::protonMass
+			+ constants::neutronMass, 2) + 2 * TLab[slice] * constants::neutronMass)));
 		}
-	}
+}
 
 
 
@@ -247,7 +248,7 @@ int main() {
 
 	/* Call kernels on GPU */
 	auto startG0sum = std::chrono::high_resolution_clock::now();
-	setupG0VectorSum <<<1,1>>> (sum_d, k0_d, quadratureN, TLabLength, k_d, w_d);
+	setupG0VectorSum <<<numBlocks, blockSize >>> (sum_d, k0_d, quadratureN, TLabLength, k_d, w_d);
 	auto stopG0sum = std::chrono::high_resolution_clock::now();
 
 	auto startSetupG0 = std::chrono::high_resolution_clock::now();
