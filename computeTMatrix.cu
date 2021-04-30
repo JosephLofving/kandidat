@@ -22,7 +22,6 @@ void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
 		 			cuDoubleComplex* V_d,
 		 			int matLength, int TLabLength) {
 
-    int batchSize = TLabLength;
 	// cuBLAS variables
     cublasStatus_t status;
     cublasHandle_t handle;
@@ -31,8 +30,8 @@ void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
     cuDoubleComplex** Fptr_array_h;
     cuDoubleComplex** Vptr_array_h;
 
-    Fptr_array_h = (cuDoubleComplex**)malloc(batchSize * sizeof(cuDoubleComplex*));
-    Vptr_array_h = (cuDoubleComplex**)malloc(batchSize * sizeof(cuDoubleComplex*));
+    Fptr_array_h = (cuDoubleComplex**)malloc(TLabLength * sizeof(cuDoubleComplex*));
+    Vptr_array_h = (cuDoubleComplex**)malloc(TLabLength * sizeof(cuDoubleComplex*));
 
     // Device variables
     cuDoubleComplex** Fptr_array_d;
@@ -68,15 +67,15 @@ void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
 
     // Perform LU decomposition
     status = cublasZgetrfBatched(handle, matLength, Fptr_array_d, matLength, pivotArray_d,
-								 trfInfo_d, batchSize);
+								 trfInfo_d, TLabLength);
 
 	// Calculate the T matrix
     status = cublasZgetrsBatched(handle, CUBLAS_OP_N, matLength, matLength, Fptr_array_d,
                                 matLength, pivotArray_d, Vptr_array_d, matLength, &trsInfo_d,
-								batchSize);
+								TLabLength);
 
     // Copy data to host from device
-    chkCudaErr(cudaMemcpy(T_d, V_d, batchSize*matLength*matLength *
+    chkCudaErr(cudaMemcpy(T_d, V_d, TLabLength*matLength*matLength *
                             sizeof(cuDoubleComplex), cudaMemcpyDeviceToDevice));
 
     // Free device variables
