@@ -189,14 +189,14 @@ int main() {
 	// TODO: Explain this
 	dim3 threadsPerBlock(matLength, matLength, TLabLength); // Block size
 	dim3 blocksPerGrid(1,1,1); // Grid size
-	if (matLength * matLength * TLabLength > 1024) {
-		threadsPerBlock.x = 16;
-		threadsPerBlock.y = 16;
-		threadsPerBlock.z = 16;
-		blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
-		blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
-		blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
-	}
+
+	threadsPerBlock.x = 1024;
+	threadsPerBlock.y = 1024;
+	threadsPerBlock.z = 1024;
+	blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
+	blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
+	blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
+
 
 	int blockSize = 256;
 	int numBlocks = (TLabLength + blockSize - 1) / blockSize;
