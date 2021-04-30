@@ -18,8 +18,8 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 }
 
 void computeTMatrixCUBLAS(cuDoubleComplex* d_Tarray,
-         			cuDoubleComplex* d_Farray, //h_Farray,
-		 			cuDoubleComplex* d_Varray, //h_Varray,
+         			cuDoubleComplex* d_Farray,
+		 			cuDoubleComplex* d_Varray,
 		 			int matLength, int TLabLength) {
 
     int batchSize = TLabLength;
@@ -46,7 +46,6 @@ void computeTMatrixCUBLAS(cuDoubleComplex* d_Tarray,
     status = cublasCreate(&handle);
     if (status != CUBLAS_STATUS_SUCCESS) {
         printf("> ERROR: cuBLAS initialization failed\n");
-        //return (EXIT_FAILURE);
     }
 
     // Allocate memory for device variables
