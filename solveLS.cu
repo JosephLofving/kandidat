@@ -227,7 +227,6 @@ int main() {
 	auto startSetupG0 = std::chrono::high_resolution_clock::now();
 	setupG0Vector <<<threadsPerBlock, blocksPerGrid>>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
 	auto stopSetupG0 = std::chrono::high_resolution_clock::now();
-	cudaMemcpy(G0_h, G0_d, matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	auto startSetupVGKernal = std::chrono::high_resolution_clock::now();
 	/* Setup the VG kernel and, at the same time, the F matrix */
