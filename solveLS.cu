@@ -198,9 +198,9 @@ int main() {
 	dim3 threadsPerBlock(matLength, matLength, TLabLength); // Block size
 	dim3 blocksPerGrid(1,1,1); // Grid size
 
-	threadsPerBlock.x = 1024;
-	threadsPerBlock.y = 1024;
-	threadsPerBlock.z = 1024;
+	threadsPerBlock.x = 64;
+	threadsPerBlock.y = 64;
+	threadsPerBlock.z = 64;
 	blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
 	blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
 	blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
