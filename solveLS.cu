@@ -175,6 +175,9 @@ int main() {
 
 	/* Allocate memory on the device */
 	cudaMalloc((void**)&F_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
+	auto stopAllocateDevice = std::chrono::high_resolution_clock::now();
+
+	auto startAllocateDevice2 = std::chrono::high_resolution_clock::now();
 	cudaMalloc((void**)&G0_d, matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&k_d, quadratureN * sizeof(double));
 	cudaMalloc((void**)&k0_d, TLabLength * sizeof(double));
@@ -185,9 +188,8 @@ int main() {
 	cudaMalloc((void**)&V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&VG_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&w_d, quadratureN * sizeof(double));
-	auto stopAllocateDevice = std::chrono::high_resolution_clock::now();
 
-	auto startCopyHostToDevice = std::chrono::high_resolution_clock::now();
+	auto startCopyHostToDevice2 = std::chrono::high_resolution_clock::now();
 	/* Copy host variables to device variables */
 	cudaMemcpy(k_d, k_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(TLab_d, TLab_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
@@ -332,7 +334,9 @@ int main() {
 	std::cout << std::chrono::duration_cast<microseconds>(stopKvadratur - startKvadratur).count()<<", ";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopAllocateDevice - startAllocateDevice).count()<<", ";
+	std::cout << "this    " << std::chrono::duration_cast<microseconds>(stopAllocateDevice - startAllocateDevice).count()<<", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopAllocateDevice2 - startAllocateDevice2).count() << ", ";
 
 
 	std::cout << std::chrono::duration_cast<microseconds>(stopCopyHostToDevice - startCopyHostToDevice).count()<<", ";
