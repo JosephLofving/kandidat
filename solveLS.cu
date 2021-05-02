@@ -312,7 +312,7 @@ int main() {
 	delete[] w_h;
 
 	/* Free allocated device memory */
-	cudaFree(F_d);
+	// cudaFree(F_d);
 	cudaFree(G0_d);
 	cudaFree(k0_d);
 	cudaFree(k_d);
@@ -320,7 +320,7 @@ int main() {
 	cudaFree(sum_d);
 	cudaFree(T_d);
 	cudaFree(TLab_d);
-	cudaFree(V_d);
+	// cudaFree(V_d);
 	cudaFree(VG_d);
 	cudaFree(w_d);
 
