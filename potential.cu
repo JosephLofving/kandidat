@@ -37,6 +37,12 @@ int getArrayIndex(QuantumState state) {
 
 
 void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, double* k, double* Tlab, double* k0, int quadratureN, int TLabLength, bool coupled, int matLength) {
+    
+    using microseconds = std::chrono::microseconds;
+    auto helapotential_start = std::chrono::high_resolution_clock::now();
+    auto test_start = std::chrono::high_resolution_clock::now();
+    auto test2_start = std::chrono::high_resolution_clock::now();
+    auto test3_start = std::chrono::high_resolution_clock::now();
 
     /* Declare a NULL pointer of the potential-class type */
     chiral_LO* potentialClassPtr = nullptr;
@@ -74,6 +80,9 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
             }
         }
 
+        auto test_stop = std::chrono::high_resolution_clock::now();
+        std::cout << "test:           " << std::chrono::duration_cast<microseconds>(test_stop - test_start).count() << "\n";
+
         //Sets on-shell points for each energy
         for (int energyIndex=0; energyIndex < TLabLength; ++energyIndex){
 
@@ -82,6 +91,9 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
                 potentialClassPtr->V(k0[energyIndex], k[col], coupled, S, J, T, Tz, VArray);
                 setElement(VMatrix, matLength - 1, col, energyIndex, matLength, make_cuDoubleComplex(constants::pi / 2.0 * VArray[arrayIndex], 0));
             }
+
+            auto test2_stop = std::chrono::high_resolution_clock::now();
+            std::cout << "test2:           " << std::chrono::duration_cast<microseconds>(test2_stop - test2_start).count() << "\n";
 
             //Sets on-shell points for last column
             for (int row = 0; row < matLength-1; ++row) {
@@ -97,6 +109,14 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
     delete potentialClassPtr;
     delete[] VArray;
     delete[] VMat2;
+
+
+    auto helapotential_stop = std::chrono::high_resolution_clock::now();
+
+    //printf("----hela potential:%a\n", std::chrono::duration_cast<microseconds>(helapotential_end - helapotential_start).count());
+    //printf("----test: %a\n", std::chrono::duration_cast<microseconds>(test_end - test_start).count());
+    std::cout << "hela potential: " << std::chrono::duration_cast<microseconds>(helapotential_stop - helapotential_start).count() << "\n";
+
  }
     
 

@@ -8,6 +8,14 @@
 #include <cuda_runtime.h>
 #include <cuComplex.h>
 
+#include <fstream>
+#include <iomanip>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
+#include <cuComplex.h>
+#include <chrono>
+
 template <typename T>
 void check(T result, char const* const func, const char* const file, int const line);
 

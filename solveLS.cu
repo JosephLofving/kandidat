@@ -1,5 +1,4 @@
 #include "solveLS.h"
-#include <chrono>
 
 
 
@@ -171,13 +170,14 @@ int main() {
 	cuDoubleComplex* VG_d;
 	double* w_d;
 
+	auto startcudafree0 = std::chrono::high_resolution_clock::now();
+	cudaFree(0);
+	auto stopcudafree0= std::chrono::high_resolution_clock::now();
+
 	auto startAllocateDevice = std::chrono::high_resolution_clock::now();
 
 	/* Allocate memory on the device */
 	cudaMalloc((void**)&F_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
-	auto stopAllocateDevice = std::chrono::high_resolution_clock::now();
-
-	auto startAllocateDevice2 = std::chrono::high_resolution_clock::now();
 	cudaMalloc((void**)&G0_d, matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&k_d, quadratureN * sizeof(double));
 	cudaMalloc((void**)&k0_d, TLabLength * sizeof(double));
@@ -189,7 +189,9 @@ int main() {
 	cudaMalloc((void**)&VG_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&w_d, quadratureN * sizeof(double));
 
-	auto startCopyHostToDevice2 = std::chrono::high_resolution_clock::now();
+	auto stopAllocateDevice = std::chrono::high_resolution_clock::now();
+
+	auto startCopyHostToDevice = std::chrono::high_resolution_clock::now();
 	/* Copy host variables to device variables */
 	cudaMemcpy(k_d, k_h, quadratureN * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(TLab_d, TLab_h, TLabLength * sizeof(double), cudaMemcpyHostToDevice);
@@ -258,6 +260,8 @@ int main() {
 		TLabLength, matLength);
 	auto stopcomputePhaseShifts = std::chrono::high_resolution_clock::now();
 	/* Make sure all kernels are done before accessing device variables from host */
+
+	auto endstart = std::chrono::high_resolution_clock::now();
 	cudaDeviceSynchronize();
 
 	/* Copy (relevant) device variables to host variables */
@@ -324,43 +328,48 @@ int main() {
 	cudaFree(VG_d);
 	cudaFree(w_d);
 
+	auto endend = std::chrono::high_resolution_clock::now();
+
 	auto finish = std::chrono::high_resolution_clock::now();
-	std::cout << std::chrono::duration_cast<microseconds>(finish - start).count()<<", ";
+	std::cout << "total: \t\t\t" << std::chrono::duration_cast<microseconds>(finish - start).count()<<"\n";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopAllocateHost - startAllocateHost).count()<<", ";
+	std::cout << "allocate host: \t\t" << std::chrono::duration_cast<microseconds>(stopAllocateHost - startAllocateHost).count()<<"\n";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopKvadratur - startKvadratur).count()<<", ";
+	std::cout << "kvadratur: \t\t" << std::chrono::duration_cast<microseconds>(stopKvadratur - startKvadratur).count()<<"\n";
+
+	std::cout << "cudafree(0): \t\t" << std::chrono::duration_cast<microseconds>(stopcudafree0 - startcudafree0).count() << "\n";
 
 
-	std::cout << "this    " << std::chrono::duration_cast<microseconds>(stopAllocateDevice - startAllocateDevice).count()<<", ";
+	std::cout << "allocated device: \t" << std::chrono::duration_cast<microseconds>(stopAllocateDevice - startAllocateDevice).count()<<"\n";
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopAllocateDevice2 - startAllocateDevice2).count() << ", ";
-
-
-	std::cout << std::chrono::duration_cast<microseconds>(stopCopyHostToDevice - startCopyHostToDevice).count()<<", ";
+	std::cout << "copy host to device: \t" << std::chrono::duration_cast<microseconds>(stopCopyHostToDevice - startCopyHostToDevice).count()<<"\n";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopGetk0 - startGetk0).count()<<", ";
+	std::cout << "getk0: \t\t\t" << std::chrono::duration_cast<microseconds>(stopGetk0 - startGetk0).count()<<"\n";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopPotential - startPotential).count()<<", ";
+	std::cout << "potential: \t\t" << std::chrono::duration_cast<microseconds>(stopPotential - startPotential).count()<<"\n";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopG0sum - startG0sum).count()<<", ";
+	std::cout << "G0sum: \t\t\t" << std::chrono::duration_cast<microseconds>(stopG0sum - startG0sum).count()<<"\n";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count()<<", ";
+	std::cout << "setupG0: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count()<<"\n";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopSetupVGKernal - startSetupVGKernal).count()<<", ";
+	std::cout << "SetupVGKernel: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupVGKernal - startSetupVGKernal).count()<<"\n";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count()<<", ";
+	std::cout << "computeTMatrixCUBLAS: \t" << std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count()<<"\n";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopcomputePhaseShifts - startcomputePhaseShifts).count()<<", ";
+	std::cout << "computePhaseShifts: \t" << std::chrono::duration_cast<microseconds>(stopcomputePhaseShifts - startcomputePhaseShifts).count()<<"\n";
+
+	std::cout << "end: \t\t\t" << std::chrono::duration_cast<microseconds>(endend - endstart).count() << "\n";
+
+
 
 
 	return 0;

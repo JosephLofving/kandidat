@@ -10,6 +10,20 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 #include <cuComplex.h>
+#include <iostream>
+#include <chrono>
+
+#include "mesh.h"
+#include "scattering.h"
+#include "potential.h"
+#include "computeTMatrix.h"
+#include <fstream>
+#include <iomanip>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
+#include <cuComplex.h>
+#include <chrono>
 
 
 void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, double* k, double* Tlab, double* k0, int quadratureN, int TLabLength, bool coupled, int matLength);
