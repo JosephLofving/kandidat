@@ -54,8 +54,10 @@ void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
     chkCudaErr(cudaMalloc((void**)&Vptr_array_d, TLabLength * sizeof(cuDoubleComplex*)));
 
     // Create pointer array for matrices
-    for (int i = 0; i < TLabLength; i++) Fptr_array_h[i] = F_d + (i * matLength * matLength);
-    for (int i = 0; i < TLabLength; i++) Vptr_array_h[i] = V_d + (i * matLength * matLength);
+    for (int i = 0; i < TLabLength; i++) {
+        Fptr_array_h[i] = F_d + (i * matLength * matLength);
+        Vptr_array_h[i] = V_d + (i * matLength * matLength);
+    }
 
     // Copy pointer array to device memory
     chkCudaErr(cudaMemcpy(Fptr_array_d, Fptr_array_h,
