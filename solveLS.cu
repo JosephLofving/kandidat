@@ -85,7 +85,7 @@ int main() {
 
 	constexpr double TLabMin = 1;	// Minimum energy
 	constexpr double TLabMax = 300; // Threshold energy for pion creation
-	constexpr int TLabLength = 400; // Number of energies to generate
+	constexpr int TLabLength = 1000; // Number of energies to generate
 
 	constexpr int quadratureN = 30;
 
@@ -268,7 +268,7 @@ int main() {
 	cudaMemcpy(phases_h, phases_d, phasesSize * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 
-	/**
+
 	for (int i = 0; i < TLabLength; i++) {
 		if (coupled) {
 			for (int j = 0; j < phasesSize; ++j) {
@@ -286,7 +286,7 @@ int main() {
 		}
 	}
 
-	*/
+
 	/**
 		for (int i = 0; i < TLabLength; i = i+20) {
 		if (coupled) {
@@ -324,7 +324,7 @@ int main() {
 	cudaFree(sum_d);
 	cudaFree(T_d);
 	cudaFree(TLab_d);
-	// cudaFree(V_d);
+	cudaFree(V_d);
 	cudaFree(VG_d);
 	cudaFree(w_d);
 
