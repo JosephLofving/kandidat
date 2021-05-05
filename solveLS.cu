@@ -361,7 +361,7 @@ int main() {
 	std::cout << "setupG0: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count()<<"\n";
 
 
-	std::cout << "SetupVGKernel: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupVGKernal - startSetupVGKernal).count()<<"\n";
+	std::cout << "SetupVGKernel: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupVGKernel - startSetupVGKernel).count()<<"\n";
 
 
 	std::cout << "computeTMatrixCUBLAS: \t" << std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count()<<"\n";
