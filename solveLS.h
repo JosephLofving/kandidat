@@ -8,5 +8,6 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 #include <cuComplex.h>
+#include <chrono>
 
 int solveLS();

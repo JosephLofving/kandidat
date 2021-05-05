@@ -179,7 +179,8 @@ void setupG0Vector(cuDoubleComplex* G0,
 	@return			VG kernel
 */
 __global__
-void setupVGKernel(cuDoubleComplex* VG,
+void setupVGKernel(cuDoubleComplex* T,
+	cuDoubleComplex* VG,
 	cuDoubleComplex* V,
 	cuDoubleComplex* G0,
 	cuDoubleComplex* F,
@@ -206,6 +207,9 @@ void setupVGKernel(cuDoubleComplex* VG,
 			F[row + column * matLength + slice * matLength * matLength] = cuCmul(make_cuDoubleComplex(-1, 0), VG[row + column * matLength + slice * matLength * matLength]);
 		}
 
+		if (column == matLength-1) {
+			T[row + slice * matLength] = V[row + column * matLength + slice * matLength * matLength];
+		}
 	}
 
 }
@@ -299,7 +303,7 @@ void computePhaseShifts(cuDoubleComplex* phases,
 		}
 		/* The uncoupled case completely follows equation (2.26). */
 		else {
-			cuDoubleComplex T0 = (T[(quadratureN)+(quadratureN * matLength) + slice * matLength * matLength ]);
+			cuDoubleComplex T0 = (T[matLength-1 + slice * matLength]);
 			cuDoubleComplex argument = make_cuDoubleComplex(1,0) - 2.0 * I * rhoT * T0;
 			phases[slice] = -0.5 * I * constants::rad2deg * logCudaComplex(argument);
 		}
