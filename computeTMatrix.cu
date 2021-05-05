@@ -19,7 +19,6 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 
 void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
          			cuDoubleComplex* F_d,
-		 			cuDoubleComplex* V_d,
 		 			int matLength, int TLabLength) {
 
 	// cuBLAS variables
@@ -28,14 +27,14 @@ void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
 
     // Host variables
     cuDoubleComplex** Fptr_array_h;
-    cuDoubleComplex** Vptr_array_h;
+    cuDoubleComplex** Tptr_array_h;
 
     Fptr_array_h = (cuDoubleComplex**)malloc(TLabLength * sizeof(cuDoubleComplex*));
-    Vptr_array_h = (cuDoubleComplex**)malloc(TLabLength * sizeof(cuDoubleComplex*));
+    Tptr_array_h = (cuDoubleComplex**)malloc(TLabLength * sizeof(cuDoubleComplex*));
 
     // Device variables
     cuDoubleComplex** Fptr_array_d;
-    cuDoubleComplex** Vptr_array_d;
+    cuDoubleComplex** Tptr_array_d;
 
     int* pivotArray_d;
     int* trfInfo_d;
@@ -51,19 +50,19 @@ void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
     chkCudaErr(cudaMalloc((void**)&pivotArray_d, matLength * TLabLength * sizeof(int)));
     chkCudaErr(cudaMalloc((void**)&trfInfo_d, TLabLength * sizeof(int)));
     chkCudaErr(cudaMalloc((void**)&Fptr_array_d, TLabLength * sizeof(cuDoubleComplex*)));
-    chkCudaErr(cudaMalloc((void**)&Vptr_array_d, TLabLength * sizeof(cuDoubleComplex*)));
+    chkCudaErr(cudaMalloc((void**)&Tptr_array_d, TLabLength * sizeof(cuDoubleComplex*)));
 
     // Create pointer array for matrices
     for (int i = 0; i < TLabLength; i++) {
         Fptr_array_h[i] = F_d + (i * matLength * matLength);
-        Vptr_array_h[i] = V_d + (i * matLength * matLength);
+        Tptr_array_h[i] = T_d + (i * matLength);
     }
 
     // Copy pointer array to device memory
     chkCudaErr(cudaMemcpy(Fptr_array_d, Fptr_array_h,
                                TLabLength * sizeof(cuDoubleComplex*),
 							   cudaMemcpyHostToDevice));
-    chkCudaErr(cudaMemcpy(Vptr_array_d, Vptr_array_h,
+    chkCudaErr(cudaMemcpy(Tptr_array_d, Tptr_array_h,
 							   TLabLength * sizeof(cuDoubleComplex*),
 							   cudaMemcpyHostToDevice));
 
@@ -72,21 +71,21 @@ void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
 								 trfInfo_d, TLabLength);
 
 	// Calculate the T matrix
-    status = cublasZgetrsBatched(handle, CUBLAS_OP_N, matLength, matLength, Fptr_array_d,
-                                matLength, pivotArray_d, Vptr_array_d, matLength, &trsInfo_d,
+    status = cublasZgetrsBatched(handle, CUBLAS_OP_N, matLength, 1, Fptr_array_d,
+                                matLength, pivotArray_d, Tptr_array_d, matLength, &trsInfo_d,
 								TLabLength);
 
     // Copy data to host from device
-    chkCudaErr(cudaMemcpy(T_d, V_d, TLabLength*matLength*matLength *
-                            sizeof(cuDoubleComplex), cudaMemcpyDeviceToDevice));
+    // chkCudaErr(cudaMemcpy(T_d, V_d, TLabLength*matLength*matLength *
+    //                         sizeof(cuDoubleComplex), cudaMemcpyDeviceToDevice));
 
     // Free device variables
     chkCudaErr(cudaFree(Fptr_array_d));
-    chkCudaErr(cudaFree(Vptr_array_d));
+    chkCudaErr(cudaFree(Tptr_array_d));
     chkCudaErr(cudaFree(trfInfo_d));
     chkCudaErr(cudaFree(pivotArray_d));
     chkCudaErr(cudaFree(F_d));
-    chkCudaErr(cudaFree(V_d));
+    // chkCudaErr(cudaFree(V_d));
 
     // Destroy cuBLAS handle
     status = cublasDestroy(handle);

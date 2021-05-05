@@ -180,7 +180,7 @@ int main() {
 	cudaMalloc((void**)&k0_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&phases_d, phasesSize * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&sum_d, TLabLength * sizeof(double));
-	cudaMalloc((void**)&T_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&T_d, matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&TLab_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&VG_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
@@ -236,17 +236,19 @@ int main() {
 	setupG0Vector <<<threadsPerBlock, blocksPerGrid>>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
 	auto stopSetupG0 = std::chrono::high_resolution_clock::now();
 
-	auto startSetupVGKernal = std::chrono::high_resolution_clock::now();
+	auto startSetupVGKernel = std::chrono::high_resolution_clock::now();
 	/* Setup the VG kernel and, at the same time, the F matrix */
-	setupVGKernel <<<threadsPerBlock, blocksPerGrid>>> (VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
-	auto stopSetupVGKernal = std::chrono::high_resolution_clock::now();
-
+	setupVGKernel <<<threadsPerBlock, blocksPerGrid>>> (T_d, VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
+	auto stopSetupVGKernel = std::chrono::high_resolution_clock::now();
 
 	auto startcomputeTMatrixCUBLAS = std::chrono::high_resolution_clock::now();
 	/* Solve the equation FT = V with cuBLAS */
-	computeTMatrixCUBLAS(T_d, F_d, V_d, matLength, TLabLength);
+	computeTMatrixCUBLAS(T_d, F_d, matLength, TLabLength);
 	auto stopcomputeTMatrixCUBLAS = std::chrono::high_resolution_clock::now();
 	/* TODO: Explain this */
+
+	cuDoubleComplex T_h[matLength*TLabLength];
+	cudaMemcpy(T_h, T_d, matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
 
 	/* Computes the phase shifts for the given T-matrix*/
 
@@ -350,7 +352,7 @@ int main() {
 	std::cout << std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count()<<", ";
 
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopSetupVGKernal - startSetupVGKernal).count()<<", ";
+	std::cout << std::chrono::duration_cast<microseconds>(stopSetupVGKernel - startSetupVGKernel).count()<<", ";
 
 
 	std::cout << std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count()<<", ";
