@@ -251,9 +251,6 @@ int main() {
 	auto stopcomputeTMatrixCUBLAS = std::chrono::high_resolution_clock::now();
 	/* TODO: Explain this */
 
-	cuDoubleComplex T_h[matLength*TLabLength];
-	cudaMemcpy(T_h, T_d, matLength * TLabLength * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-
 	/* Computes the phase shifts for the given T-matrix*/
 
 
@@ -271,22 +268,22 @@ int main() {
 
 
 
-	for (int i = 0; i < TLabLength; i++) {
-		if (coupled) {
-			for (int j = 0; j < phasesSize; ++j) {
-				printf("\nTLab = %f", TLab_h[i]);
-				printf("\nReal(phases[%i]) = %.10e", j, cuCreal(phases_h[j + i * phasesSize]));
-				printf("\nImag(phases[%i]) = %.10e", j, cuCimag(phases_h[j + i * phasesSize]));
-				printf("\n");
-			}
-		}
-		else {
-			printf("\nTLab = %f", TLab_h[i]);
-			printf("\nReal(phase) = %.10e", cuCreal(phases_h[i]));
-			printf("\nImag(phase) = %.10e", cuCimag(phases_h[i]));
-			printf("\n");
-		}
-	}
+	// for (int i = 0; i < TLabLength; i++) {
+	// 	if (coupled) {
+	// 		for (int j = 0; j < phasesSize; ++j) {
+	// 			printf("\nTLab = %f", TLab_h[i]);
+	// 			printf("\nReal(phases[%i]) = %.10e", j, cuCreal(phases_h[j + i * phasesSize]));
+	// 			printf("\nImag(phases[%i]) = %.10e", j, cuCimag(phases_h[j + i * phasesSize]));
+	// 			printf("\n");
+	// 		}
+	// 	}
+	// 	else {
+	// 		printf("\nTLab = %f", TLab_h[i]);
+	// 		printf("\nReal(phase) = %.10e", cuCreal(phases_h[i]));
+	// 		printf("\nImag(phase) = %.10e", cuCimag(phases_h[i]));
+	// 		printf("\n");
+	// 	}
+	// }
 
 
 	/**
