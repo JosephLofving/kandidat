@@ -111,7 +111,6 @@ int main() {
 	auto cublasCreate_start = std::chrono::high_resolution_clock::now();
 	status = cublasCreate(&handle);
 	auto cublasCreate_stop = std::chrono::high_resolution_clock::now();
-	std::cout << "cublasCreate:           " << std::chrono::duration_cast<microseconds>(cublasCreate_stop - cublasCreate_start).count() << "\n";
 
 	/*End of initializing CUDA and cuBlas*/
 
@@ -353,37 +352,29 @@ int main() {
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::cout << "total: \t\t\t" << std::chrono::duration_cast<microseconds>(finish - start).count()<<"\n";
 
+	std::cout << "cudafree(0): \t\t" << std::chrono::duration_cast<microseconds>(stopcudafree0 - startcudafree0).count() << "\n";
+
+	std::cout << "cublasCreate:           " << std::chrono::duration_cast<microseconds>(cublasCreate_stop - cublasCreate_start).count() << "\n";
 
 	std::cout << "allocate host: \t\t" << std::chrono::duration_cast<microseconds>(stopAllocateHost - startAllocateHost).count()<<"\n";
 
-
 	std::cout << "kvadratur: \t\t" << std::chrono::duration_cast<microseconds>(stopKvadratur - startKvadratur).count()<<"\n";
-
-	std::cout << "cudafree(0): \t\t" << std::chrono::duration_cast<microseconds>(stopcudafree0 - startcudafree0).count() << "\n";
-
 
 	std::cout << "allocated device: \t" << std::chrono::duration_cast<microseconds>(stopAllocateDevice - startAllocateDevice).count()<<"\n";
 
 	std::cout << "copy host to device: \t" << std::chrono::duration_cast<microseconds>(stopCopyHostToDevice - startCopyHostToDevice).count()<<"\n";
 
-
 	std::cout << "getk0: \t\t\t" << std::chrono::duration_cast<microseconds>(stopGetk0 - startGetk0).count()<<"\n";
-
 
 	std::cout << "potential: \t\t" << std::chrono::duration_cast<microseconds>(stopPotential - startPotential).count()<<"\n";
 
-
 	std::cout << "G0sum: \t\t\t" << std::chrono::duration_cast<microseconds>(stopG0sum - startG0sum).count()<<"\n";
-
 
 	std::cout << "setupG0: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count()<<"\n";
 
-
 	std::cout << "SetupVGKernel: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupVGKernel - startSetupVGKernel).count()<<"\n";
 
-
 	std::cout << "computeTMatrixCUBLAS: \t" << std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count()<<"\n";
-
 
 	std::cout << "computePhaseShifts: \t" << std::chrono::duration_cast<microseconds>(stopcomputePhaseShifts - startcomputePhaseShifts).count()<<"\n";
 
