@@ -37,10 +37,6 @@ int getArrayIndex(QuantumState state) {
 
 
 void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, double* k, double* Tlab, double* k0, int quadratureN, int TLabLength, bool coupled, int matLength) {
-    
-    using microseconds = std::chrono::microseconds;
-    auto helapotential_start = std::chrono::high_resolution_clock::now();
-    auto test_start = std::chrono::high_resolution_clock::now();
 
     /* Declare a NULL pointer of the potential-class type */
     chiral_LO* potentialClassPtr = nullptr;
@@ -78,9 +74,6 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
             }
         }
 
-        auto test_stop = std::chrono::high_resolution_clock::now();
-        std::cout << "test:           " << std::chrono::duration_cast<microseconds>(test_stop - test_start).count() << "\n";
-
         //Sets on-shell points for each energy
         for (int energyIndex=0; energyIndex < TLabLength; ++energyIndex){
 
@@ -105,9 +98,6 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
     delete[] VArray;
     delete[] VMat2;
 
-
-    auto helapotential_stop = std::chrono::high_resolution_clock::now();
-    std::cout << "hela potential: " << std::chrono::duration_cast<microseconds>(helapotential_stop - helapotential_start).count() << "\n";
 
  }
     
