@@ -350,7 +350,7 @@ int main() {
 	auto freemem_end = std::chrono::high_resolution_clock::now();
 	auto finish = std::chrono::high_resolution_clock::now();
 
-
+	/*
 	std::cout << "total: \t\t\t" << std::chrono::duration_cast<microseconds>(finish - start).count()<<"\n";
 
 	std::cout << "cudafree(0): \t\t" << std::chrono::duration_cast<microseconds>(stopcudafree0 - startcudafree0).count() << "\n";
@@ -379,10 +379,38 @@ int main() {
 
 	std::cout << "computePhaseShifts: \t" << std::chrono::duration_cast<microseconds>(stopcomputePhaseShifts - startcomputePhaseShifts).count()<<"\n";
 
-	std::cout << "Free memory: \t\t\t" << std::chrono::duration_cast<microseconds>(freemem_end - freemem_start).count() << "\n";
+	std::cout << "Free memory: \t" << std::chrono::duration_cast<microseconds>(freemem_end - freemem_start).count() << "\n";
+	*/
 
+	std::cout << std::chrono::duration_cast<microseconds>(finish - start).count() << ", ";
 
+	std::cout << std::chrono::duration_cast<microseconds>(stopcudafree0 - startcudafree0).count() << ", ";
 
+	std::cout << std::chrono::duration_cast<microseconds>(cublasCreate_stop - cublasCreate_start).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopAllocateHost - startAllocateHost).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopKvadratur - startKvadratur).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopAllocateDevice - startAllocateDevice).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopCopyHostToDevice - startCopyHostToDevice).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopGetk0 - startGetk0).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopPotential - startPotential).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopG0sum - startG0sum).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopSetupVGKernel - startSetupVGKernel).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(stopcomputePhaseShifts - startcomputePhaseShifts).count() << ", ";
+
+	std::cout << std::chrono::duration_cast<microseconds>(freemem_end - freemem_start).count() << ", ";
 
 	return 0;
 }
