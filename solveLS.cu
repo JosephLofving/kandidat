@@ -410,7 +410,7 @@ int main() {
 
 	std::cout << std::chrono::duration_cast<microseconds>(stopcomputePhaseShifts - startcomputePhaseShifts).count() << ", ";
 
-	std::cout << std::chrono::duration_cast<microseconds>(freemem_end - freemem_start).count() << ", ";
+	std::cout << std::chrono::duration_cast<microseconds>(freemem_end - freemem_start).count() << "\n";
 
 	return 0;
 }
