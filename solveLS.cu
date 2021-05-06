@@ -280,7 +280,6 @@ int main() {
 	auto stopcomputePhaseShifts = std::chrono::high_resolution_clock::now();
 	/* Make sure all kernels are done before accessing device variables from host */
 
-	auto endstart = std::chrono::high_resolution_clock::now();
 	cudaDeviceSynchronize();
 
 	/* Copy (relevant) device variables to host variables */
@@ -325,6 +324,7 @@ int main() {
 	}
 	*/
 
+	auto freemem_start = std::chrono::high_resolution_clock::now();
 
 	/* Free allocated host memory */
 	delete[] k_h;
@@ -347,9 +347,10 @@ int main() {
 	cudaFree(VG_d);
 	cudaFree(w_d);
 
-	auto endend = std::chrono::high_resolution_clock::now();
-
+	auto freemem_end = std::chrono::high_resolution_clock::now();
 	auto finish = std::chrono::high_resolution_clock::now();
+
+
 	std::cout << "total: \t\t\t" << std::chrono::duration_cast<microseconds>(finish - start).count()<<"\n";
 
 	std::cout << "cudafree(0): \t\t" << std::chrono::duration_cast<microseconds>(stopcudafree0 - startcudafree0).count() << "\n";
@@ -378,7 +379,7 @@ int main() {
 
 	std::cout << "computePhaseShifts: \t" << std::chrono::duration_cast<microseconds>(stopcomputePhaseShifts - startcomputePhaseShifts).count()<<"\n";
 
-	std::cout << "end: \t\t\t" << std::chrono::duration_cast<microseconds>(endend - endstart).count() << "\n";
+	std::cout << "Free memory: \t\t\t" << std::chrono::duration_cast<microseconds>(freemem_end - freemem_start).count() << "\n";
 
 
 
