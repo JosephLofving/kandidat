@@ -19,14 +19,11 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 
 void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
          			cuDoubleComplex* F_d,
-		 			int matLength, int TLabLength) {
+		 			int matLength, int TLabLength,
+                    cublasStatus_t status,
+                    cublasHandle_t handle) {
 
     using microseconds = std::chrono::microseconds;
-
-
-	// cuBLAS variables
-    cublasStatus_t status;
-    cublasHandle_t handle;
 
     // Host variables
     cuDoubleComplex** Fptr_array_h;
@@ -45,12 +42,6 @@ void computeTMatrixCUBLAS(cuDoubleComplex* T_d,
     int* trfInfo_d;
     int  trsInfo_d;
 
-
-    // Initialize cuBLAS
-    auto bla2_start = std::chrono::high_resolution_clock::now();
-    status = cublasCreate(&handle);
-    auto bla2_stop = std::chrono::high_resolution_clock::now();
-    std::cout << "bla2:           " << std::chrono::duration_cast<microseconds>(bla2_stop - bla2_start).count() << "\n";
     if (status != CUBLAS_STATUS_SUCCESS) {
         printf("> ERROR: cuBLAS initialization failed\n");
     }

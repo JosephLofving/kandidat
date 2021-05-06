@@ -81,6 +81,9 @@ void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
 
 int main() {
 
+	using microseconds = std::chrono::microseconds;
+	auto start = std::chrono::high_resolution_clock::now();
+
 	/*We define our parameters here*/
 
 	constexpr double TLabMin = 1;	// Minimum energy
@@ -92,9 +95,28 @@ int main() {
 	/*End of defining parameters*/
 
 
+	/*We initialize CUDA and cuBLAS here*/
 
-	using microseconds = std::chrono::microseconds;
-	auto start = std::chrono::high_resolution_clock::now();
+	// Initialize CUDA
+	auto startcudafree0 = std::chrono::high_resolution_clock::now();
+	cudaFree(0);
+	auto stopcudafree0 = std::chrono::high_resolution_clock::now();
+
+
+	// cuBLAS variables
+	cublasStatus_t status;
+	cublasHandle_t handle;
+
+	// Initialize cuBLAS
+	auto cublasCreate_start = std::chrono::high_resolution_clock::now();
+	status = cublasCreate(&handle);
+	auto cublasCreate_stop = std::chrono::high_resolution_clock::now();
+	std::cout << "cublasCreate:           " << std::chrono::duration_cast<microseconds>(cublasCreate_stop - cublasCreate_start).count() << "\n";
+
+	/*End of initializing CUDA and cuBlas*/
+
+
+
 	/* Set up the quantum states by choosing ranges for the j and tz quantum numbers*/
 	int jMin = 0;
 	int jMax = 2;
@@ -170,9 +192,6 @@ int main() {
 	cuDoubleComplex* VG_d;
 	double* w_d;
 
-	auto startcudafree0 = std::chrono::high_resolution_clock::now();
-	cudaFree(0);
-	auto stopcudafree0= std::chrono::high_resolution_clock::now();
 
 	auto startAllocateDevice = std::chrono::high_resolution_clock::now();
 
@@ -247,7 +266,9 @@ int main() {
 
 	auto startcomputeTMatrixCUBLAS = std::chrono::high_resolution_clock::now();
 	/* Solve the equation FT = V with cuBLAS */
-	computeTMatrixCUBLAS(T_d, F_d, matLength, TLabLength);
+
+
+	computeTMatrixCUBLAS(T_d, F_d, matLength, TLabLength, status, handle);
 	auto stopcomputeTMatrixCUBLAS = std::chrono::high_resolution_clock::now();
 	/* TODO: Explain this */
 
