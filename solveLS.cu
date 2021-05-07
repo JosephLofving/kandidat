@@ -88,9 +88,9 @@ int main() {
 
 	constexpr double TLabMin = 1;	// Minimum energy
 	constexpr double TLabMax = 300; // Threshold energy for pion creation
-	constexpr int TLabLength = 1000; // Number of energies to generate
+	constexpr int TLabLength = 4096; // Number of energies to generate
 
-	constexpr int quadratureN = 30;
+	constexpr int quadratureN = 40;
 
 	/*End of defining parameters*/
 
@@ -220,9 +220,9 @@ int main() {
 	dim3 threadsPerBlock(matLength, matLength, TLabLength); // Block size
 	dim3 blocksPerGrid(1,1,1); // Grid size
 
-	threadsPerBlock.x = 32;
-	threadsPerBlock.y = 32;
-	threadsPerBlock.z = 32;
+	threadsPerBlock.x = 4;
+	threadsPerBlock.y = 4;
+	threadsPerBlock.z = 64;
 	blocksPerGrid.x = ceil(double(matLength) / double(threadsPerBlock.x));
 	blocksPerGrid.y = ceil(double(matLength) / double(threadsPerBlock.y));
 	blocksPerGrid.z = ceil(double(TLabLength) / double(threadsPerBlock.z));
@@ -255,12 +255,12 @@ int main() {
 	auto stopG0sum = std::chrono::high_resolution_clock::now();
 
 	auto startSetupG0 = std::chrono::high_resolution_clock::now();
-	setupG0Vector <<<threadsPerBlock, blocksPerGrid>>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
+	setupG0Vector <<<blocksPerGrid, threadsPerBlock>>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
 	auto stopSetupG0 = std::chrono::high_resolution_clock::now();
 
 	auto startSetupVGKernel = std::chrono::high_resolution_clock::now();
 	/* Setup the VG kernel and, at the same time, the F matrix */
-	setupVGKernel <<<threadsPerBlock, blocksPerGrid>>> (T_d, VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
+	setupVGKernel <<<blocksPerGrid, threadsPerBlock>>> (T_d, VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
 	auto stopSetupVGKernel = std::chrono::high_resolution_clock::now();
 
 	auto startcomputeTMatrixCUBLAS = std::chrono::high_resolution_clock::now();
