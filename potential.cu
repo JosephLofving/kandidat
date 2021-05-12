@@ -15,13 +15,13 @@ int getArrayIndex(QuantumState state) {
      }
 
     if (state.state["l"]==state.state["ll"]) {
-        if (state.state["l"]==state.state["j"]) {
+        if (state.state["l"]==state.state["J"]) {
             return 1;
         }
-        if (state.state["l"]==state.state["j"] + 1) {
+        if (state.state["l"]==state.state["J"] + 1) {
             return 2;
         }
-        if (state.state["l"]==state.state["j"] - 1) {
+        if (state.state["l"]==state.state["J"] - 1) {
             return 3;
         }
      }
@@ -51,9 +51,9 @@ void potential(cuDoubleComplex* VMatrix, std::vector<QuantumState> channel, doub
     for (QuantumState state : channel){
         int L = state.state["l"];
         int S = state.state["s"];
-        int J = state.state["j"];
+        int J = state.state["J"];
         int T = state.state["t"];
-        int Tz = state.state["tz"];
+        int Tz = state.state["Tz"];
 
         arrayIndex=getArrayIndex(state);
 

@@ -60,30 +60,30 @@ void printStates(std::vector<QuantumState> states){
 
 
 /**
-    Sets up the allowed quantum states for two nuclei, based on the specified maxiumum total angular momentum j
-	and the iso-spin projection tz. 
-    @param jmin Minimum allowed total angular momentum
-	@param jmax Maximum allowed total angular momentum
-	@param tzmin Minimum allowed iso-spin projection
-	@param tzmin Maximum allowed iso-spin projection
+    Sets up the allowed quantum states for two nuclei, based on the specified maxiumum total angular momentum J
+	and the iso-spin projection Tz. 
+    @param Jmin Minimum allowed total angular momentum
+	@param Jmax Maximum allowed total angular momentum
+	@param Tzmin Minimum allowed iso-spin projection
+	@param Tzmin Maximum allowed iso-spin projection
 	@return The set of allowed quantum states as a vector
 	
 */
-std::vector<QuantumState> setupBasis(int jmin, int jmax, int tzmin, int tzmax){
+std::vector<QuantumState> setupBasis(int Jmin, int Jmax, int Tzmin, int Tzmax){
 	std::vector<QuantumState> basis; 
-	for (int tz = tzmin; tz <= tzmax; tz++){
-		for (int j = jmin; j <= jmax; j++){
-			for (int s = 0; s < 2; s++){ //Spin can be either 1 or 0
-				for (int l = abs(j - s); l <= j + s; l++){ // J = L + S, thus the orbital angular momentum L has to be J-S
-					for (int t = abs(tz); t < 2; t++){ // Iso-spin can either be 1 or 0
-						if ((l + s + t) % 2 != 0){ // Why? 
+	for (int Tz = Tzmin; Tz <= Tzmax; Tz++){
+		for (int J = Jmin; J <= Jmax; J++){
+			for (int S = 0; S < 2; S++){ //Spin can be either 1 or 0
+				for (int l = abs(J - S); l <= J + S; l++){ // J = L + S, thus the orbital angular momentum L has to be J-S
+					for (int T = abs(Tz); T < 2; T++){ // Total iso-spin can either be 1 or 0
+						if ((l + S + T) % 2 != 0){
 							QuantumState basestate;
-							basestate.addQuantumNumber("tz", tz);
+							basestate.addQuantumNumber("Tz", Tz);
 							basestate.addQuantumNumber("l", l);
 							basestate.addQuantumNumber("pi", pow(-1, l)); // The pairity https://en.wikipedia.org/wiki/Parity_(physics)
-							basestate.addQuantumNumber("s", s);
-							basestate.addQuantumNumber("j", j);
-							basestate.addQuantumNumber("t", t);
+							basestate.addQuantumNumber("S", S);
+							basestate.addQuantumNumber("J", J);
+							basestate.addQuantumNumber("T", T);
 
 							basis.push_back(basestate); //Adds the allowed state to the return vector
 						}
@@ -97,7 +97,7 @@ std::vector<QuantumState> setupBasis(int jmin, int jmax, int tzmin, int tzmax){
 
 /**
     Calculates the allowed combination of states before and after the a scattering process. Based on the
-	conserved quantum numbers: s,j,pi,tz. The only unconserved quantum number is orbital momentum l. The
+	conserved quantum numbers: s,J,pi,Tz. The only unconserved quantum number is orbital momentum l. The
 	quantum number ll represents l after scattering.
 	https://www.asc.ohio-state.edu/physics/ntg/8805/notes/section_5_Scattering_2.pdf
 
@@ -114,10 +114,10 @@ std::map<std::string, std::vector<QuantumState> > setupNNChannels(std::vector<Qu
 
 	//A vector of strings that specify which quantum numbers to be conserved
 	std::vector<std::string> conservedQuantumNumbers;
-	conservedQuantumNumbers.push_back("s");
-	conservedQuantumNumbers.push_back("j");
+	conservedQuantumNumbers.push_back("S");
+	conservedQuantumNumbers.push_back("J");
 	conservedQuantumNumbers.push_back("pi");
-	conservedQuantumNumbers.push_back("tz");
+	conservedQuantumNumbers.push_back("Tz");
 
 	std::vector<QuantumState> allowedStates;
 
@@ -135,10 +135,10 @@ std::map<std::string, std::vector<QuantumState> > setupNNChannels(std::vector<Qu
 				state.addQuantumNumber("ll", ket.state["l"]);
 				
 				//The rest are just copied
-				state.addQuantumNumber("s", bra.state["s"]);
-				state.addQuantumNumber("j", bra.state["j"]);
-				state.addQuantumNumber("t", bra.state["t"]);
-				state.addQuantumNumber("tz", bra.state["tz"]);
+				state.addQuantumNumber("S", bra.state["S"]);
+				state.addQuantumNumber("J", bra.state["J"]);
+				state.addQuantumNumber("T", bra.state["T"]);
+				state.addQuantumNumber("Tz", bra.state["Tz"]);
 				state.addQuantumNumber("pi", bra.state["pi"]);
 
 				allowedStates.push_back(state); //adds state
@@ -155,7 +155,7 @@ std::map<std::string, std::vector<QuantumState> > setupNNChannels(std::vector<Qu
 	 * is added to the vector with that key.
 	 */
 	for (QuantumState state : allowedStates){
-		key = "j:"+std::to_string(state.state["j"])+" s:"+std::to_string(state.state["s"])+" tz:" +std::to_string(state.state["tz"]) +" pi:"+ std::to_string(state.state["pi"]);
+		key = "J:"+std::to_string(state.state["J"])+" S:"+std::to_string(state.state["S"])+" Tz:" +std::to_string(state.state["Tz"]) +" pi:"+ std::to_string(state.state["pi"]);
 		if(channels.count(key)==0){ //checks if channel contais key. True if key is not present
 			std::vector<QuantumState> vec_state;
 			vec_state.push_back(state);

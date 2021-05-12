@@ -9,15 +9,15 @@
 */
 double getReducedMass(std::vector<QuantumState> channel) {
 	double mu = 0;
-	int tzChannel = channel[0].state["tz"];
+	int TzChannel = channel[0].state["Tz"];
 	/* Proton-proton scattering */
-	if (tzChannel == -1)
+	if (TzChannel == -1)
 		mu = constants::protonMass / 2;
 	/* Proton-neutron scattering */
-	else if (tzChannel == 0)
+	else if (TzChannel == 0)
 		mu = constants::nucleonReducedMass;
 	/* Neutron-neutron scattering */
-	else if (tzChannel == 1)
+	else if (TzChannel == 1)
 		mu = constants::neutronMass / 2;
 
 	return mu;
@@ -63,13 +63,13 @@ void setupDVectorSum(
 	@param k0:	On-shell point
 	@param TLab: Kinetic energy for the projectile in the lab system
 	@param TLabLength: Size of the TLab array
-	@param tzChannel: Current tz channel
+	@param TzChannel: Current Tz channel
 	@return			On-shell point k0
 */
 __global__
-void getk0(double* k0, double* TLab, int TLabLength, int tzChannel) {
+void getk0(double* k0, double* TLab, int TLabLength, int TzChannel) {
 	int slice = blockIdx.x * blockDim.x + threadIdx.x;
-		//Hardcode for tz=0
+		//Hardcode for Tz=0
 		if (slice < TLabLength) {
 			k0[slice] = sqrt(pow(constants::neutronMass, 2) * TLab[slice] * (TLab[slice]
 				+ 2 * constants::protonMass) / ((pow(constants::protonMass
@@ -116,22 +116,22 @@ int main() {
 
 
 
-	/* Set up the quantum states by choosing ranges for the j and tz quantum numbers*/
-	int jMin = 0;
-	int jMax = 2;
-	int tzMin = 0;
-	int tzMax = 2;
-	std::vector<QuantumState> basis = setupBasis(jMin, jMax, tzMin, tzMax);
+	/* Set up the quantum states by choosing ranges for the J and Tz quantum numbers*/
+	int JMin = 0;
+	int JMax = 2;
+	int TzMin = 0;
+	int TzMax = 2;
+	std::vector<QuantumState> basis = setupBasis(JMin, JMax, TzMin, TzMax);
 	std::map<std::string, std::vector<QuantumState>> channels = setupNNChannels(basis);
 
 	// TODO: Explain
-	std::string key = "j:0 s:0 tz:0 pi:1"; // TODO: Looks like "magic numbers" for outside reader, explain this
+	std::string key = "J:0 S:0 Tz:0 pi:1"; // TODO: Looks like "magic numbers" for outside reader, explain this
 	std::vector<QuantumState> channel = channels[key];
 	if (channel.size() == 0) {
 		std::cout << "Invalid key";
 		abort();
 	}
-	int tzChannel = channel[0].state["tz"];
+	int TzChannel = channel[0].state["Tz"];
 
 	/* Number of quadrature points, needed for array sizes and later the quadrature setup */
 
@@ -233,7 +233,7 @@ int main() {
 
 	auto startGetk0 = std::chrono::high_resolution_clock::now();
 	/* Get the on-shell points for different TLab with parallellization */
-	getk0 <<<numBlocks, blockSize>>>(k0_d, TLab_d, TLabLength, tzChannel);
+	getk0 <<<numBlocks, blockSize>>>(k0_d, TLab_d, TLabLength, TzChannel);
 	auto stopGetk0 = std::chrono::high_resolution_clock::now();
 
 	/* Use k0 to generate different potentials on the CPU. The CPU generated potentials are
