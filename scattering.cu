@@ -133,7 +133,7 @@ cuDoubleComplex tanCudaComplex(cuDoubleComplex argument) {
 }
 
 __global__
-void setupG0Vector(cuDoubleComplex* G0,
+void setupDVector(cuDoubleComplex* D,
 	double* k,
 	double* w,
 	double* k0,
@@ -151,24 +151,24 @@ void setupG0Vector(cuDoubleComplex* G0,
 	double twoOverPi = (2.0 / constants::pi);
 
 	if (column < quadratureN && slice < TLabLength) {
-		G0[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
+		D[column + slice * matLength] = make_cuDoubleComplex(twoOverPi * twoMu * k[column] * k[column] * w[column] / (k0[slice] * k0[slice] - k[column] * k[column]), 0);
 
-		/* If coupled, append G0 to itself to facilitate calculations.
-		 * This means the second half of G0 is a copy of the first. */
+		/* If coupled, append D to itself to facilitate calculations.
+		 * This means the second half of D is a copy of the first. */
 		if (coupled) {
-			G0[quadratureN + 1 + column + slice * matLength] = G0[column + slice * matLength];
+			D[quadratureN + 1 + column + slice * matLength] = D[column + slice * matLength];
 		}
 
-		/* Assign the last element of G0 */
-		G0[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum[slice], -twoMu * k0[slice]);
+		/* Assign the last element of D */
+		D[quadratureN + slice * matLength] = make_cuDoubleComplex(-twoOverPi * twoMu * k0[slice] * k0[slice] * sum[slice], -twoMu * k0[slice]);
 		if (coupled) {
-			G0[2 * (quadratureN + 1) - 1 + slice * matLength] = G0[quadratureN + slice * matLength];
+			D[2 * (quadratureN + 1) - 1 + slice * matLength] = D[quadratureN + slice * matLength];
 		}
 	}
 }
 
 /**
-	Multiplies the potential matrix elements with the G0 vector elements.
+	Multiplies the potential matrix elements with the D vector elements.
 
 	@param channel: Scattering channel
 	@param key:		Channel name
@@ -176,13 +176,13 @@ void setupG0Vector(cuDoubleComplex* G0,
 	@param k:		Quadrature points
 	@param w:		Weights for quadrature points
 	@param k0:		On-shell-point
-	@return			VG kernel
+	@return			VD kernel
 */
 __global__
-void setupVGKernel(cuDoubleComplex* T,
-	cuDoubleComplex* VG,
+void setupVDKernel(cuDoubleComplex* T,
+	cuDoubleComplex* VD,
 	cuDoubleComplex* V,
-	cuDoubleComplex* G0,
+	cuDoubleComplex* D,
 	cuDoubleComplex* F,
 	double* k,
 	double* w,
@@ -198,13 +198,13 @@ void setupVGKernel(cuDoubleComplex* T,
 	int slice = blockIdx.z * blockDim.z + threadIdx.z;
 
 	if (row < matLength && column < matLength && slice < TLabLength) {
-		VG[row + column * matLength + slice * matLength * matLength] = cuCmul(V[row + column * matLength + slice * matLength * matLength], G0[column + slice * matLength]);
+		VD[row + column * matLength + slice * matLength * matLength] = cuCmul(V[row + column * matLength + slice * matLength * matLength], D[column + slice * matLength]);
 
 		if (row == column) {
-			F[row + row * matLength + slice * matLength * matLength] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VG[row + row * matLength + slice * matLength * matLength])); // Diagonal element
+			F[row + row * matLength + slice * matLength * matLength] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VD[row + row * matLength + slice * matLength * matLength])); // Diagonal element
 		}
 		else {
-			F[row + column * matLength + slice * matLength * matLength] = cuCmul(make_cuDoubleComplex(-1, 0), VG[row + column * matLength + slice * matLength * matLength]);
+			F[row + column * matLength + slice * matLength * matLength] = cuCmul(make_cuDoubleComplex(-1, 0), VD[row + column * matLength + slice * matLength * matLength]);
 		}
 
 		if (column == matLength-1) {
@@ -218,15 +218,15 @@ void setupVGKernel(cuDoubleComplex* T,
 
 	//for (int row = 0; row < matLength; row++) {
 	//	for (int column = 0; column < matLength; column++) {
-	//		/* Create VG by using VG[i,j] = V[i,j] * G[j] */
-	//		VG[row + column * matLength] = cuCmul(V[row + column * matLength], G0[column]);
+	//		/* Create VD by using VD[i,j] = V[i,j] * D[j] */
+	//		VD[row + column * matLength] = cuCmul(V[row + column * matLength], D[column]);
 
-	//		/* At the same time, create F = delta_ij - VG_ij for computeTMatrix*/
+	//		/* At the same time, create F = delta_ij - VD_ij for computeTMatrix*/
 	//		if (row != column) {
-	//			F[row + column * matLength] = cuCmul(make_cuDoubleComplex(-1, 0), VG[row + column * matLength]);
+	//			F[row + column * matLength] = cuCmul(make_cuDoubleComplex(-1, 0), VD[row + column * matLength]);
 	//		}
 	//	}
-	//	F[row + row * matLength] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VG[row + row * matLength])); // Diagonal element
+	//	F[row + row * matLength] = cuCadd(make_cuDoubleComplex(1, 0), cuCmul(make_cuDoubleComplex(-1, 0), VD[row + row * matLength])); // Diagonal element
 	//}
 //}
 

@@ -18,7 +18,7 @@
 
 
 __global__
-void setupG0Vector(cuDoubleComplex* G0,
+void setupDVector(cuDoubleComplex* D,
 	double* k,
 	double* w,
 	double* k0,
@@ -30,10 +30,10 @@ void setupG0Vector(cuDoubleComplex* G0,
 	bool coupled);
 
 __global__
-void setupVGKernel(cuDoubleComplex* T,
-	cuDoubleComplex* VG,
+void setupVDKernel(cuDoubleComplex* T,
+	cuDoubleComplex* VD,
 	cuDoubleComplex* V,
-	cuDoubleComplex* G0,
+	cuDoubleComplex* D,
 	cuDoubleComplex* F,
 	double* k,
 	double* w,

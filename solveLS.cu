@@ -39,7 +39,7 @@ bool isCoupled(std::vector<QuantumState> channel) {
 
 /* TODO: Explain what this does*/
 __global__
-void setupG0VectorSum(
+void setupDVectorSum(
 	double* sum,
 	double* k0,
 	int quadratureN,
@@ -180,7 +180,7 @@ int main() {
 
 	/* Declare device variables to be able to allocate them on the device */
 	cuDoubleComplex* F_d;
-	cuDoubleComplex* G0_d;
+	cuDoubleComplex* D_d;
 	double* k_d;
 	double* k0_d;
 	cuDoubleComplex* phases_d;
@@ -188,7 +188,7 @@ int main() {
 	cuDoubleComplex* T_d;
 	double* TLab_d;
 	cuDoubleComplex* V_d;
-	cuDoubleComplex* VG_d;
+	cuDoubleComplex* VD_d;
 	double* w_d;
 
 
@@ -196,7 +196,7 @@ int main() {
 
 	/* Allocate memory on the device */
 	cudaMalloc((void**)&F_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&G0_d, matLength * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&D_d, matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&k_d, quadratureN * sizeof(double));
 	cudaMalloc((void**)&k0_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&phases_d, phasesSize * TLabLength * sizeof(cuDoubleComplex));
@@ -204,7 +204,7 @@ int main() {
 	cudaMalloc((void**)&T_d, matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&TLab_d, TLabLength * sizeof(double));
 	cudaMalloc((void**)&V_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
-	cudaMalloc((void**)&VG_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
+	cudaMalloc((void**)&VD_d, matLength * matLength * TLabLength * sizeof(cuDoubleComplex));
 	cudaMalloc((void**)&w_d, quadratureN * sizeof(double));
 
 	auto stopAllocateDevice = std::chrono::high_resolution_clock::now();
@@ -250,18 +250,18 @@ int main() {
 	double mu = getReducedMass(channel);
 
 	/* Call kernels on GPU */
-	auto startG0sum = std::chrono::high_resolution_clock::now();
-	setupG0VectorSum <<<numBlocks, blockSize >>> (sum_d, k0_d, quadratureN, TLabLength, k_d, w_d);
-	auto stopG0sum = std::chrono::high_resolution_clock::now();
+	auto startDsum = std::chrono::high_resolution_clock::now();
+	setupDVectorSum <<<numBlocks, blockSize >>> (sum_d, k0_d, quadratureN, TLabLength, k_d, w_d);
+	auto stopDsum = std::chrono::high_resolution_clock::now();
 
-	auto startSetupG0 = std::chrono::high_resolution_clock::now();
-	setupG0Vector <<<blocksPerGrid, threadsPerBlock>>> (G0_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
-	auto stopSetupG0 = std::chrono::high_resolution_clock::now();
+	auto startSetupD = std::chrono::high_resolution_clock::now();
+	setupDVector <<<blocksPerGrid, threadsPerBlock>>> (D_d, k_d, w_d, k0_d, sum_d, quadratureN, matLength, TLabLength, mu, coupled);
+	auto stopSetupD = std::chrono::high_resolution_clock::now();
 
-	auto startSetupVGKernel = std::chrono::high_resolution_clock::now();
-	/* Setup the VG kernel and, at the same time, the F matrix */
-	setupVGKernel <<<blocksPerGrid, threadsPerBlock>>> (T_d, VG_d, V_d, G0_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
-	auto stopSetupVGKernel = std::chrono::high_resolution_clock::now();
+	auto startSetupVDKernel = std::chrono::high_resolution_clock::now();
+	/* Setup the VD kernel and, at the same time, the F matrix */
+	setupVDKernel <<<blocksPerGrid, threadsPerBlock>>> (T_d, VD_d, V_d, D_d, F_d, k_d, w_d, k0_d, quadratureN, matLength, TLabLength, mu, coupled);
+	auto stopSetupVDKernel = std::chrono::high_resolution_clock::now();
 
 	auto startcomputeTMatrixCUBLAS = std::chrono::high_resolution_clock::now();
 	/* Solve the equation FT = V with cuBLAS */
@@ -336,7 +336,7 @@ int main() {
 
 	/* Free allocated device memory */
 	// cudaFree(F_d);
-	cudaFree(G0_d);
+	cudaFree(D_d);
 	cudaFree(k0_d);
 	cudaFree(k_d);
 	cudaFree(phases_d);
@@ -344,7 +344,7 @@ int main() {
 	cudaFree(T_d);
 	cudaFree(TLab_d);
 	cudaFree(V_d);
-	cudaFree(VG_d);
+	cudaFree(VD_d);
 	cudaFree(w_d);
 
 	auto freemem_end = std::chrono::high_resolution_clock::now();
@@ -369,11 +369,11 @@ int main() {
 
 	std::cout << "potential: \t\t" << std::chrono::duration_cast<microseconds>(stopPotential - startPotential).count()<<"\n";
 
-	std::cout << "G0sum: \t\t\t" << std::chrono::duration_cast<microseconds>(stopG0sum - startG0sum).count()<<"\n";
+	std::cout << "Dsum: \t\t\t" << std::chrono::duration_cast<microseconds>(stopDsum - startDsum).count()<<"\n";
 
-	std::cout << "setupG0: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count()<<"\n";
+	std::cout << "setupD: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupD - startSetupD).count()<<"\n";
 
-	std::cout << "SetupVGKernel: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupVGKernel - startSetupVGKernel).count()<<"\n";
+	std::cout << "SetupVDKernel: \t\t" << std::chrono::duration_cast<microseconds>(stopSetupVDKernel - startSetupVDKernel).count()<<"\n";
 
 	std::cout << "computeTMatrixCUBLAS: \t" << std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count()<<"\n";
 
@@ -400,11 +400,11 @@ int main() {
 
 	std::cout << std::chrono::duration_cast<microseconds>(stopPotential - startPotential).count() << ", ";
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopG0sum - startG0sum).count() << ", ";
+	std::cout << std::chrono::duration_cast<microseconds>(stopDsum - startDsum).count() << ", ";
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopSetupG0 - startSetupG0).count() << ", ";
+	std::cout << std::chrono::duration_cast<microseconds>(stopSetupD - startSetupD).count() << ", ";
 
-	std::cout << std::chrono::duration_cast<microseconds>(stopSetupVGKernel - startSetupVGKernel).count() << ", ";
+	std::cout << std::chrono::duration_cast<microseconds>(stopSetupVDKernel - startSetupVDKernel).count() << ", ";
 
 	std::cout << std::chrono::duration_cast<microseconds>(stopcomputeTMatrixCUBLAS - startcomputeTMatrixCUBLAS).count() << ", ";
 
