@@ -8,7 +8,7 @@
 */
 double getReducedMass(std::vector<QuantumState> channel) {
 	double mu = 0;
-	int tzChannel = channel[0].state["tz"];
+	int tzChannel = channel[0].state["Tz"];
 	if (tzChannel == -1)	 // Proton-proton scattering
 		mu = constants::protonMass / 2;
 	else if (tzChannel == 0) // Proton-neutron scattering
