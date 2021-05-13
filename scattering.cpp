@@ -37,7 +37,7 @@ bool isCoupled(std::vector<QuantumState> channel) {
 	@param k0:	On-shell-point
 	@return		G0 vector
 */
-std::vector<std::complex<double>> setupG0Vector(std::vector<QuantumState> channel, std::vector<double> k, std::vector<double> w, double k0) {
+std::vector<std::complex<double>> setupDVector(std::vector<QuantumState> channel, std::vector<double> k, std::vector<double> w, double k0) {
 	int N = k.size();
 	std::vector<std::complex<double>> D(N + 1);
 
@@ -56,7 +56,7 @@ std::vector<std::complex<double>> setupG0Vector(std::vector<QuantumState> channe
 }
 
 /**
-	Multiplies the potential matrix with the G0 vector.
+	Multiplies the potential matrix with the D vector.
 
 	@param channel: Scattering channel
     @param key:		Channel name
@@ -67,27 +67,27 @@ std::vector<std::complex<double>> setupG0Vector(std::vector<QuantumState> channe
 	@return			VG kernel
 */
 LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0) {
-	//std::cout << "Setting up G0(k0) in channel " << key << std::endl;
-	std::vector<std::complex<double>> G0 = setupG0Vector(channel, k, w, k0);
+	//std::cout << "Setting up D(k0) in channel " << key << std::endl;
+	std::vector<std::complex<double>> D = setupG0Vector(channel, k, w, k0);
 
-	/* If coupled, append G0 to itself to facilitate calculations. This means the second half of G0 is a copy of the first. */
+	/* If coupled, append D to itself to facilitate calculations. This means the second half of D is a copy of the first. */
 	if (isCoupled(channel)) {
-		G0.insert(std::end(G0), std::begin(G0), std::end(G0)); // TODO: Risk that this does not work properly, might want to test in uncoupled case
+		D.insert(std::end(D), std::begin(D), std::end(D)); // TODO: Risk that this does not work properly, might want to test in uncoupled case
 	}
 
-	/* Create VG by using VG[i,j] = V[i,j] * G[j] */
-	LapackMat VG = LapackMat(G0.size());
-	for (int row = 0; row < G0.size(); row++) {
-		for (int column = 0; column < G0.size(); column++) {
-			VG.setElement(row, column, V.getElement(row, column) * G0[column]);
+	/* Create VD by using VG[i,j] = V[i,j] * D[j] */
+	LapackMat VD = LapackMat(D.size());
+	for (int row = 0; row < D.size(); row++) {
+		for (int column = 0; column < D.size(); column++) {
+			VD.setElement(row, column, V.getElement(row, column) * D[column]);
 		}
 	}
 
-	for (int i = 0; i < VG.width * VG.height; i += 100) {
-		std::cout << VG.contents[i].real() << std::endl;
+	for (int i = 0; i < VD.width * VD.height; i += 100) {
+		std::cout << VD.contents[i].real() << std::endl;
 	}
 
-	return VG;
+	return VD;
 }
 
 
@@ -105,9 +105,9 @@ LapackMat setupVGKernel(std::vector<QuantumState> channel, std::string key, Lapa
 LapackMat computeTMatrix(std::vector<QuantumState> channel, std::string key, LapackMat V, std::vector<double> k, std::vector<double> w, double k0)  {
 	std::cout << "Solving for the complex T-matrix in channel " << key << std::endl;
 
-	LapackMat VG = setupVGKernel(channel, key, V, k, w, k0);
+	LapackMat VD = setupVGKernel(channel, key, V, k, w, k0);
 	LapackMat identity = LapackMat(VG.width);
-	LapackMat F = identity + VG;
+	LapackMat F = identity + VD;
 
 	// Solves the equation FT = V.
 	LapackMat T = solveMatrixEq(F, V);
