@@ -18,7 +18,7 @@ int main() {
 	std::vector<double> k = k_and_w.v1;
 	std::vector<double> w = k_and_w.v2;
 
-	std::string key = "j:0 s:0 tz:0 pi:1"; //could change key format
+	std::string key = "J:0 S:0 Tz:0 pi:1"; //could change key format
 	std::vector<QuantumState> channel = channels[key];
 	if (channel.size()==0) {
 		std::cout << "Invalid key";
